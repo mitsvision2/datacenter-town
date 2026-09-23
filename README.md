@@ -34,7 +34,7 @@ debug = True
 Replace `<Your OpenAI API>` with your OpenAI API key, and `<name>` with your name.
  
 ### Step 2. Install requirements.txt
-Install everything listed in the `requirements.txt` file (I strongly recommend first setting up a virtualenv as usual). A note on Python version: we tested our environment on Python 3.9.12. 
+Use **Python 3.11** and install from `requirements.txt` (see the Datacenter Town section below). The original paper used 3.9.12; Python 3.14 cannot install the legacy pin set. 
 
 ## <img src="https://joonsungpark.s3.amazonaws.com:443/static/assets/characters/profile/Klaus_Mueller.png" alt="Generative Klaus">   Running a Simulation 
 To run a new simulation, you will need to concurrently start two servers: the environment server and the agent simulation server.
@@ -81,6 +81,48 @@ You may have noticed that all character sprites in the replay look identical. We
 To start the demo, go to the following address on your browser: `http://localhost:8000/demo/<simulation-name>/<starting-time-step>/<simulation-speed>`. Note that `<simulation-name>` and `<starting-time-step>` denote the same things as mentioned above. `<simulation-speed>` can be set to control the demo speed, where 1 is the slowest, and 5 is the fastest. For instance, visiting the following link will start a pre-simulated example, beginning at time-step 1, with a medium demo speed:  
 [http://localhost:8000/demo/July1_the_ville_isabella_maria_klaus-step-3-20/1/3/](http://localhost:8000/demo/July1_the_ville_isabella_maria_klaus-step-3-20/1/3/)
 
+## Datacenter Town (this fork)
+
+This fork adds multi-provider LLM support, an 8-resident datacenter-proposal scenario on the existing Ville map, and basic experiment logging.
+
+### 1. Configure LLM keys
+Copy the example config and edit keys/models:
+
+```bash
+cp reverie/backend_server/utils.py.example reverie/backend_server/utils.py
+```
+
+Set `llm_provider` to `openai`, `anthropic`, or `openai_compatible`, and fill in the matching API key(s). Defaults use `gpt-4o` and `text-embedding-3-small`.
+
+Install deps (use **Python 3.11** — not 3.14; Django 2.2 + the sim stack are happier there):
+
+```bash
+rm -rf .venv
+python3.11 -m venv .venv
+source .venv/bin/activate
+pip install -U pip setuptools wheel
+pip install -r requirements.txt
+python scripts/diag_deps.py
+```
+
+The old 2022/2023 pin set is kept as `requirements-legacy.txt` for historical/Python 3.9 use only. Do not install it on Python 3.14.
+
+### 2. Run the datacenter scenario
+1. Start Django: `cd environment/frontend_server && python manage.py runserver`
+2. Start Reverie: `cd reverie/backend_server && python reverie.py`
+3. Fork: `base_the_ville_datacenter_n8` → e.g. `dc-run-1`
+4. Open http://localhost:8000/simulator_home
+5. Seed memories: `call -- load history the_ville/agent_history_init_datacenter_n8.csv`
+6. Run steps: `run 100`
+7. Mid-run news drop (optional): `call -- whisper all ;; The council posted a summary of the datacenter proposal.`
+8. Save: `fin`
+
+Experiment artifacts land in `environment/frontend_server/storage/<sim>/experiment/` (`run_manifest.json`, `conversations.jsonl`, `events.jsonl`, `agent_snapshots.jsonl`, `outcomes.jsonl`).
+
+Runtime logs (step timing, LLM calls, CLI commands) go to the console and `reverie/backend_server/logs/datacenter-town.log`. Control with `log_level` / `log_to_file` / `log_dir` in `utils.py` (`DEBUG` for per-agent cognitive stages).
+
+To rebuild the n8 base sim from donors: `python scripts/build_datacenter_n8_base.py`
+
 ### Tips
 We've noticed that OpenAI's API can hang when it reaches the hourly rate limit. When this happens, you may need to restart your simulation. For now, we recommend saving your simulation often as you progress to ensure that you lose as little of the simulation as possible when you do need to stop and rerun it. Running these simulations, at least as of early 2023, could be somewhat costly, especially when there are many agents in the environment.
 
@@ -95,7 +137,7 @@ There are two ways to optionally customize your simulations.
 First is to initialize agents with unique history at the start of the simulation. To do this, you would want to 1) start your simulation using one of the base simulations, and 2) author and load agent history. More specifically, here are the steps:
 
 #### Step 1. Starting Up a Base Simulation 
-There are two base simulations included in the repository: `base_the_ville_n25` with 25 agents, and `base_the_ville_isabella_maria_klaus` with 3 agents. Load one of the base simulations by following the steps until step 2 above. 
+There are three base simulations included in the repository: `base_the_ville_datacenter_n8` (datacenter proposal, 8 agents), `base_the_ville_n25` with 25 agents, and `base_the_ville_isabella_maria_klaus` with 3 agents. Load one of the base simulations by following the steps until step 2 above. For the datacenter scenario, also see the **Datacenter Town** section above. 
 
 #### Step 2. Loading a History File 
 Then, when prompted with "Enter option: ", you should load the agent history by responding with the following command:

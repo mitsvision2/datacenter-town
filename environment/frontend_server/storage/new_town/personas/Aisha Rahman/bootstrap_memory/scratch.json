@@ -1,0 +1,349 @@
+{
+  "vision_r": 8,
+  "att_bandwidth": 8,
+  "retention": 8,
+  "curr_time": "February 13, 2023, 00:00:00",
+  "curr_tile": [
+    16,
+    18
+  ],
+  "daily_plan_req": "Aisha Rahman researches environmental impacts during the day and talks with residents about water and emissions risks from the datacenter.",
+  "name": "Aisha Rahman",
+  "first_name": "Aisha",
+  "last_name": "Rahman",
+  "age": 29,
+  "innate": "principled, careful, articulate",
+  "learned": "Aisha Rahman is an environmental advocate focused on water use, emissions, habitat, and climate impacts of large infrastructure.",
+  "currently": "Aisha Rahman conditionally opposes the datacenter proposal until there are binding water, emissions, and habitat protections. She is organizing facts for a town discussion.",
+  "lifestyle": "Aisha Rahman goes to bed around 11:30pm, wakes up around 7am, and often works from the park or cafe.",
+  "living_area": "the Ville:artist's co-living space:Latoya Williams's room",
+  "concept_forget": 100,
+  "daily_reflection_time": 180,
+  "daily_reflection_size": 5,
+  "overlap_reflect_th": 4,
+  "kw_strg_event_reflect_th": 10,
+  "kw_strg_thought_reflect_th": 9,
+  "recency_w": 1,
+  "relevance_w": 1,
+  "importance_w": 1,
+  "recency_decay": 0.995,
+  "importance_trigger_max": 250,
+  "importance_trigger_curr": 245,
+  "importance_ele_n": 5,
+  "thought_count": 5,
+  "daily_req": [
+    "wake up and complete the morning routine at 8:00 am"
+  ],
+  "f_daily_schedule": [
+    [
+      "sleeping",
+      480
+    ],
+    [
+      "waking up and completing her morning routine, which includes meditation, a light breakfast, and reviewing her agenda for the day (waking up and stretching in bed)",
+      5
+    ],
+    [
+      "waking up and completing her morning routine, which includes meditation, a light breakfast, and reviewing her agenda for the day (getting out of bed and heading to the bathroom to freshen up)",
+      10
+    ],
+    [
+      "waking up and completing her morning routine, which includes meditation, a light breakfast, and reviewing her agenda for the day (meditating in a quiet corner of her room)",
+      10
+    ],
+    [
+      "waking up and completing her morning routine, which includes meditation, a light breakfast, and reviewing her agenda for the day (preparing a light breakfast in the kitchen)",
+      10
+    ],
+    [
+      "waking up and completing her morning routine, which includes meditation, a light breakfast, and reviewing her agenda for the day (enjoying her breakfast while sitting at the dining table)",
+      10
+    ],
+    [
+      "waking up and completing her morning routine, which includes meditation, a light breakfast, and reviewing her agenda for the day (reviewing her agenda for the day in her office)",
+      10
+    ],
+    [
+      "waking up and completing her morning routine, which includes meditation, a light breakfast, and reviewing her agenda for the day (organizing her bag with necessary items for the day)",
+      5
+    ],
+    [
+      "[(ID:M6CEyl) Monday February 13 -- 09:00 AM] Activity: Aisha is heading to the local park to begin her research on the environmental impacts of the proposed datacenter, focusing on water use and emissions",
+      60
+    ],
+    [
+      "[(ID:8q8JUG) Monday February 13 -- 10:00 AM] Activity: Aisha is continuing her research at the park, focusing on compiling data about the emissions impact of the proposed datacenter",
+      60
+    ],
+    [
+      "meeting with a local environmental group at the park to discuss strategies for the upcoming town discussion and gather insights on community concerns regarding the datacenter proposal",
+      60
+    ],
+    [
+      "having lunch at a nearby caf\u00e9 while reviewing notes from the morning's research and meeting. She also takes some time to respond to emails related to the datacenter proposal",
+      60
+    ],
+    [
+      "reviewing the community feedback she received during the morning meeting and organizing her notes to prepare for the town discussion. She also begins drafting a summary of key points to address during the meeting",
+      60
+    ],
+    [
+      "analyzing the water usage data of the proposed datacenter to identify potential risks and areas for improvement. She is also preparing questions to address these issues during the town discussion",
+      60
+    ],
+    [
+      "reviewing emissions data and drafting a proposal for alternative solutions that could reduce the environmental impact of the datacenter. She is preparing to present these ideas at the town discussion",
+      60
+    ],
+    [
+      "[(ID:xqzFPs) Monday February 13 -- 04:00 PM] Activity: Aisha is meeting with a local journalist at the caf\u00e9 to discuss the environmental concerns related to the datacenter. She is providing insights and data to",
+      60
+    ],
+    [
+      "reviewing her notes and preparing her talking points for the town discussion. She is ensuring her arguments are clear and supported by data, focusing on water and emissions issues",
+      60
+    ],
+    [
+      "attending a community forum where she will present her findings on the environmental impacts of the proposed datacenter. She is focusing on engaging with residents and addressing their concerns about water use and emissions",
+      60
+    ],
+    [
+      "attending the community forum, where she continues to present her findings on the datacenter's environmental impacts. She is actively participating in discussions, answering questions, and listening to residents' concerns about water use and emissions",
+      60
+    ],
+    [
+      "reviewing feedback and notes from the community forum. She is reflecting on the discussions and considering adjustments to her approach based on the residents' concerns and suggestions",
+      60
+    ],
+    [
+      "relaxing at home, unwinding from the day's activities. She is reviewing the feedback she received during the community forum and considering how to incorporate it into her ongoing advocacy efforts. She may also spend some time reading or engaging in a calming activity to",
+      60
+    ],
+    [
+      "preparing for bed by winding down with a calming routine. She might engage in some light reading or meditation to relax before sleep. She also sets her agenda for the next day, ensuring she is ready to continue her advocacy work",
+      60
+    ],
+    [
+      "preparing for bed, reflecting on the day's activities, and noting any important tasks or insights for tomorrow. She ensures her notes and materials are organized for the next day\u2019s work and sets her alarm for the morning",
+      60
+    ],
+    [
+      "sleeping",
+      0
+    ]
+  ],
+  "f_daily_schedule_hourly_org": [
+    [
+      "sleeping",
+      480
+    ],
+    [
+      "waking up and completing her morning routine, which includes meditation, a light breakfast, and reviewing her agenda for the day",
+      60
+    ],
+    [
+      "[(ID:M6CEyl) Monday February 13 -- 09:00 AM] Activity: Aisha is heading to the local park to begin her research on the environmental impacts of the proposed datacenter, focusing on water use and emissions",
+      60
+    ],
+    [
+      "[(ID:8q8JUG) Monday February 13 -- 10:00 AM] Activity: Aisha is continuing her research at the park, focusing on compiling data about the emissions impact of the proposed datacenter",
+      60
+    ],
+    [
+      "meeting with a local environmental group at the park to discuss strategies for the upcoming town discussion and gather insights on community concerns regarding the datacenter proposal",
+      60
+    ],
+    [
+      "having lunch at a nearby caf\u00e9 while reviewing notes from the morning's research and meeting. She also takes some time to respond to emails related to the datacenter proposal",
+      60
+    ],
+    [
+      "reviewing the community feedback she received during the morning meeting and organizing her notes to prepare for the town discussion. She also begins drafting a summary of key points to address during the meeting",
+      60
+    ],
+    [
+      "analyzing the water usage data of the proposed datacenter to identify potential risks and areas for improvement. She is also preparing questions to address these issues during the town discussion",
+      60
+    ],
+    [
+      "reviewing emissions data and drafting a proposal for alternative solutions that could reduce the environmental impact of the datacenter. She is preparing to present these ideas at the town discussion",
+      60
+    ],
+    [
+      "[(ID:xqzFPs) Monday February 13 -- 04:00 PM] Activity: Aisha is meeting with a local journalist at the caf\u00e9 to discuss the environmental concerns related to the datacenter. She is providing insights and data to",
+      60
+    ],
+    [
+      "reviewing her notes and preparing her talking points for the town discussion. She is ensuring her arguments are clear and supported by data, focusing on water and emissions issues",
+      60
+    ],
+    [
+      "attending a community forum where she will present her findings on the environmental impacts of the proposed datacenter. She is focusing on engaging with residents and addressing their concerns about water use and emissions",
+      60
+    ],
+    [
+      "attending the community forum, where she continues to present her findings on the datacenter's environmental impacts. She is actively participating in discussions, answering questions, and listening to residents' concerns about water use and emissions",
+      60
+    ],
+    [
+      "reviewing feedback and notes from the community forum. She is reflecting on the discussions and considering adjustments to her approach based on the residents' concerns and suggestions",
+      60
+    ],
+    [
+      "relaxing at home, unwinding from the day's activities. She is reviewing the feedback she received during the community forum and considering how to incorporate it into her ongoing advocacy efforts. She may also spend some time reading or engaging in a calming activity to",
+      60
+    ],
+    [
+      "preparing for bed by winding down with a calming routine. She might engage in some light reading or meditation to relax before sleep. She also sets her agenda for the next day, ensuring she is ready to continue her advocacy work",
+      60
+    ],
+    [
+      "preparing for bed, reflecting on the day's activities, and noting any important tasks or insights for tomorrow. She ensures her notes and materials are organized for the next day\u2019s work and sets her alarm for the morning",
+      60
+    ]
+  ],
+  "act_address": "the Ville:artist's co-living space:common room:common room sofa",
+  "act_start_time": "February 13, 2023, 00:00:00",
+  "act_duration": 480,
+  "act_description": "sleeping",
+  "act_pronunciatio": "\ud83d\ude34",
+  "act_event": [
+    "Aisha Rahman",
+    "is",
+    "sleep"
+  ],
+  "act_obj_description": "not in use",
+  "act_obj_pronunciatio": "\ud83d\udeab",
+  "act_obj_event": [
+    "common room sofa",
+    "is not",
+    "in use"
+  ],
+  "chatting_with": null,
+  "chat": null,
+  "chatting_with_buffer": {},
+  "chatting_end_time": null,
+  "act_path_set": true,
+  "planned_path": [
+    [
+      17,
+      19
+    ],
+    [
+      18,
+      19
+    ],
+    [
+      18,
+      20
+    ],
+    [
+      18,
+      21
+    ],
+    [
+      18,
+      22
+    ],
+    [
+      18,
+      23
+    ],
+    [
+      18,
+      24
+    ],
+    [
+      18,
+      25
+    ],
+    [
+      19,
+      25
+    ],
+    [
+      20,
+      25
+    ],
+    [
+      21,
+      25
+    ],
+    [
+      22,
+      25
+    ],
+    [
+      23,
+      25
+    ],
+    [
+      24,
+      25
+    ],
+    [
+      25,
+      25
+    ],
+    [
+      26,
+      25
+    ],
+    [
+      27,
+      25
+    ],
+    [
+      28,
+      25
+    ],
+    [
+      29,
+      25
+    ],
+    [
+      30,
+      25
+    ],
+    [
+      31,
+      25
+    ],
+    [
+      32,
+      25
+    ],
+    [
+      33,
+      25
+    ],
+    [
+      34,
+      25
+    ],
+    [
+      35,
+      25
+    ],
+    [
+      35,
+      26
+    ],
+    [
+      35,
+      27
+    ],
+    [
+      35,
+      28
+    ],
+    [
+      35,
+      29
+    ],
+    [
+      35,
+      30
+    ]
+  ]
+}

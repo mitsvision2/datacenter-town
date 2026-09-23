@@ -16,6 +16,10 @@ from global_methods import *
 
 from django.contrib.staticfiles.templatetags.staticfiles import static
 from .models import *
+import logging
+
+log = logging.getLogger("frontend.translator")
+
 
 def landing(request): 
   context = {}
@@ -258,6 +262,8 @@ def process_environment(request):
   step = data["step"]
   sim_code = data["sim_code"]
   environment = data["environment"]
+  log.info("process_environment sim=%s step=%s agents=%s",
+           sim_code, step, list(environment.keys()) if isinstance(environment, dict) else "?")
 
   with open(f"storage/{sim_code}/environment/{step}.json", "w") as outfile:
     outfile.write(json.dumps(environment, indent=2))
@@ -291,6 +297,10 @@ def update_environment(request):
     with open(f"storage/{sim_code}/movement/{step}.json") as json_file: 
       response_data = json.load(json_file)
       response_data["<step>"] = step
+    log.info("update_environment READY sim=%s step=%s", sim_code, step)
+  else:
+    log.debug("update_environment WAIT sim=%s step=%s (no movement file yet)",
+              sim_code, step)
 
   return JsonResponse(response_data)
 

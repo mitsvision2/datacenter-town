@@ -14,6 +14,18 @@ def main():
             "available on your PYTHONPATH environment variable? Did you "
             "forget to activate a virtual environment?"
         ) from exc
+    # Lightweight startup line (no secrets).
+    try:
+        import logging
+        logging.basicConfig(
+            level=logging.INFO,
+            format="%(asctime)s | %(levelname)-7s | %(name)s | %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S",
+        )
+        logging.getLogger("frontend").info(
+            "Django manage.py starting: %s", " ".join(sys.argv[1:]) or "(no args)")
+    except Exception:
+        pass
     execute_from_command_line(sys.argv)
 
 

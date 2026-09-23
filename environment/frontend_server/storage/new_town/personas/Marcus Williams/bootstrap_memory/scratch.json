@@ -1,0 +1,228 @@
+{
+  "vision_r": 8,
+  "att_bandwidth": 8,
+  "retention": 8,
+  "curr_time": "February 13, 2023, 00:00:00",
+  "curr_tile": [
+    36,
+    65
+  ],
+  "daily_plan_req": "Marcus Williams meets neighbors, posts flyers, and urges people to demand a fair process around the datacenter proposal.",
+  "name": "Marcus Williams",
+  "first_name": "Marcus",
+  "last_name": "Williams",
+  "age": 45,
+  "innate": "outspoken, community-minded, skeptical of corporate power",
+  "learned": "Marcus Williams is a community organizer who pushes for fair process, transparent hearings, and local voice against outside corporate influence.",
+  "currently": "Marcus Williams opposes the datacenter proposal as currently framed. He argues the process has been rushed and that corporate power is sidelining residents.",
+  "lifestyle": "Marcus Williams goes to bed around 11pm, wakes up around 6:30am, and spends afternoons meeting people around town.",
+  "living_area": "the Ville:Moore family's house:main room",
+  "concept_forget": 100,
+  "daily_reflection_time": 180,
+  "daily_reflection_size": 5,
+  "overlap_reflect_th": 4,
+  "kw_strg_event_reflect_th": 10,
+  "kw_strg_thought_reflect_th": 9,
+  "recency_w": 1,
+  "relevance_w": 1,
+  "importance_w": 1,
+  "recency_decay": 0.995,
+  "importance_trigger_max": 250,
+  "importance_trigger_curr": 242,
+  "importance_ele_n": 8,
+  "thought_count": 5,
+  "daily_req": [
+    "wake up and complete the morning routine at 8:00 am"
+  ],
+  "f_daily_schedule": [
+    [
+      "sleeping",
+      480
+    ],
+    [
+      "[(ID:lynYTu) Monday February 13 -- 08:00 AM] Activity: Marcus is waking up and completing his morning routine (waking up and getting out of bed)",
+      5
+    ],
+    [
+      "[(ID:lynYTu) Monday February 13 -- 08:00 AM] Activity: Marcus is waking up and completing his morning routine (stretching and doing a quick morning exercise routine)",
+      10
+    ],
+    [
+      "[(ID:lynYTu) Monday February 13 -- 08:00 AM] Activity: Marcus is waking up and completing his morning routine (taking a shower)",
+      10
+    ],
+    [
+      "[(ID:lynYTu) Monday February 13 -- 08:00 AM] Activity: Marcus is waking up and completing his morning routine (getting dressed for the day)",
+      10
+    ],
+    [
+      "[(ID:lynYTu) Monday February 13 -- 08:00 AM] Activity: Marcus is waking up and completing his morning routine (brushing his teeth and grooming)",
+      5
+    ],
+    [
+      "[(ID:lynYTu) Monday February 13 -- 08:00 AM] Activity: Marcus is waking up and completing his morning routine (making his bed and tidying up his room)",
+      5
+    ],
+    [
+      "[(ID:lynYTu) Monday February 13 -- 08:00 AM] Activity: Marcus is waking up and completing his morning routine (preparing a cup of coffee or tea)",
+      5
+    ],
+    [
+      "[(ID:lynYTu) Monday February 13 -- 08:00 AM] Activity: Marcus is waking up and completing his morning routine (checking his phone for any important messages or updates)",
+      5
+    ],
+    [
+      "[(ID:lynYTu) Monday February 13 -- 08:00 AM] Activity: Marcus is waking up and completing his morning routine (reviewing his schedule and to-do list for the day)",
+      5
+    ],
+    [
+      "[(ID:80kxWX) Monday February 13 -- 09:00 AM] Activity: Marcus is having breakfast and reviewing his notes for the day",
+      60
+    ],
+    [
+      "[(ID:gwEzNc) Monday February 13 -- 10:00 AM] Activity: Marcus is preparing flyers about the datacenter proposal and planning his route for the day",
+      60
+    ],
+    [
+      "[(ID:NKTMqW) Monday February 13 -- 11:00 AM] Activity: Marcus is heading out to meet with local residents to discuss concerns about the datacenter proposal",
+      60
+    ],
+    [
+      "[(ID:LU4ynh) Monday February 13 -- 12:00 PM] Activity: Marcus is meeting with a group of community leaders to strategize on how to address the datacenter proposal effectively",
+      60
+    ],
+    [
+      "meeting with local business owners to gather their perspectives on the datacenter proposal and discuss potential impacts on the community",
+      60
+    ],
+    [
+      "attending a community forum to present his concerns about the datacenter proposal and encourage residents to voice their opinions",
+      60
+    ],
+    [
+      "meeting with city council members to discuss the importance of transparency and fair process in the datacenter proposal decision-making",
+      60
+    ],
+    [
+      "reviewing notes from his meetings earlier in the day and preparing a summary to share with his community group",
+      60
+    ],
+    [
+      "meeting with a journalist to discuss the community's concerns about the datacenter proposal and highlight the need for more inclusive decision-making",
+      60
+    ],
+    [
+      "meeting with a local environmental group to understand the potential ecological impacts of the datacenter proposal and discuss collaborative strategies",
+      60
+    ],
+    [
+      "attending a town hall meeting where the datacenter proposal is being discussed, ensuring that community voices are heard and advocating for a transparent process",
+      120
+    ],
+    [
+      "reviewing feedback from the town hall meeting and planning next steps with his community group to ensure ongoing engagement with the datacenter proposal issue",
+      60
+    ],
+    [
+      "[(ID:Ud9L71) Monday February 13 -- 10:00 PM] Activity: Marcus is unwinding from the day's activities by reading a book and reflecting on the progress made in advocating for a fair process regarding the datacenter proposal",
+      60
+    ],
+    [
+      "[(ID:ql5kS8) Monday February 13 -- 11:00 PM] Activity: Marcus is getting ready for bed, reflecting on the day's events, and planning for tomorrow's activities to continue advocating for a fair process regarding the",
+      60
+    ],
+    [
+      "sleeping",
+      0
+    ]
+  ],
+  "f_daily_schedule_hourly_org": [
+    [
+      "sleeping",
+      480
+    ],
+    [
+      "[(ID:lynYTu) Monday February 13 -- 08:00 AM] Activity: Marcus is waking up and completing his morning routine",
+      60
+    ],
+    [
+      "[(ID:80kxWX) Monday February 13 -- 09:00 AM] Activity: Marcus is having breakfast and reviewing his notes for the day",
+      60
+    ],
+    [
+      "[(ID:gwEzNc) Monday February 13 -- 10:00 AM] Activity: Marcus is preparing flyers about the datacenter proposal and planning his route for the day",
+      60
+    ],
+    [
+      "[(ID:NKTMqW) Monday February 13 -- 11:00 AM] Activity: Marcus is heading out to meet with local residents to discuss concerns about the datacenter proposal",
+      60
+    ],
+    [
+      "[(ID:LU4ynh) Monday February 13 -- 12:00 PM] Activity: Marcus is meeting with a group of community leaders to strategize on how to address the datacenter proposal effectively",
+      60
+    ],
+    [
+      "meeting with local business owners to gather their perspectives on the datacenter proposal and discuss potential impacts on the community",
+      60
+    ],
+    [
+      "attending a community forum to present his concerns about the datacenter proposal and encourage residents to voice their opinions",
+      60
+    ],
+    [
+      "meeting with city council members to discuss the importance of transparency and fair process in the datacenter proposal decision-making",
+      60
+    ],
+    [
+      "reviewing notes from his meetings earlier in the day and preparing a summary to share with his community group",
+      60
+    ],
+    [
+      "meeting with a journalist to discuss the community's concerns about the datacenter proposal and highlight the need for more inclusive decision-making",
+      60
+    ],
+    [
+      "meeting with a local environmental group to understand the potential ecological impacts of the datacenter proposal and discuss collaborative strategies",
+      60
+    ],
+    [
+      "attending a town hall meeting where the datacenter proposal is being discussed, ensuring that community voices are heard and advocating for a transparent process",
+      120
+    ],
+    [
+      "reviewing feedback from the town hall meeting and planning next steps with his community group to ensure ongoing engagement with the datacenter proposal issue",
+      60
+    ],
+    [
+      "[(ID:Ud9L71) Monday February 13 -- 10:00 PM] Activity: Marcus is unwinding from the day's activities by reading a book and reflecting on the progress made in advocating for a fair process regarding the datacenter proposal",
+      60
+    ],
+    [
+      "[(ID:ql5kS8) Monday February 13 -- 11:00 PM] Activity: Marcus is getting ready for bed, reflecting on the day's events, and planning for tomorrow's activities to continue advocating for a fair process regarding the",
+      60
+    ]
+  ],
+  "act_address": "the Ville:Moore family's house:main room:bed",
+  "act_start_time": "February 13, 2023, 00:00:00",
+  "act_duration": 480,
+  "act_description": "sleeping",
+  "act_pronunciatio": "\ud83d\ude34",
+  "act_event": [
+    "Marcus Williams",
+    "is",
+    "sleep"
+  ],
+  "act_obj_description": "being used",
+  "act_obj_pronunciatio": "\ud83d\udee0\ufe0f",
+  "act_obj_event": [
+    "bed",
+    "is",
+    "use"
+  ],
+  "chatting_with": null,
+  "chat": null,
+  "chatting_with_buffer": {},
+  "chatting_end_time": null,
+  "act_path_set": true,
+  "planned_path": []
+}
