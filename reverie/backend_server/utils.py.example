@@ -36,7 +36,8 @@ debug = True
 # Runtime logging (sim_logging.py)
 log_level = "INFO"       # DEBUG | INFO | WARNING | ERROR
 log_to_file = True
-log_dir = "logs"         # written under reverie/backend_server/logs by default
+log_dir = "logs"         # relative to reverie/backend_server/, or an absolute path
+capture_prints = True    # also write print()/stderr output to the log file
 
 # Experiment logging
 experiment_scenario_id = "datacenter_proposal_v1"

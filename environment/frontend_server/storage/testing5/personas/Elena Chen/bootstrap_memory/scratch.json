@@ -1,0 +1,236 @@
+{
+  "vision_r": 8,
+  "att_bandwidth": 8,
+  "retention": 8,
+  "curr_time": "February 13, 2023, 00:01:30",
+  "curr_tile": [
+    29,
+    65
+  ],
+  "daily_plan_req": "Elena Chen reviews utility planning documents and answers technical questions when residents ask about the datacenter's grid impacts.",
+  "name": "Elena Chen",
+  "first_name": "Elena",
+  "last_name": "Chen",
+  "age": 47,
+  "innate": "analytical, reserved, evidence-driven",
+  "learned": "Elena Chen is a utility planner who evaluates grid reliability, interconnection feasibility, and load growth. Colleagues call her Dr. Chen.",
+  "currently": "Elena Chen is evidence-dependent on the datacenter proposal. She will not take a public stance until she sees credible grid studies on capacity, interconnection timelines, and ratepayer impacts.",
+  "lifestyle": "Elena Chen goes to bed around 10:30pm, wakes up around 6am, and often reviews technical documents in the evening.",
+  "living_area": "the Ville:Yuriko Yamamoto's house:main room",
+  "concept_forget": 100,
+  "daily_reflection_time": 180,
+  "daily_reflection_size": 5,
+  "overlap_reflect_th": 4,
+  "kw_strg_event_reflect_th": 10,
+  "kw_strg_thought_reflect_th": 9,
+  "recency_w": 1,
+  "relevance_w": 1,
+  "importance_w": 1,
+  "recency_decay": 0.995,
+  "importance_trigger_max": 250,
+  "importance_trigger_curr": 234,
+  "importance_ele_n": 16,
+  "thought_count": 5,
+  "daily_req": [
+    "wake up and complete the morning routine at 8:00 am"
+  ],
+  "f_daily_schedule": [
+    [
+      "sleeping",
+      480
+    ],
+    [
+      "waking up and completing her morning routine (waking up and stretching in bed)",
+      5
+    ],
+    [
+      "waking up and completing her morning routine (getting out of bed and making her bed)",
+      5
+    ],
+    [
+      "waking up and completing her morning routine (heading to the bathroom to freshen up)",
+      5
+    ],
+    [
+      "waking up and completing her morning routine (brushing her teeth)",
+      5
+    ],
+    [
+      "waking up and completing her morning routine (washing her face)",
+      5
+    ],
+    [
+      "waking up and completing her morning routine (taking a quick shower)",
+      10
+    ],
+    [
+      "waking up and completing her morning routine (getting dressed for the day)",
+      10
+    ],
+    [
+      "waking up and completing her morning routine (preparing a simple breakfast)",
+      10
+    ],
+    [
+      "waking up and completing her morning routine (eating breakfast and reviewing her schedule for the day)",
+      5
+    ],
+    [
+      "[(ID:0CMi5d) Monday February 13 -- 09:00 AM] Activity: Elena is reviewing utility planning documents and checking emails",
+      60
+    ],
+    [
+      "reviewing utility planning documents and preparing for upcoming meetings",
+      60
+    ],
+    [
+      "[(ID:KJOZ7a) Monday February 13 -- 11:00 AM] Activity: Elena is attending a meeting with colleagues to discuss grid reliability and interconnection feasibility for the datacenter proposal",
+      60
+    ],
+    [
+      "[(ID:lZWjKI) Monday February 13 -- 12:00 PM] Activity: Elena is having lunch while reviewing notes from the morning meeting",
+      60
+    ],
+    [
+      "reviewing technical documents related to grid capacity and interconnection timelines",
+      60
+    ],
+    [
+      "reviewing ratepayer impact studies related to the datacenter proposal",
+      60
+    ],
+    [
+      "[(ID:Uni5TJ) Monday February 13 -- 03:00 PM] Activity: Elena is responding to technical questions from residents about the datacenter's grid impacts and clarifying any concerns they have",
+      60
+    ],
+    [
+      "reviewing additional utility planning documents and preparing a report on grid reliability for the datacenter proposal",
+      60
+    ],
+    [
+      "reviewing her report on grid reliability and making final edits before submission",
+      60
+    ],
+    [
+      "reviewing feedback on her grid reliability report and making necessary adjustments based on peer suggestions",
+      60
+    ],
+    [
+      "having dinner and relaxing with a book or watching a documentary",
+      60
+    ],
+    [
+      "reviewing technical documents related to the datacenter proposal and preparing for any upcoming meetings or presentations",
+      60
+    ],
+    [
+      "reviewing utility planning documents and answering any remaining technical questions from residents about the datacenter's grid impacts",
+      60
+    ],
+    [
+      "preparing for bed, organizing her thoughts on the day's work, and planning tasks for the following day",
+      60
+    ],
+    [
+      "[(ID:6R94AO) Monday February 13 -- 11:00 PM] Activity: Elena is sleeping",
+      60
+    ],
+    [
+      "sleeping",
+      0
+    ]
+  ],
+  "f_daily_schedule_hourly_org": [
+    [
+      "sleeping",
+      480
+    ],
+    [
+      "waking up and completing her morning routine",
+      60
+    ],
+    [
+      "[(ID:0CMi5d) Monday February 13 -- 09:00 AM] Activity: Elena is reviewing utility planning documents and checking emails",
+      60
+    ],
+    [
+      "reviewing utility planning documents and preparing for upcoming meetings",
+      60
+    ],
+    [
+      "[(ID:KJOZ7a) Monday February 13 -- 11:00 AM] Activity: Elena is attending a meeting with colleagues to discuss grid reliability and interconnection feasibility for the datacenter proposal",
+      60
+    ],
+    [
+      "[(ID:lZWjKI) Monday February 13 -- 12:00 PM] Activity: Elena is having lunch while reviewing notes from the morning meeting",
+      60
+    ],
+    [
+      "reviewing technical documents related to grid capacity and interconnection timelines",
+      60
+    ],
+    [
+      "reviewing ratepayer impact studies related to the datacenter proposal",
+      60
+    ],
+    [
+      "[(ID:Uni5TJ) Monday February 13 -- 03:00 PM] Activity: Elena is responding to technical questions from residents about the datacenter's grid impacts and clarifying any concerns they have",
+      60
+    ],
+    [
+      "reviewing additional utility planning documents and preparing a report on grid reliability for the datacenter proposal",
+      60
+    ],
+    [
+      "reviewing her report on grid reliability and making final edits before submission",
+      60
+    ],
+    [
+      "reviewing feedback on her grid reliability report and making necessary adjustments based on peer suggestions",
+      60
+    ],
+    [
+      "having dinner and relaxing with a book or watching a documentary",
+      60
+    ],
+    [
+      "reviewing technical documents related to the datacenter proposal and preparing for any upcoming meetings or presentations",
+      60
+    ],
+    [
+      "reviewing utility planning documents and answering any remaining technical questions from residents about the datacenter's grid impacts",
+      60
+    ],
+    [
+      "preparing for bed, organizing her thoughts on the day's work, and planning tasks for the following day",
+      60
+    ],
+    [
+      "[(ID:6R94AO) Monday February 13 -- 11:00 PM] Activity: Elena is sleeping",
+      60
+    ]
+  ],
+  "act_address": "the Ville:Yuriko Yamamoto's house:main room:bed",
+  "act_start_time": "February 13, 2023, 00:00:00",
+  "act_duration": 480,
+  "act_description": "sleeping",
+  "act_pronunciatio": "\ud83d\ude34",
+  "act_event": [
+    "Elena Chen",
+    "is",
+    "sleep"
+  ],
+  "act_obj_description": "being used",
+  "act_obj_pronunciatio": "\ud83d\udd04",
+  "act_obj_event": [
+    "bed",
+    "is",
+    "use"
+  ],
+  "chatting_with": null,
+  "chat": null,
+  "chatting_with_buffer": {},
+  "chatting_end_time": null,
+  "act_path_set": true,
+  "planned_path": []
+}

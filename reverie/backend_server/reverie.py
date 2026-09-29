@@ -63,6 +63,8 @@ class ReverieServer:
     self.sim_code = sim_code
     sim_folder = f"{fs_storage}/{self.sim_code}"
     copyanything(fork_folder, sim_folder)
+    # Git does not track empty dirs, so base sims ship without movement/.
+    os.makedirs(f"{sim_folder}/movement", exist_ok=True)
     log.info("Copied storage folder to %s", sim_folder)
 
     with open(f"{sim_folder}/reverie/meta.json") as json_file:  
