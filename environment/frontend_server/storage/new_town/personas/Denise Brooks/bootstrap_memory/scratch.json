@@ -1,0 +1,251 @@
+{
+  "vision_r": 8,
+  "att_bandwidth": 8,
+  "retention": 8,
+  "curr_time": "February 13, 2023, 00:00:00",
+  "curr_tile": [
+    72,
+    14
+  ],
+  "daily_plan_req": "Denise Brooks opens her shop in the morning, greets customers, and discusses the datacenter proposal with people who stop by.",
+  "name": "Denise Brooks",
+  "first_name": "Denise",
+  "last_name": "Brooks",
+  "age": 38,
+  "innate": "friendly, entrepreneurial, pragmatic",
+  "learned": "Denise Brooks owns a local shop and cares about foot traffic, the tax base, and keeping Main Street businesses alive.",
+  "currently": "Denise Brooks leans in favor of the datacenter proposal because she expects temporary construction spending and a stronger tax base, though she worries about power bills and long-term customer mix.",
+  "lifestyle": "Denise Brooks goes to bed around 11pm, wakes up around 6am, and keeps shop hours most weekdays.",
+  "living_area": "the Ville:Isabella Rodriguez's apartment:main room",
+  "concept_forget": 100,
+  "daily_reflection_time": 180,
+  "daily_reflection_size": 5,
+  "overlap_reflect_th": 4,
+  "kw_strg_event_reflect_th": 10,
+  "kw_strg_thought_reflect_th": 9,
+  "recency_w": 1,
+  "relevance_w": 1,
+  "importance_w": 1,
+  "recency_decay": 0.995,
+  "importance_trigger_max": 250,
+  "importance_trigger_curr": 244,
+  "importance_ele_n": 6,
+  "thought_count": 5,
+  "daily_req": [
+    "wake up and complete the morning routine at 6:00 am",
+    "open the shop and prepare for the day at 8:00 am",
+    "greet and assist early customers from 9:00 am to 11:00 am",
+    "have a lunch break at 12:00 pm",
+    "engage with more customers and discuss the datacenter proposal from 1:00 pm to 3:00 pm",
+    "take a short break and restock items from 3:00 pm to 3:30 pm",
+    "continue to assist customers and gather opinions on the datacenter from 3:30 pm to 5:00 pm",
+    "begin closing procedures and tidy up the shop from 5:00 pm to 6:00 pm"
+  ],
+  "f_daily_schedule": [
+    [
+      "sleeping",
+      360
+    ],
+    [
+      "waking up and completing her morning routine (waking up and stretching in bed)",
+      5
+    ],
+    [
+      "waking up and completing her morning routine (getting out of bed and making her bed)",
+      5
+    ],
+    [
+      "waking up and completing her morning routine (heading to the bathroom to freshen up)",
+      5
+    ],
+    [
+      "waking up and completing her morning routine (brushing her teeth)",
+      5
+    ],
+    [
+      "waking up and completing her morning routine (washing her face)",
+      5
+    ],
+    [
+      "waking up and completing her morning routine (taking a quick shower)",
+      10
+    ],
+    [
+      "waking up and completing her morning routine (getting dressed for the day)",
+      10
+    ],
+    [
+      "waking up and completing her morning routine (doing her hair and makeup)",
+      10
+    ],
+    [
+      "waking up and completing her morning routine (tidying up the bathroom and heading to the kitchen)",
+      5
+    ],
+    [
+      "[(ID:spWJZu) Monday February 13 -- 07:00 AM] Activity: Denise is having breakfast and planning her day",
+      60
+    ],
+    [
+      "[(ID:ZWDd5F) Monday February 13 -- 08:00 AM] Activity: Denise is opening the shop and preparing for the day",
+      60
+    ],
+    [
+      "greeting and assisting early customers at her shop",
+      60
+    ],
+    [
+      "[(ID:gcHAMp) Monday February 13 -- 10:00 AM] Activity: Denise is continuing to greet and assist customers at her shop",
+      60
+    ],
+    [
+      "[(ID:Ewnnjw) Monday February 13 -- 11:00 AM] Activity: Denise is continuing to greet and assist customers at her shop",
+      60
+    ],
+    [
+      "[(ID:wXrESv) Monday February 13 -- 12:00 PM] Activity: Denise is having a lunch break",
+      60
+    ],
+    [
+      "engaging with customers and discussing the datacenter proposal with those who stop by her shop",
+      120
+    ],
+    [
+      "[(ID:IN9FIj) Monday February 13 -- 03:00 PM] Activity: Denise is taking a short break and restocking items in her shop",
+      60
+    ],
+    [
+      "continuing to assist customers and gather opinions on the datacenter proposal at her shop",
+      60
+    ],
+    [
+      "beginning closing procedures and tidying up the shop",
+      60
+    ],
+    [
+      "[(ID:XEAlzp) Monday February 13 -- 06:00 PM] Activity: Denise is finishing up closing procedures and locking up the shop for the day",
+      60
+    ],
+    [
+      "relaxing at home, having dinner, and unwinding after a long day at the shop",
+      60
+    ],
+    [
+      "[(ID:uRGcd5) Monday February 13 -- 08:00 PM] Activity: Denise is spending some quality time with her family or friends, possibly discussing the day's events and plans for the week",
+      60
+    ],
+    [
+      "[(ID:lO3F9Y) Monday February 13 -- 09:00 PM] Activity: Denise is catching up on emails and planning for the next day's activities at home",
+      60
+    ],
+    [
+      "[(ID:7ZdL32) Monday February 13 -- 10:00 PM] Activity: Denise is relaxing and winding down for the night, possibly reading a book or watching a show before bed",
+      60
+    ],
+    [
+      "sleeping",
+      60
+    ],
+    [
+      "sleeping",
+      0
+    ]
+  ],
+  "f_daily_schedule_hourly_org": [
+    [
+      "sleeping",
+      360
+    ],
+    [
+      "waking up and completing her morning routine",
+      60
+    ],
+    [
+      "[(ID:spWJZu) Monday February 13 -- 07:00 AM] Activity: Denise is having breakfast and planning her day",
+      60
+    ],
+    [
+      "[(ID:ZWDd5F) Monday February 13 -- 08:00 AM] Activity: Denise is opening the shop and preparing for the day",
+      60
+    ],
+    [
+      "greeting and assisting early customers at her shop",
+      60
+    ],
+    [
+      "[(ID:gcHAMp) Monday February 13 -- 10:00 AM] Activity: Denise is continuing to greet and assist customers at her shop",
+      60
+    ],
+    [
+      "[(ID:Ewnnjw) Monday February 13 -- 11:00 AM] Activity: Denise is continuing to greet and assist customers at her shop",
+      60
+    ],
+    [
+      "[(ID:wXrESv) Monday February 13 -- 12:00 PM] Activity: Denise is having a lunch break",
+      60
+    ],
+    [
+      "engaging with customers and discussing the datacenter proposal with those who stop by her shop",
+      120
+    ],
+    [
+      "[(ID:IN9FIj) Monday February 13 -- 03:00 PM] Activity: Denise is taking a short break and restocking items in her shop",
+      60
+    ],
+    [
+      "continuing to assist customers and gather opinions on the datacenter proposal at her shop",
+      60
+    ],
+    [
+      "beginning closing procedures and tidying up the shop",
+      60
+    ],
+    [
+      "[(ID:XEAlzp) Monday February 13 -- 06:00 PM] Activity: Denise is finishing up closing procedures and locking up the shop for the day",
+      60
+    ],
+    [
+      "relaxing at home, having dinner, and unwinding after a long day at the shop",
+      60
+    ],
+    [
+      "[(ID:uRGcd5) Monday February 13 -- 08:00 PM] Activity: Denise is spending some quality time with her family or friends, possibly discussing the day's events and plans for the week",
+      60
+    ],
+    [
+      "[(ID:lO3F9Y) Monday February 13 -- 09:00 PM] Activity: Denise is catching up on emails and planning for the next day's activities at home",
+      60
+    ],
+    [
+      "[(ID:7ZdL32) Monday February 13 -- 10:00 PM] Activity: Denise is relaxing and winding down for the night, possibly reading a book or watching a show before bed",
+      60
+    ],
+    [
+      "sleeping",
+      60
+    ]
+  ],
+  "act_address": "the Ville:Isabella Rodriguez's apartment:main room:bed",
+  "act_start_time": "February 13, 2023, 00:00:00",
+  "act_duration": 360,
+  "act_description": "sleeping",
+  "act_pronunciatio": "\ud83d\ude34",
+  "act_event": [
+    "Denise Brooks",
+    "is",
+    "sleep"
+  ],
+  "act_obj_description": "being used",
+  "act_obj_pronunciatio": "\ud83d\udd04",
+  "act_obj_event": [
+    "bed",
+    "is",
+    "use"
+  ],
+  "chatting_with": null,
+  "chat": null,
+  "chatting_with_buffer": {},
+  "chatting_end_time": null,
+  "act_path_set": true,
+  "planned_path": []
+}

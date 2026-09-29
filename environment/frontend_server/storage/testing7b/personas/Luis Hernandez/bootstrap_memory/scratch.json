@@ -1,0 +1,252 @@
+{
+  "vision_r": 8,
+  "att_bandwidth": 8,
+  "retention": 8,
+  "curr_time": "February 13, 2023, 08:00:00",
+  "curr_tile": [
+    54,
+    15
+  ],
+  "daily_plan_req": "Luis Hernandez works job sites during the day and stops by the pub or market after work to talk with other residents.",
+  "name": "Luis Hernandez",
+  "first_name": "Luis",
+  "last_name": "Hernandez",
+  "age": 41,
+  "innate": "practical, loyal, cautious",
+  "learned": "Luis Hernandez is a union electrician who cares about construction jobs, apprenticeships, and fair wages. He has worked major builds across the region.",
+  "currently": "Luis Hernandez offers conditional support for the datacenter proposal: he wants firm local-hire and prevailing-wage commitments before he backs it. He is asking what the project would mean for union members.",
+  "lifestyle": "Luis Hernandez goes to bed around 10pm, wakes up around 5:30am, and eats dinner around 6pm.",
+  "living_area": "the Ville:Luis Hernandez's apartment:main room",
+  "concept_forget": 100,
+  "daily_reflection_time": 180,
+  "daily_reflection_size": 5,
+  "overlap_reflect_th": 4,
+  "kw_strg_event_reflect_th": 10,
+  "kw_strg_thought_reflect_th": 9,
+  "recency_w": 1,
+  "relevance_w": 1,
+  "importance_w": 1,
+  "recency_decay": 0.995,
+  "importance_trigger_max": 250,
+  "importance_trigger_curr": 241,
+  "importance_ele_n": 9,
+  "thought_count": 5,
+  "daily_req": [
+    "wake up and complete the morning routine at 8:00 am"
+  ],
+  "f_daily_schedule": [
+    [
+      "sleeping",
+      480
+    ],
+    [
+      "waking up and completing his morning routine, which includes getting dressed, having breakfast, and preparing for the day ahead (waking up and getting out of bed)",
+      5
+    ],
+    [
+      "waking up and completing his morning routine, which includes getting dressed, having breakfast, and preparing for the day ahead (heading to the bathroom to freshen up)",
+      10
+    ],
+    [
+      "waking up and completing his morning routine, which includes getting dressed, having breakfast, and preparing for the day ahead (getting dressed for the day)",
+      10
+    ],
+    [
+      "waking up and completing his morning routine, which includes getting dressed, having breakfast, and preparing for the day ahead (preparing breakfast in the kitchen)",
+      10
+    ],
+    [
+      "waking up and completing his morning routine, which includes getting dressed, having breakfast, and preparing for the day ahead (eating breakfast)",
+      15
+    ],
+    [
+      "waking up and completing his morning routine, which includes getting dressed, having breakfast, and preparing for the day ahead (reviewing his schedule and preparing for the day ahead)",
+      10
+    ],
+    [
+      "heading to the job site to start his workday (getting his tools and equipment ready)",
+      10
+    ],
+    [
+      "heading to the job site to start his workday (checking his schedule and reviewing the day's tasks)",
+      10
+    ],
+    [
+      "heading to the job site to start his workday (leaving his house and heading to his vehicle)",
+      5
+    ],
+    [
+      "heading to the job site to start his workday (driving to the job site)",
+      20
+    ],
+    [
+      "heading to the job site to start his workday (parking his vehicle and gathering his belongings)",
+      5
+    ],
+    [
+      "heading to the job site to start his workday (walking to the job site entrance)",
+      5
+    ],
+    [
+      "heading to the job site to start his workday (checking in with the site manager and confirming his tasks for the day)",
+      5
+    ],
+    [
+      "[(ID:YmZTHL) Monday February 13 -- 10:00 AM] Activity: Luis is working on the job site, focusing on electrical installations and ensuring all safety protocols are followed",
+      60
+    ],
+    [
+      "working on the job site, coordinating with other tradespeople to ensure the project stays on schedule",
+      60
+    ],
+    [
+      "[(ID:qh8oA1) Monday February 13 -- 12:00 PM] Activity: Luis is taking a lunch break, eating his packed lunch, and catching up with coworkers about the day's progress",
+      60
+    ],
+    [
+      "working on the job site, continuing with electrical installations and troubleshooting any issues that arise",
+      60
+    ],
+    [
+      "working on the job site, reviewing blueprints and ensuring that the electrical work aligns with the project specifications",
+      60
+    ],
+    [
+      "working on the job site, conducting quality checks on completed electrical work to ensure compliance with safety standards",
+      60
+    ],
+    [
+      "working on the job site, preparing reports on the day's progress and discussing any concerns with the site manager",
+      60
+    ],
+    [
+      "[(ID:9okgwQ) Monday February 13 -- 05:00 PM] Activity: Luis is wrapping up his work on the job site, organizing his tools, and preparing to leave for the day",
+      60
+    ],
+    [
+      "having dinner at home, enjoying a meal with his family and discussing the events of the day",
+      60
+    ],
+    [
+      "[(ID:eZphwN) Monday February 13 -- 07:00 PM] Activity: Luis is visiting the local pub to catch up with friends and other residents, discussing community matters and the datacenter proposal",
+      60
+    ],
+    [
+      "[(ID:dtr9O8) Monday February 13 -- 08:00 PM] Activity: Luis is attending a community meeting at the local community center to discuss the datacenter proposal and gather more information about its potential impact on union jobs and",
+      60
+    ],
+    [
+      "attending the community meeting, engaging in discussions about the datacenter proposal, and voicing his concerns about local-hire and prevailing-wage commitments",
+      60
+    ],
+    [
+      "[(ID:u60tgh) Monday February 13 -- 10:00 PM] Activity: Luis is relaxing at home, unwinding from the day's activities, and preparing for bed by reading or watching a bit of television",
+      60
+    ],
+    [
+      "[(ID:cnd0VF) Monday February 13 -- 11:00 PM] Activity: Luis is going to bed to ensure he gets enough rest for the next day's activities",
+      60
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ]
+  ],
+  "f_daily_schedule_hourly_org": [
+    [
+      "sleeping",
+      480
+    ],
+    [
+      "waking up and completing his morning routine, which includes getting dressed, having breakfast, and preparing for the day ahead",
+      60
+    ],
+    [
+      "heading to the job site to start his workday",
+      60
+    ],
+    [
+      "[(ID:YmZTHL) Monday February 13 -- 10:00 AM] Activity: Luis is working on the job site, focusing on electrical installations and ensuring all safety protocols are followed",
+      60
+    ],
+    [
+      "working on the job site, coordinating with other tradespeople to ensure the project stays on schedule",
+      60
+    ],
+    [
+      "[(ID:qh8oA1) Monday February 13 -- 12:00 PM] Activity: Luis is taking a lunch break, eating his packed lunch, and catching up with coworkers about the day's progress",
+      60
+    ],
+    [
+      "working on the job site, continuing with electrical installations and troubleshooting any issues that arise",
+      60
+    ],
+    [
+      "working on the job site, reviewing blueprints and ensuring that the electrical work aligns with the project specifications",
+      60
+    ],
+    [
+      "working on the job site, conducting quality checks on completed electrical work to ensure compliance with safety standards",
+      60
+    ],
+    [
+      "working on the job site, preparing reports on the day's progress and discussing any concerns with the site manager",
+      60
+    ],
+    [
+      "[(ID:9okgwQ) Monday February 13 -- 05:00 PM] Activity: Luis is wrapping up his work on the job site, organizing his tools, and preparing to leave for the day",
+      60
+    ],
+    [
+      "having dinner at home, enjoying a meal with his family and discussing the events of the day",
+      60
+    ],
+    [
+      "[(ID:eZphwN) Monday February 13 -- 07:00 PM] Activity: Luis is visiting the local pub to catch up with friends and other residents, discussing community matters and the datacenter proposal",
+      60
+    ],
+    [
+      "[(ID:dtr9O8) Monday February 13 -- 08:00 PM] Activity: Luis is attending a community meeting at the local community center to discuss the datacenter proposal and gather more information about its potential impact on union jobs and",
+      60
+    ],
+    [
+      "attending the community meeting, engaging in discussions about the datacenter proposal, and voicing his concerns about local-hire and prevailing-wage commitments",
+      60
+    ],
+    [
+      "[(ID:u60tgh) Monday February 13 -- 10:00 PM] Activity: Luis is relaxing at home, unwinding from the day's activities, and preparing for bed by reading or watching a bit of television",
+      60
+    ],
+    [
+      "[(ID:cnd0VF) Monday February 13 -- 11:00 PM] Activity: Luis is going to bed to ensure he gets enough rest for the next day's activities",
+      60
+    ]
+  ],
+  "act_address": "the Ville:Luis Hernandez's apartment:main room:bed",
+  "act_start_time": "February 13, 2023, 08:00:00",
+  "act_duration": 5,
+  "act_description": "waking up and completing his morning routine, which includes getting dressed, having breakfast, and preparing for the day ahead (waking up and getting out of bed)",
+  "act_pronunciatio": "\ud83c\udf05\ud83d\udecc",
+  "act_event": [
+    "Luis Hernandez",
+    "wake",
+    "up"
+  ],
+  "act_obj_description": "unmade",
+  "act_obj_pronunciatio": "\ud83d\udecf\ufe0f\u274c",
+  "act_obj_event": [
+    "bed",
+    "is",
+    "unmade"
+  ],
+  "chatting_with": null,
+  "chat": null,
+  "chatting_with_buffer": {},
+  "chatting_end_time": null,
+  "act_path_set": true,
+  "planned_path": []
+}

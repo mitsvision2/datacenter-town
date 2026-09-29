@@ -1,0 +1,121 @@
+{
+  "persona": {
+    "Maya Okonkwo": {
+      "movement": [
+        66,
+        24
+      ],
+      "pronunciatio": "\ud83d\udd0d\u2728",
+      "description": "[(ID:Js4cYi) Monday February 13 -- 09:00 AM] Activity: Maya is working on her startup, focusing on product development and strategy planning (identifying key areas for improvement in the product) @ the Ville:Maya Okonkwo's apartment:main room:computer desk",
+      "chat": null
+    },
+    "Luis Hernandez": {
+      "movement": [
+        65,
+        45
+      ],
+      "pronunciatio": "\ud83d\udcac",
+      "description": "conversing about Luis Hernandez discussing with Denise Brooks the progress and community benefits of a local-hire agreement for a datacenter project, with Denise offering support to promote community involvement. @ <persona> Denise Brooks",
+      "chat": [
+        [
+          "Luis Hernandez",
+          "Hey Denise, how's it going? I see you're busy helping customers. I'm just on my way to the job site and thought I'd stop by to see how things are going. By the way, I'm still working on getting that local-hire agreement for the datacenter project. How's business been for you lately?"
+        ],
+        [
+          "Denise Brooks",
+          "Hi Luis! Business has been steady, especially with all the talk about the datacenter. I'm really hoping the project brings more foot traffic to the area. It's great to hear you're pushing for the local-hire agreement; that's important for our community. Are you feeling optimistic about it?"
+        ],
+        [
+          "Luis Hernandez",
+          "I'm cautiously optimistic, Denise. It's been a bit of a process, but I think we're making progress. I just want to make sure that our community benefits from this project, you know? Thanks for your support. I'll keep you updated on how it goes."
+        ],
+        [
+          "Denise Brooks",
+          "Absolutely, Luis. It's crucial that our community gets a fair share of the benefits. If there's anything I can do, like spreading the word or gathering support, let me know. I really appreciate your efforts on this."
+        ],
+        [
+          "Luis Hernandez",
+          "Thanks, Denise. I might take you up on that offer if we need more community support. It's always good to know we have local businesses like yours backing us. I'll drop by again soon to keep you posted. Have a great day!"
+        ]
+      ]
+    },
+    "Denise Brooks": {
+      "movement": [
+        65,
+        45
+      ],
+      "pronunciatio": "\ud83d\udcac",
+      "description": "conversing about Luis Hernandez discussing with Denise Brooks the progress and community benefits of a local-hire agreement for a datacenter project, with Denise offering support to promote community involvement. @ <persona> Luis Hernandez",
+      "chat": [
+        [
+          "Luis Hernandez",
+          "Hey Denise, how's it going? I see you're busy helping customers. I'm just on my way to the job site and thought I'd stop by to see how things are going. By the way, I'm still working on getting that local-hire agreement for the datacenter project. How's business been for you lately?"
+        ],
+        [
+          "Denise Brooks",
+          "Hi Luis! Business has been steady, especially with all the talk about the datacenter. I'm really hoping the project brings more foot traffic to the area. It's great to hear you're pushing for the local-hire agreement; that's important for our community. Are you feeling optimistic about it?"
+        ],
+        [
+          "Luis Hernandez",
+          "I'm cautiously optimistic, Denise. It's been a bit of a process, but I think we're making progress. I just want to make sure that our community benefits from this project, you know? Thanks for your support. I'll keep you updated on how it goes."
+        ],
+        [
+          "Denise Brooks",
+          "Absolutely, Luis. It's crucial that our community gets a fair share of the benefits. If there's anything I can do, like spreading the word or gathering support, let me know. I really appreciate your efforts on this."
+        ],
+        [
+          "Luis Hernandez",
+          "Thanks, Denise. I might take you up on that offer if we need more community support. It's always good to know we have local businesses like yours backing us. I'll drop by again soon to keep you posted. Have a great day!"
+        ]
+      ]
+    },
+    "Rachel Nguyen": {
+      "movement": [
+        112,
+        20
+      ],
+      "pronunciatio": "\ud83d\udcda\ud83d\udca1",
+      "description": "[(ID:s0kBAp) Monday February 13 -- 09:00 AM] Activity: Rachel is teaching her first class of the day (explaining the key concepts of the lesson) @ the Ville:Oak Hill College:classroom:blackboard",
+      "chat": null
+    },
+    "Tom Whitaker": {
+      "movement": [
+        75,
+        66
+      ],
+      "pronunciatio": "\ud83c\udf73\u2615",
+      "description": "[(ID:F75YC8) Monday February 13 -- 09:00 AM] Activity: Tom is having breakfast and reading the morning news (preparing his breakfast) @ the Ville:Whitaker family's house:kitchen:cooking area",
+      "chat": null
+    },
+    "Aisha Rahman": {
+      "movement": [
+        71,
+        30
+      ],
+      "pronunciatio": "\u2615\ufe0f",
+      "description": "[(ID:V2HEjZ) Monday February 13 -- 09:00 AM] Activity: Aisha is heading to a local caf\u00e9 to start her day. She plans to get a cup of coffee and settle in to begin her research (arriving at the caf\u00e9 and ordering a cup of coffee) @ the Ville:Hobbs Cafe:cafe:behind the cafe counter",
+      "chat": null
+    },
+    "Marcus Williams": {
+      "movement": [
+        37,
+        61
+      ],
+      "pronunciatio": "\ud83d\udce7\ud83d\udc65",
+      "description": "[(ID:mkJxUE) Monday February 13 -- 09:00 AM] Activity: Marcus is reviewing community feedback and preparing materials for the day's meetings (reviewing emails and messages from community members) @ the Ville:Williams family's house:main room:desk",
+      "chat": null
+    },
+    "Elena Chen": {
+      "movement": [
+        31,
+        59
+      ],
+      "pronunciatio": "\ud83d\udcc4\ud83d\udc40",
+      "description": "[(ID:QjdHRW) Monday February 13 -- 09:00 AM] Activity: Elena is reviewing utility planning documents and checking emails related to the datacenter proposal (skimming through the utility planning documents to get an overview) @ the Ville:Elena Chen's house:main room:desk",
+      "chat": null
+    }
+  },
+  "meta": {
+    "curr_time": "February 13, 2023, 09:11:20"
+  }
+}

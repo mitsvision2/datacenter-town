@@ -1,0 +1,79 @@
+{
+  "persona": {
+    "Maya Okonkwo": {
+      "movement": [
+        66,
+        14
+      ],
+      "pronunciatio": "\u2744\ufe0f\ud83d\udebf",
+      "description": "[(ID:UVmWRb) Monday February 13 -- 07:00 AM] Activity: Maya is waking up and starting her morning routine, which includes meditation, a quick workout, and breakfast (cooling down and taking a quick shower) @ the Ville:Maya Okonkwo's apartment:bathroom:shower",
+      "chat": null
+    },
+    "Luis Hernandez": {
+      "movement": [
+        54,
+        15
+      ],
+      "pronunciatio": "\ud83d\ude34",
+      "description": "sleeping @ the Ville:Luis Hernandez's apartment:main room:bed",
+      "chat": null
+    },
+    "Denise Brooks": {
+      "movement": [
+        58,
+        43
+      ],
+      "pronunciatio": "\ud83e\uddf9\ud83d\udecd\ufe0f",
+      "description": "[(ID:F9g3tu) Monday February 13 -- 07:00 AM] Activity: Denise is heading to her shop to prepare for opening, ensuring everything is in order for the day (tidying up the shop floor and arranging displays) @ the Ville:Harvey Oak Supply Store:supply store:supply store product shelf",
+      "chat": null
+    },
+    "Rachel Nguyen": {
+      "movement": [
+        88,
+        65
+      ],
+      "pronunciatio": "\ud83d\ude34",
+      "description": "sleeping @ the Ville:Nguyen family's house:common room:shelf",
+      "chat": null
+    },
+    "Tom Whitaker": {
+      "movement": [
+        54,
+        26
+      ],
+      "pronunciatio": "\ud83d\ude34",
+      "description": "sleeping @ the Ville:The Rose and Crown Pub:pub:shelf",
+      "chat": null
+    },
+    "Aisha Rahman": {
+      "movement": [
+        35,
+        30
+      ],
+      "pronunciatio": "\ud83d\ude34",
+      "description": "sleeping @ the Ville:artist's co-living space:common room:common room sofa",
+      "chat": null
+    },
+    "Marcus Williams": {
+      "movement": [
+        37,
+        66
+      ],
+      "pronunciatio": "\ud83d\ude34",
+      "description": "sleeping @ the Ville:Williams family's house:main room:bed",
+      "chat": null
+    },
+    "Elena Chen": {
+      "movement": [
+        29,
+        66
+      ],
+      "pronunciatio": "\ud83d\ude34",
+      "description": "sleeping @ the Ville:Elena Chen's house:main room:bed",
+      "chat": null
+    }
+  },
+  "meta": {
+    "curr_time": "February 13, 2023, 07:46:40"
+  }
+}

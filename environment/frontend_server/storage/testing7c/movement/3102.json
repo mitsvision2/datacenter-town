@@ -1,0 +1,79 @@
+{
+  "persona": {
+    "Maya Okonkwo": {
+      "movement": [
+        66,
+        24
+      ],
+      "pronunciatio": "\ud83d\udce7\ud83d\udea9",
+      "description": "[(ID:l2SL53) Monday February 13 -- 08:00 AM] Activity: Maya is reviewing her emails and planning her tasks for the day (flagging emails that need follow-up later) @ the Ville:Maya Okonkwo's apartment:main room:computer desk",
+      "chat": null
+    },
+    "Luis Hernandez": {
+      "movement": [
+        55,
+        14
+      ],
+      "pronunciatio": "\ud83c\udf73\u2615",
+      "description": "waking up and completing his morning routine, which includes getting dressed, having breakfast, and preparing for the day ahead (eating breakfast) @ the Ville:Luis Hernandez's apartment:main room:refrigerator",
+      "chat": null
+    },
+    "Denise Brooks": {
+      "movement": [
+        66,
+        46
+      ],
+      "pronunciatio": "\ud83d\udce6\ud83d\udd0d",
+      "description": "[(ID:KCUc9N) Monday February 13 -- 08:00 AM] Activity: Denise is opening her shop and welcoming early customers (reviewing the inventory to ensure popular items are well-stocked) @ the Ville:Harvey Oak Supply Store:supply store:supply store product shelf",
+      "chat": null
+    },
+    "Rachel Nguyen": {
+      "movement": [
+        87,
+        73
+      ],
+      "pronunciatio": "\ud83d\udc57\ud83d\udc56",
+      "description": "[(ID:px0qKO) Monday February 13 -- 08:00 AM] Activity: Rachel is waking up and completing her morning routine (getting dressed for the day) @ the Ville:Nguyen family's house:Rachel Nguyen's bedroom:closet",
+      "chat": null
+    },
+    "Tom Whitaker": {
+      "movement": [
+        79,
+        67
+      ],
+      "pronunciatio": "\ud83d\udebf\ud83e\uddfc",
+      "description": "[(ID:bDYyXF) Monday February 13 -- 08:00 AM] Activity: Tom is waking up and completing his morning routine (taking a shower) @ the Ville:Whitaker family's house:bathroom:shower",
+      "chat": null
+    },
+    "Aisha Rahman": {
+      "movement": [
+        27,
+        25
+      ],
+      "pronunciatio": "\ud83e\uddd8\u200d\u2640",
+      "description": "waking up and completing her morning routine, which includes a light breakfast, some stretching exercises, and reviewing her plan for the day (doing some light stretching exercises to wake up her body) @ the Ville:artist's co-living space:Aisha Rahman's room:bed",
+      "chat": null
+    },
+    "Marcus Williams": {
+      "movement": [
+        39,
+        61
+      ],
+      "pronunciatio": "\ud83c\udf73\u2615",
+      "description": "[(ID:w7bvhA) Monday February 13 -- 08:00 AM] Activity: Marcus is waking up and completing his morning routine, including breakfast and checking the news (preparing breakfast) @ the Ville:Williams family's house:main room:cooking area",
+      "chat": null
+    },
+    "Elena Chen": {
+      "movement": [
+        31,
+        61
+      ],
+      "pronunciatio": "\ud83d\udc68\u200d\ud83c\udf73",
+      "description": "waking up and completing her morning routine, which includes having breakfast and preparing for the day (heading to the kitchen to prepare breakfast) @ the Ville:Elena Chen's house:main room:cooking area",
+      "chat": null
+    }
+  },
+  "meta": {
+    "curr_time": "February 13, 2023, 08:37:00"
+  }
+}

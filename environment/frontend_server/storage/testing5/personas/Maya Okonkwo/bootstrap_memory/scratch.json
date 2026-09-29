@@ -1,0 +1,232 @@
+{
+  "vision_r": 8,
+  "att_bandwidth": 8,
+  "retention": 8,
+  "curr_time": "February 13, 2023, 00:01:30",
+  "curr_tile": [
+    66,
+    19
+  ],
+  "daily_plan_req": "Maya Okonkwo works on her startup during the day, takes meetings at Hobbs Cafe, and talks with residents about the datacenter proposal.",
+  "name": "Maya Okonkwo",
+  "first_name": "Maya",
+  "last_name": "Okonkwo",
+  "age": 34,
+  "innate": "ambitious, optimistic, persuasive",
+  "learned": "Maya Okonkwo is an AI founder who builds machine-learning products and champions regional tech growth. She networks widely and argues that modern infrastructure attracts talent.",
+  "currently": "Maya Okonkwo supports a proposed datacenter on the outskirts of the Ville. She believes it will create high-skill jobs, bring investment, and put the town on the innovation map. She is talking to neighbors about the upside.",
+  "lifestyle": "Maya Okonkwo goes to bed around midnight, wakes up around 7am, and often works from cafes in the afternoon.",
+  "living_area": "the Ville:Ryan Park's apartment:main room",
+  "concept_forget": 100,
+  "daily_reflection_time": 180,
+  "daily_reflection_size": 5,
+  "overlap_reflect_th": 4,
+  "kw_strg_event_reflect_th": 10,
+  "kw_strg_thought_reflect_th": 9,
+  "recency_w": 1,
+  "relevance_w": 1,
+  "importance_w": 1,
+  "recency_decay": 0.995,
+  "importance_trigger_max": 250,
+  "importance_trigger_curr": 241,
+  "importance_ele_n": 9,
+  "thought_count": 5,
+  "daily_req": [
+    "wake up and complete the morning routine at 8:00 am"
+  ],
+  "f_daily_schedule": [
+    [
+      "sleeping",
+      480
+    ],
+    [
+      "waking up and completing her morning routine, which includes a quick workout and breakfast (waking up and getting out of bed)",
+      5
+    ],
+    [
+      "waking up and completing her morning routine, which includes a quick workout and breakfast (doing a quick stretching routine to wake up her body)",
+      10
+    ],
+    [
+      "waking up and completing her morning routine, which includes a quick workout and breakfast (changing into workout clothes)",
+      5
+    ],
+    [
+      "waking up and completing her morning routine, which includes a quick workout and breakfast (doing a quick workout, such as a short jog or a home exercise routine)",
+      15
+    ],
+    [
+      "waking up and completing her morning routine, which includes a quick workout and breakfast (cooling down and doing some post-workout stretches)",
+      5
+    ],
+    [
+      "waking up and completing her morning routine, which includes a quick workout and breakfast (taking a quick shower to freshen up)",
+      10
+    ],
+    [
+      "waking up and completing her morning routine, which includes a quick workout and breakfast (preparing a simple breakfast, like oatmeal or a smoothie)",
+      5
+    ],
+    [
+      "waking up and completing her morning routine, which includes a quick workout and breakfast (eating breakfast and reviewing her schedule for the day)",
+      5
+    ],
+    [
+      "[(ID:xLN0wg) Monday February 13 -- 09:00 AM] Activity: Maya is reviewing emails and planning her tasks for the day",
+      60
+    ],
+    [
+      "[(ID:sxmubQ) Monday February 13 -- 10:00 AM] Activity: Maya is working on her startup, focusing on product development and strategy",
+      60
+    ],
+    [
+      "[(ID:BDdBmY) Monday February 13 -- 11:00 AM] Activity: Maya is attending a virtual meeting with potential investors to discuss funding opportunities for her startup",
+      60
+    ],
+    [
+      "[(ID:pbDMCi) Monday February 13 -- 12:00 PM] Activity: Maya is having lunch while reviewing notes from the morning meeting and preparing for her afternoon tasks",
+      60
+    ],
+    [
+      "[(ID:aM536g) Monday February 13 -- 01:00 PM] Activity: Maya is heading to Hobbs Cafe to meet with local residents and discuss the benefits of the proposed datacenter project",
+      60
+    ],
+    [
+      "[(ID:YIsbIr) Monday February 13 -- 02:00 PM] Activity: Maya is meeting with her team at Hobbs Cafe to collaborate on the machine-learning product development and share updates on the datacenter proposal discussions",
+      60
+    ],
+    [
+      "[(ID:eCZ63i) Monday February 13 -- 03:00 PM] Activity: Maya is continuing her work at Hobbs Cafe, focusing on refining the business strategy for her startup and preparing a presentation for an upcoming tech conference",
+      60
+    ],
+    [
+      "reviewing feedback from her team and making necessary adjustments to the project timeline and deliverables",
+      60
+    ],
+    [
+      "[(ID:dh6pqA) Monday February 13 -- 05:00 PM] Activity: Maya is wrapping up her work at Hobbs Cafe and heading back home to prepare for an evening meeting with community leaders regarding the datacenter proposal",
+      60
+    ],
+    [
+      "[(ID:3E8z5g) Monday February 13 -- 06:00 PM] Activity: Maya is meeting with community leaders to discuss the datacenter proposal, addressing any concerns and highlighting the potential benefits for the local economy and job",
+      60
+    ],
+    [
+      "networking with local tech enthusiasts and entrepreneurs at a community event to build support for the datacenter project and explore potential collaborations for her startup",
+      60
+    ],
+    [
+      "relaxing at home, having dinner, and unwinding after a busy day. She takes this time to catch up on personal reading or watch a documentary",
+      60
+    ],
+    [
+      "reviewing the day's accomplishments and planning for tomorrow. She takes this time to jot down any key takeaways and prioritize tasks for the following day",
+      60
+    ],
+    [
+      "preparing a detailed report on the datacenter proposal to send to local media outlets and stakeholders. She wants to ensure that the community is well-informed about the project's potential benefits and address any misconceptions",
+      60
+    ],
+    [
+      "[(ID:StWUnr) Monday February 13 -- 11:00 PM] Activity: Maya is winding down for the night by doing a quick meditation session and setting her alarm for the next day. Afterward, she prepares for bed",
+      60
+    ],
+    [
+      "sleeping",
+      0
+    ]
+  ],
+  "f_daily_schedule_hourly_org": [
+    [
+      "sleeping",
+      480
+    ],
+    [
+      "waking up and completing her morning routine, which includes a quick workout and breakfast",
+      60
+    ],
+    [
+      "[(ID:xLN0wg) Monday February 13 -- 09:00 AM] Activity: Maya is reviewing emails and planning her tasks for the day",
+      60
+    ],
+    [
+      "[(ID:sxmubQ) Monday February 13 -- 10:00 AM] Activity: Maya is working on her startup, focusing on product development and strategy",
+      60
+    ],
+    [
+      "[(ID:BDdBmY) Monday February 13 -- 11:00 AM] Activity: Maya is attending a virtual meeting with potential investors to discuss funding opportunities for her startup",
+      60
+    ],
+    [
+      "[(ID:pbDMCi) Monday February 13 -- 12:00 PM] Activity: Maya is having lunch while reviewing notes from the morning meeting and preparing for her afternoon tasks",
+      60
+    ],
+    [
+      "[(ID:aM536g) Monday February 13 -- 01:00 PM] Activity: Maya is heading to Hobbs Cafe to meet with local residents and discuss the benefits of the proposed datacenter project",
+      60
+    ],
+    [
+      "[(ID:YIsbIr) Monday February 13 -- 02:00 PM] Activity: Maya is meeting with her team at Hobbs Cafe to collaborate on the machine-learning product development and share updates on the datacenter proposal discussions",
+      60
+    ],
+    [
+      "[(ID:eCZ63i) Monday February 13 -- 03:00 PM] Activity: Maya is continuing her work at Hobbs Cafe, focusing on refining the business strategy for her startup and preparing a presentation for an upcoming tech conference",
+      60
+    ],
+    [
+      "reviewing feedback from her team and making necessary adjustments to the project timeline and deliverables",
+      60
+    ],
+    [
+      "[(ID:dh6pqA) Monday February 13 -- 05:00 PM] Activity: Maya is wrapping up her work at Hobbs Cafe and heading back home to prepare for an evening meeting with community leaders regarding the datacenter proposal",
+      60
+    ],
+    [
+      "[(ID:3E8z5g) Monday February 13 -- 06:00 PM] Activity: Maya is meeting with community leaders to discuss the datacenter proposal, addressing any concerns and highlighting the potential benefits for the local economy and job",
+      60
+    ],
+    [
+      "networking with local tech enthusiasts and entrepreneurs at a community event to build support for the datacenter project and explore potential collaborations for her startup",
+      60
+    ],
+    [
+      "relaxing at home, having dinner, and unwinding after a busy day. She takes this time to catch up on personal reading or watch a documentary",
+      60
+    ],
+    [
+      "reviewing the day's accomplishments and planning for tomorrow. She takes this time to jot down any key takeaways and prioritize tasks for the following day",
+      60
+    ],
+    [
+      "preparing a detailed report on the datacenter proposal to send to local media outlets and stakeholders. She wants to ensure that the community is well-informed about the project's potential benefits and address any misconceptions",
+      60
+    ],
+    [
+      "[(ID:StWUnr) Monday February 13 -- 11:00 PM] Activity: Maya is winding down for the night by doing a quick meditation session and setting her alarm for the next day. Afterward, she prepares for bed",
+      60
+    ]
+  ],
+  "act_address": "the Ville:Ryan Park's apartment:main room:bed",
+  "act_start_time": "February 13, 2023, 00:00:00",
+  "act_duration": 480,
+  "act_description": "sleeping",
+  "act_pronunciatio": "\ud83d\ude34",
+  "act_event": [
+    "Maya Okonkwo",
+    "is",
+    "sleep"
+  ],
+  "act_obj_description": "being used for sleeping",
+  "act_obj_pronunciatio": "\ud83d\udecf\ufe0f\ud83d\udca4",
+  "act_obj_event": [
+    "bed",
+    "use",
+    "sleep"
+  ],
+  "chatting_with": null,
+  "chat": null,
+  "chatting_with_buffer": {},
+  "chatting_end_time": null,
+  "act_path_set": true,
+  "planned_path": []
+}

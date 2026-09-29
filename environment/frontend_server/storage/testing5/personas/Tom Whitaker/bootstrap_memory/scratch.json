@@ -1,0 +1,505 @@
+{
+  "vision_r": 8,
+  "att_bandwidth": 8,
+  "retention": 8,
+  "curr_time": "February 13, 2023, 00:01:30",
+  "curr_tile": [
+    70,
+    68
+  ],
+  "daily_plan_req": "Tom Whitaker tends to home and neighborhood errands, and raises concerns about the datacenter with anyone who will listen.",
+  "name": "Tom Whitaker",
+  "first_name": "Tom",
+  "last_name": "Whitaker",
+  "age": 52,
+  "innate": "stubborn, protective, straightforward",
+  "learned": "Tom Whitaker is a long-term homeowner who watches property values, noise, and utility rates closely. He has lived in the Ville for decades.",
+  "currently": "Tom Whitaker leans against the datacenter proposal. He worries about industrial noise, higher rates, and damage to nearby property values, and he tells people so.",
+  "lifestyle": "Tom Whitaker goes to bed around 10pm, wakes up around 6am, and spends mornings around the house and market.",
+  "living_area": "the Ville:Moreno family's house:Tom and Jane Moreno's bedroom",
+  "concept_forget": 100,
+  "daily_reflection_time": 180,
+  "daily_reflection_size": 5,
+  "overlap_reflect_th": 4,
+  "kw_strg_event_reflect_th": 10,
+  "kw_strg_thought_reflect_th": 9,
+  "recency_w": 1,
+  "relevance_w": 1,
+  "importance_w": 1,
+  "recency_decay": 0.995,
+  "importance_trigger_max": 250,
+  "importance_trigger_curr": 242,
+  "importance_ele_n": 8,
+  "thought_count": 5,
+  "daily_req": [
+    "wake up and complete the morning routine at 6:00 am"
+  ],
+  "f_daily_schedule": [
+    [
+      "sleeping",
+      360
+    ],
+    [
+      "[(ID:2MG1hO) Monday February 13 -- 06:00 AM] Activity: Tom is waking up and completing his morning routine (waking up and getting out of bed)",
+      5
+    ],
+    [
+      "[(ID:2MG1hO) Monday February 13 -- 06:00 AM] Activity: Tom is waking up and completing his morning routine (making his bed)",
+      5
+    ],
+    [
+      "[(ID:2MG1hO) Monday February 13 -- 06:00 AM] Activity: Tom is waking up and completing his morning routine (heading to the bathroom)",
+      5
+    ],
+    [
+      "[(ID:2MG1hO) Monday February 13 -- 06:00 AM] Activity: Tom is waking up and completing his morning routine (brushing his teeth)",
+      5
+    ],
+    [
+      "[(ID:2MG1hO) Monday February 13 -- 06:00 AM] Activity: Tom is waking up and completing his morning routine (shaving)",
+      10
+    ],
+    [
+      "[(ID:2MG1hO) Monday February 13 -- 06:00 AM] Activity: Tom is waking up and completing his morning routine (taking a shower)",
+      10
+    ],
+    [
+      "[(ID:2MG1hO) Monday February 13 -- 06:00 AM] Activity: Tom is waking up and completing his morning routine (getting dressed)",
+      10
+    ],
+    [
+      "[(ID:2MG1hO) Monday February 13 -- 06:00 AM] Activity: Tom is waking up and completing his morning routine (tidying up the bathroom)",
+      5
+    ],
+    [
+      "[(ID:2MG1hO) Monday February 13 -- 06:00 AM] Activity: Tom is waking up and completing his morning routine (heading to the kitchen to start breakfast)",
+      5
+    ],
+    [
+      "[(ID:JWXNWZ) Monday February 13 -- 07:00 AM] Activity: Tom is having breakfast and reading the morning newspaper",
+      60
+    ],
+    [
+      "[(ID:8uVhCA) Monday February 13 -- 08:00 AM] Activity: Tom is heading to the local market to pick up groceries and chat with neighbors",
+      60
+    ],
+    [
+      "[(ID:bNnHZc) Monday February 13 -- 09:00 AM] Activity: Tom is continuing his errands at the market, discussing local issues with fellow residents and expressing his concerns about the datacenter proposal",
+      60
+    ],
+    [
+      "[(ID:nBmvX2) Monday February 13 -- 10:00 AM] Activity: Tom is returning home from the market, organizing groceries, and planning his tasks for the day",
+      60
+    ],
+    [
+      "[(ID:Oulb1L) Monday February 13 -- 11:00 AM] Activity: Tom is working on household chores, such as tidying up and doing some light maintenance around the house",
+      60
+    ],
+    [
+      "[(ID:KETaUX) Monday February 13 -- 12:00 PM] Activity: Tom is having lunch at home, taking a short break to relax and watch the news",
+      60
+    ],
+    [
+      "[(ID:YH6vns) Monday February 13 -- 01:00 PM] Activity: Tom is attending a community meeting to discuss the datacenter proposal, voicing his concerns and listening to other residents' opinions",
+      60
+    ],
+    [
+      "[(ID:0P9ztz) Monday February 13 -- 02:00 PM] Activity: Tom is engaging in a follow-up discussion with a few community members after the meeting, sharing additional thoughts and gathering more information about the datacenter",
+      60
+    ],
+    [
+      "[(ID:vPNAug) Monday February 13 -- 03:00 PM] Activity: Tom is taking a walk around the neighborhood, checking for any changes or developments, and chatting with neighbors about their views on the datacenter proposal",
+      60
+    ],
+    [
+      "[(ID:rt4YYl) Monday February 13 -- 04:00 PM] Activity: Tom is spending time in his garden, tending to plants and enjoying the fresh air while reflecting on the day's discussions about the datacenter proposal",
+      60
+    ],
+    [
+      "[(ID:5Fhqvr) Monday February 13 -- 05:00 PM] Activity: Tom is preparing dinner at home, using fresh ingredients he picked up from the market earlier in the day",
+      60
+    ],
+    [
+      "[(ID:FnQcoF) Monday February 13 -- 06:00 PM] Activity: Tom is having dinner and reviewing the notes he took during the community meeting about the datacenter proposal",
+      60
+    ],
+    [
+      "[(ID:bHcTwu) Monday February 13 -- 07:00 PM] Activity: Tom is relaxing in the living room, watching his favorite TV show or reading a book to unwind after a busy day",
+      60
+    ],
+    [
+      "[(ID:U84FUU) Monday February 13 -- 08:00 PM] Activity: Tom is making phone calls to friends and family, discussing the day's events and sharing his views on the datacenter proposal",
+      60
+    ],
+    [
+      "[(ID:yMNDrN) Monday February 13 -- 09:00 PM] Activity: Tom is taking a short evening walk around the neighborhood, enjoying the cool air and reflecting on the day's events",
+      60
+    ],
+    [
+      "[(ID:fh78kW) Monday February 13 -- 10:00 PM] Activity: Tom is getting ready for bed, winding down with a bit of light reading or listening to calming music",
+      60
+    ],
+    [
+      "[(ID:n0hU5j) Monday February 13 -- 11:00 PM] Activity: Tom is going to bed, reflecting on the day's activities and preparing for a restful night's sleep",
+      60
+    ],
+    [
+      "sleeping",
+      0
+    ]
+  ],
+  "f_daily_schedule_hourly_org": [
+    [
+      "sleeping",
+      360
+    ],
+    [
+      "[(ID:2MG1hO) Monday February 13 -- 06:00 AM] Activity: Tom is waking up and completing his morning routine",
+      60
+    ],
+    [
+      "[(ID:JWXNWZ) Monday February 13 -- 07:00 AM] Activity: Tom is having breakfast and reading the morning newspaper",
+      60
+    ],
+    [
+      "[(ID:8uVhCA) Monday February 13 -- 08:00 AM] Activity: Tom is heading to the local market to pick up groceries and chat with neighbors",
+      60
+    ],
+    [
+      "[(ID:bNnHZc) Monday February 13 -- 09:00 AM] Activity: Tom is continuing his errands at the market, discussing local issues with fellow residents and expressing his concerns about the datacenter proposal",
+      60
+    ],
+    [
+      "[(ID:nBmvX2) Monday February 13 -- 10:00 AM] Activity: Tom is returning home from the market, organizing groceries, and planning his tasks for the day",
+      60
+    ],
+    [
+      "[(ID:Oulb1L) Monday February 13 -- 11:00 AM] Activity: Tom is working on household chores, such as tidying up and doing some light maintenance around the house",
+      60
+    ],
+    [
+      "[(ID:KETaUX) Monday February 13 -- 12:00 PM] Activity: Tom is having lunch at home, taking a short break to relax and watch the news",
+      60
+    ],
+    [
+      "[(ID:YH6vns) Monday February 13 -- 01:00 PM] Activity: Tom is attending a community meeting to discuss the datacenter proposal, voicing his concerns and listening to other residents' opinions",
+      60
+    ],
+    [
+      "[(ID:0P9ztz) Monday February 13 -- 02:00 PM] Activity: Tom is engaging in a follow-up discussion with a few community members after the meeting, sharing additional thoughts and gathering more information about the datacenter",
+      60
+    ],
+    [
+      "[(ID:vPNAug) Monday February 13 -- 03:00 PM] Activity: Tom is taking a walk around the neighborhood, checking for any changes or developments, and chatting with neighbors about their views on the datacenter proposal",
+      60
+    ],
+    [
+      "[(ID:rt4YYl) Monday February 13 -- 04:00 PM] Activity: Tom is spending time in his garden, tending to plants and enjoying the fresh air while reflecting on the day's discussions about the datacenter proposal",
+      60
+    ],
+    [
+      "[(ID:5Fhqvr) Monday February 13 -- 05:00 PM] Activity: Tom is preparing dinner at home, using fresh ingredients he picked up from the market earlier in the day",
+      60
+    ],
+    [
+      "[(ID:FnQcoF) Monday February 13 -- 06:00 PM] Activity: Tom is having dinner and reviewing the notes he took during the community meeting about the datacenter proposal",
+      60
+    ],
+    [
+      "[(ID:bHcTwu) Monday February 13 -- 07:00 PM] Activity: Tom is relaxing in the living room, watching his favorite TV show or reading a book to unwind after a busy day",
+      60
+    ],
+    [
+      "[(ID:U84FUU) Monday February 13 -- 08:00 PM] Activity: Tom is making phone calls to friends and family, discussing the day's events and sharing his views on the datacenter proposal",
+      60
+    ],
+    [
+      "[(ID:yMNDrN) Monday February 13 -- 09:00 PM] Activity: Tom is taking a short evening walk around the neighborhood, enjoying the cool air and reflecting on the day's events",
+      60
+    ],
+    [
+      "[(ID:fh78kW) Monday February 13 -- 10:00 PM] Activity: Tom is getting ready for bed, winding down with a bit of light reading or listening to calming music",
+      60
+    ],
+    [
+      "[(ID:n0hU5j) Monday February 13 -- 11:00 PM] Activity: Tom is going to bed, reflecting on the day's activities and preparing for a restful night's sleep",
+      60
+    ]
+  ],
+  "act_address": "the Ville:The Rose and Crown Pub:pub:shelf",
+  "act_start_time": "February 13, 2023, 00:00:00",
+  "act_duration": 360,
+  "act_description": "sleeping",
+  "act_pronunciatio": "\ud83d\ude34",
+  "act_event": [
+    "Tom Whitaker",
+    "is",
+    "sleep"
+  ],
+  "act_obj_description": "unchanged and undisturbed as Tom is not interacting with it",
+  "act_obj_pronunciatio": "\ud83d\ude10",
+  "act_obj_event": [
+    "shelf",
+    "is",
+    "unchanged"
+  ],
+  "chatting_with": null,
+  "chat": null,
+  "chatting_with_buffer": {},
+  "chatting_end_time": null,
+  "act_path_set": true,
+  "planned_path": [
+    [
+      70,
+      66
+    ],
+    [
+      71,
+      66
+    ],
+    [
+      72,
+      66
+    ],
+    [
+      73,
+      66
+    ],
+    [
+      73,
+      65
+    ],
+    [
+      73,
+      64
+    ],
+    [
+      73,
+      63
+    ],
+    [
+      73,
+      62
+    ],
+    [
+      73,
+      61
+    ],
+    [
+      73,
+      60
+    ],
+    [
+      72,
+      60
+    ],
+    [
+      71,
+      60
+    ],
+    [
+      70,
+      60
+    ],
+    [
+      69,
+      60
+    ],
+    [
+      68,
+      60
+    ],
+    [
+      67,
+      60
+    ],
+    [
+      67,
+      59
+    ],
+    [
+      67,
+      58
+    ],
+    [
+      67,
+      57
+    ],
+    [
+      67,
+      56
+    ],
+    [
+      67,
+      55
+    ],
+    [
+      67,
+      54
+    ],
+    [
+      67,
+      53
+    ],
+    [
+      66,
+      53
+    ],
+    [
+      65,
+      53
+    ],
+    [
+      65,
+      52
+    ],
+    [
+      65,
+      51
+    ],
+    [
+      65,
+      50
+    ],
+    [
+      65,
+      49
+    ],
+    [
+      65,
+      48
+    ],
+    [
+      65,
+      47
+    ],
+    [
+      65,
+      46
+    ],
+    [
+      65,
+      45
+    ],
+    [
+      64,
+      45
+    ],
+    [
+      63,
+      45
+    ],
+    [
+      62,
+      45
+    ],
+    [
+      62,
+      44
+    ],
+    [
+      62,
+      43
+    ],
+    [
+      62,
+      42
+    ],
+    [
+      62,
+      41
+    ],
+    [
+      62,
+      40
+    ],
+    [
+      62,
+      39
+    ],
+    [
+      62,
+      38
+    ],
+    [
+      62,
+      37
+    ],
+    [
+      61,
+      37
+    ],
+    [
+      60,
+      37
+    ],
+    [
+      59,
+      37
+    ],
+    [
+      58,
+      37
+    ],
+    [
+      57,
+      37
+    ],
+    [
+      56,
+      37
+    ],
+    [
+      56,
+      36
+    ],
+    [
+      56,
+      35
+    ],
+    [
+      56,
+      34
+    ],
+    [
+      56,
+      33
+    ],
+    [
+      56,
+      32
+    ],
+    [
+      56,
+      31
+    ],
+    [
+      56,
+      30
+    ],
+    [
+      56,
+      29
+    ],
+    [
+      56,
+      28
+    ],
+    [
+      56,
+      27
+    ],
+    [
+      56,
+      26
+    ],
+    [
+      55,
+      26
+    ],
+    [
+      54,
+      26
+    ]
+  ]
+}

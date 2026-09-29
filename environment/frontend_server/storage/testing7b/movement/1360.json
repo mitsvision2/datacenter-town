@@ -1,0 +1,79 @@
+{
+  "persona": {
+    "Maya Okonkwo": {
+      "movement": [
+        66,
+        20
+      ],
+      "pronunciatio": "\ud83d\ude34",
+      "description": "sleeping @ the Ville:Maya Okonkwo's apartment:main room:bed",
+      "chat": null
+    },
+    "Luis Hernandez": {
+      "movement": [
+        54,
+        15
+      ],
+      "pronunciatio": "\ud83d\ude34",
+      "description": "sleeping @ the Ville:Luis Hernandez's apartment:main room:bed",
+      "chat": null
+    },
+    "Denise Brooks": {
+      "movement": [
+        73,
+        15
+      ],
+      "pronunciatio": "\ud83d\ude34",
+      "description": "sleeping @ the Ville:Denise Brooks's apartment:main room:bed",
+      "chat": null
+    },
+    "Rachel Nguyen": {
+      "movement": [
+        88,
+        65
+      ],
+      "pronunciatio": "\ud83d\ude34",
+      "description": "sleeping @ the Ville:Nguyen family's house:common room:shelf",
+      "chat": null
+    },
+    "Tom Whitaker": {
+      "movement": [
+        54,
+        26
+      ],
+      "pronunciatio": "\ud83d\ude34",
+      "description": "sleeping @ the Ville:The Rose and Crown Pub:pub:shelf",
+      "chat": null
+    },
+    "Aisha Rahman": {
+      "movement": [
+        35,
+        30
+      ],
+      "pronunciatio": "\ud83d\ude34",
+      "description": "sleeping @ the Ville:artist's co-living space:common room:common room sofa",
+      "chat": null
+    },
+    "Marcus Williams": {
+      "movement": [
+        37,
+        66
+      ],
+      "pronunciatio": "\ud83d\ude34",
+      "description": "sleeping @ the Ville:Williams family's house:main room:bed",
+      "chat": null
+    },
+    "Elena Chen": {
+      "movement": [
+        29,
+        66
+      ],
+      "pronunciatio": "\ud83d\ude34",
+      "description": "sleeping @ the Ville:Elena Chen's house:main room:bed",
+      "chat": null
+    }
+  },
+  "meta": {
+    "curr_time": "February 13, 2023, 03:46:40"
+  }
+}

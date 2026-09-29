@@ -1,0 +1,247 @@
+{
+  "vision_r": 8,
+  "att_bandwidth": 8,
+  "retention": 8,
+  "curr_time": "February 13, 2023, 00:01:30",
+  "curr_tile": [
+    73,
+    14
+  ],
+  "daily_plan_req": "Denise Brooks opens her shop in the morning, greets customers. Denise expresses her opinions on the datacenter when she sees it in a flyer, newspaper, internet or when someone mentions it.",
+  "name": "Denise Brooks",
+  "first_name": "Denise",
+  "last_name": "Brooks",
+  "age": 38,
+  "innate": "friendly, entrepreneurial, pragmatic",
+  "learned": "Denise Brooks owns a local shop and cares about foot traffic, the tax base, and keeping Main Street businesses alive.",
+  "currently": "Denise Brooks leans in favor of the datacenter proposal because she expects temporary construction spending and a stronger tax base, though she worries about power bills and long-term customer mix.",
+  "lifestyle": "Denise Brooks goes to bed around 11pm, wakes up around 6am, and keeps shop hours most weekdays.",
+  "living_area": "the Ville:Isabella Rodriguez's apartment:main room",
+  "concept_forget": 100,
+  "daily_reflection_time": 180,
+  "daily_reflection_size": 5,
+  "overlap_reflect_th": 4,
+  "kw_strg_event_reflect_th": 10,
+  "kw_strg_thought_reflect_th": 9,
+  "recency_w": 1,
+  "relevance_w": 1,
+  "importance_w": 1,
+  "recency_decay": 0.995,
+  "importance_trigger_max": 250,
+  "importance_trigger_curr": 242,
+  "importance_ele_n": 8,
+  "thought_count": 5,
+  "daily_req": [
+    "wake up and complete the morning routine at 6:00 am",
+    "open the shop at 8:00 am",
+    "greet customers and attend to shop duties throughout the morning",
+    "have a lunch break at 12:30 pm",
+    "return to the shop after lunch and continue serving customers while managing administrative tasks",
+    "engage in conversations with customers about the datacenter proposal if prompted",
+    "close the shop around 5:30 pm",
+    "review financials and plan for the next day until 6:30 pm"
+  ],
+  "f_daily_schedule": [
+    [
+      "sleeping",
+      360
+    ],
+    [
+      "waking up and completing her morning routine (waking up and stretching in bed)",
+      5
+    ],
+    [
+      "waking up and completing her morning routine (getting out of bed and making her bed)",
+      5
+    ],
+    [
+      "waking up and completing her morning routine (heading to the bathroom to freshen up)",
+      5
+    ],
+    [
+      "waking up and completing her morning routine (brushing her teeth)",
+      5
+    ],
+    [
+      "waking up and completing her morning routine (washing her face)",
+      5
+    ],
+    [
+      "waking up and completing her morning routine (taking a quick shower)",
+      10
+    ],
+    [
+      "waking up and completing her morning routine (drying off and applying skincare products)",
+      5
+    ],
+    [
+      "waking up and completing her morning routine (getting dressed for the day)",
+      10
+    ],
+    [
+      "waking up and completing her morning routine (brushing her hair and doing any additional grooming)",
+      5
+    ],
+    [
+      "waking up and completing her morning routine (tidying up the bathroom and heading to the kitchen)",
+      5
+    ],
+    [
+      "getting ready for the day, having breakfast, and preparing to open her shop",
+      60
+    ],
+    [
+      "[(ID:sGDQtG) Monday February 13 -- 08:00 AM] Activity: Denise is opening her shop and preparing for the day ahead",
+      60
+    ],
+    [
+      "greeting customers and attending to shop duties, ensuring everything runs smoothly",
+      60
+    ],
+    [
+      "greeting customers, attending to shop duties, and ensuring everything runs smoothly. She is also engaging with customers who bring up the datacenter proposal, sharing her thoughts on the potential benefits and concerns",
+      60
+    ],
+    [
+      "[(ID:n9Grbz) Monday February 13 -- 11:00 AM] Activity: Denise is continuing to greet customers and attend to shop duties. She is also taking the opportunity to discuss the datacenter proposal with any interested customers, sharing",
+      60
+    ],
+    [
+      "[(ID:Fph7PC) Monday February 13 -- 12:00 PM] Activity: Denise is continuing to greet customers and attend to shop duties, while also preparing for her upcoming lunch break",
+      60
+    ],
+    [
+      "continuing to greet customers and attend to shop duties. She is also engaging with any customers who mention the datacenter proposal, sharing her perspectives on its potential impact",
+      60
+    ],
+    [
+      "continuing to greet customers and attend to shop duties. She is also managing administrative tasks, such as inventory checks and restocking, while engaging with any customers who bring up the datacenter proposal",
+      180
+    ],
+    [
+      "[(ID:gm0KSX) Monday February 13 -- 05:00 PM] Activity: Denise is preparing to close the shop, finishing up with any remaining customers and ensuring everything is in order for the next day",
+      60
+    ],
+    [
+      "reviewing financials and planning for the next day, ensuring she is prepared for any upcoming tasks or challenges",
+      60
+    ],
+    [
+      "having dinner and relaxing at home, possibly discussing her day with family or friends and unwinding from work",
+      60
+    ],
+    [
+      "[(ID:2wmGLW) Monday February 13 -- 08:00 PM] Activity: Denise is relaxing at home, perhaps reading or watching TV, and reflecting on her day while considering the implications of the datacenter proposal",
+      60
+    ],
+    [
+      "relaxing at home, perhaps reading or watching TV. She is also reflecting on the day's events and considering her plans for the datacenter proposal",
+      60
+    ],
+    [
+      "winding down for the night, perhaps enjoying a quiet moment with a book or watching a favorite TV show. She is reflecting on her day and considering her stance on the datacenter proposal, weighing the potential benefits and challenges it might bring to her business",
+      60
+    ],
+    [
+      "preparing for bed, reflecting on her day, and considering her stance on the datacenter proposal. She is ensuring she gets a good night's sleep to be ready for the next day",
+      60
+    ],
+    [
+      "sleeping",
+      0
+    ]
+  ],
+  "f_daily_schedule_hourly_org": [
+    [
+      "sleeping",
+      360
+    ],
+    [
+      "waking up and completing her morning routine",
+      60
+    ],
+    [
+      "getting ready for the day, having breakfast, and preparing to open her shop",
+      60
+    ],
+    [
+      "[(ID:sGDQtG) Monday February 13 -- 08:00 AM] Activity: Denise is opening her shop and preparing for the day ahead",
+      60
+    ],
+    [
+      "greeting customers and attending to shop duties, ensuring everything runs smoothly",
+      60
+    ],
+    [
+      "greeting customers, attending to shop duties, and ensuring everything runs smoothly. She is also engaging with customers who bring up the datacenter proposal, sharing her thoughts on the potential benefits and concerns",
+      60
+    ],
+    [
+      "[(ID:n9Grbz) Monday February 13 -- 11:00 AM] Activity: Denise is continuing to greet customers and attend to shop duties. She is also taking the opportunity to discuss the datacenter proposal with any interested customers, sharing",
+      60
+    ],
+    [
+      "[(ID:Fph7PC) Monday February 13 -- 12:00 PM] Activity: Denise is continuing to greet customers and attend to shop duties, while also preparing for her upcoming lunch break",
+      60
+    ],
+    [
+      "continuing to greet customers and attend to shop duties. She is also engaging with any customers who mention the datacenter proposal, sharing her perspectives on its potential impact",
+      60
+    ],
+    [
+      "continuing to greet customers and attend to shop duties. She is also managing administrative tasks, such as inventory checks and restocking, while engaging with any customers who bring up the datacenter proposal",
+      180
+    ],
+    [
+      "[(ID:gm0KSX) Monday February 13 -- 05:00 PM] Activity: Denise is preparing to close the shop, finishing up with any remaining customers and ensuring everything is in order for the next day",
+      60
+    ],
+    [
+      "reviewing financials and planning for the next day, ensuring she is prepared for any upcoming tasks or challenges",
+      60
+    ],
+    [
+      "having dinner and relaxing at home, possibly discussing her day with family or friends and unwinding from work",
+      60
+    ],
+    [
+      "[(ID:2wmGLW) Monday February 13 -- 08:00 PM] Activity: Denise is relaxing at home, perhaps reading or watching TV, and reflecting on her day while considering the implications of the datacenter proposal",
+      60
+    ],
+    [
+      "relaxing at home, perhaps reading or watching TV. She is also reflecting on the day's events and considering her plans for the datacenter proposal",
+      60
+    ],
+    [
+      "winding down for the night, perhaps enjoying a quiet moment with a book or watching a favorite TV show. She is reflecting on her day and considering her stance on the datacenter proposal, weighing the potential benefits and challenges it might bring to her business",
+      60
+    ],
+    [
+      "preparing for bed, reflecting on her day, and considering her stance on the datacenter proposal. She is ensuring she gets a good night's sleep to be ready for the next day",
+      60
+    ]
+  ],
+  "act_address": "the Ville:Isabella Rodriguez's apartment:main room:bed",
+  "act_start_time": "February 13, 2023, 00:00:00",
+  "act_duration": 360,
+  "act_description": "sleeping",
+  "act_pronunciatio": "\ud83d\ude34",
+  "act_event": [
+    "Denise Brooks",
+    "is",
+    "sleep"
+  ],
+  "act_obj_description": "being slept in",
+  "act_obj_pronunciatio": "\ud83d\ude34\ud83d\udecf\ufe0f",
+  "act_obj_event": [
+    "bed",
+    "is",
+    "slept in"
+  ],
+  "chatting_with": null,
+  "chat": null,
+  "chatting_with_buffer": {},
+  "chatting_end_time": null,
+  "act_path_set": true,
+  "planned_path": []
+}

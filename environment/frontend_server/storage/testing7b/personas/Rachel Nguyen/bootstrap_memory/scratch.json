@@ -1,0 +1,268 @@
+{
+  "vision_r": 8,
+  "att_bandwidth": 8,
+  "retention": 8,
+  "curr_time": "February 13, 2023, 08:00:00",
+  "curr_tile": [
+    88,
+    65
+  ],
+  "daily_plan_req": "Rachel Nguyen teaches during the day, runs errands after school, and listens carefully  when neighbors debate the datacenter.",
+  "name": "Rachel Nguyen",
+  "first_name": "Rachel",
+  "last_name": "Nguyen",
+  "age": 36,
+  "innate": "thoughtful, empathetic, measured",
+  "learned": "Rachel Nguyen is a teacher and parent who focuses on schools, household budgets, and whether big projects help kids in town.",
+  "currently": "Rachel Nguyen is undecided about the datacenter proposal. She wants clear answers on school funding, electricity rates, and whether the town will see lasting benefits for families. She is sometimes ignorant of the topic, and can move away from conversations about it.",
+  "lifestyle": "Rachel Nguyen goes to bed around 10:30pm, wakes up around 6:30am, and spends evenings with family or grading.",
+  "living_area": "the Ville:Nguyen family's house:Rachel Nguyen's bedroom",
+  "concept_forget": 100,
+  "daily_reflection_time": 180,
+  "daily_reflection_size": 5,
+  "overlap_reflect_th": 4,
+  "kw_strg_event_reflect_th": 10,
+  "kw_strg_thought_reflect_th": 9,
+  "recency_w": 1,
+  "relevance_w": 1,
+  "importance_w": 1,
+  "recency_decay": 0.995,
+  "importance_trigger_max": 250,
+  "importance_trigger_curr": 242,
+  "importance_ele_n": 8,
+  "thought_count": 5,
+  "daily_req": [
+    "wake up and complete the morning routine at 8:00 am",
+    "teach classes from 9:00 am to 3:30 pm",
+    "run errands such as grocery shopping or picking up supplies for school from 4:00 pm to 5:00 pm",
+    "prepare and have dinner with family from 6:00 pm to 7:00 pm",
+    "grade papers or plan lessons from 7:30 pm to 8:30 pm"
+  ],
+  "f_daily_schedule": [
+    [
+      "sleeping",
+      480
+    ],
+    [
+      "[(ID:px0qKO) Monday February 13 -- 08:00 AM] Activity: Rachel is waking up and completing her morning routine (waking up and stretching in bed)",
+      5
+    ],
+    [
+      "[(ID:px0qKO) Monday February 13 -- 08:00 AM] Activity: Rachel is waking up and completing her morning routine (getting out of bed and heading to the bathroom)",
+      5
+    ],
+    [
+      "[(ID:px0qKO) Monday February 13 -- 08:00 AM] Activity: Rachel is waking up and completing her morning routine (brushing her teeth)",
+      5
+    ],
+    [
+      "[(ID:px0qKO) Monday February 13 -- 08:00 AM] Activity: Rachel is waking up and completing her morning routine (washing her face)",
+      5
+    ],
+    [
+      "[(ID:px0qKO) Monday February 13 -- 08:00 AM] Activity: Rachel is waking up and completing her morning routine (taking a quick shower)",
+      10
+    ],
+    [
+      "[(ID:px0qKO) Monday February 13 -- 08:00 AM] Activity: Rachel is waking up and completing her morning routine (getting dressed for the day)",
+      10
+    ],
+    [
+      "[(ID:px0qKO) Monday February 13 -- 08:00 AM] Activity: Rachel is waking up and completing her morning routine (preparing breakfast for herself)",
+      10
+    ],
+    [
+      "[(ID:px0qKO) Monday February 13 -- 08:00 AM] Activity: Rachel is waking up and completing her morning routine (eating breakfast)",
+      10
+    ],
+    [
+      "[(ID:s0kBAp) Monday February 13 -- 09:00 AM] Activity: Rachel is teaching her first class of the day (greeting her students and taking attendance)",
+      5
+    ],
+    [
+      "[(ID:s0kBAp) Monday February 13 -- 09:00 AM] Activity: Rachel is teaching her first class of the day (introducing the day's lesson topic)",
+      5
+    ],
+    [
+      "[(ID:s0kBAp) Monday February 13 -- 09:00 AM] Activity: Rachel is teaching her first class of the day (explaining the key concepts of the lesson)",
+      10
+    ],
+    [
+      "[(ID:s0kBAp) Monday February 13 -- 09:00 AM] Activity: Rachel is teaching her first class of the day (engaging students in a class discussion about the topic)",
+      10
+    ],
+    [
+      "[(ID:s0kBAp) Monday February 13 -- 09:00 AM] Activity: Rachel is teaching her first class of the day (assigning a short group activity related to the lesson)",
+      10
+    ],
+    [
+      "[(ID:s0kBAp) Monday February 13 -- 09:00 AM] Activity: Rachel is teaching her first class of the day (circulating around the classroom to assist students with the activity)",
+      10
+    ],
+    [
+      "[(ID:s0kBAp) Monday February 13 -- 09:00 AM] Activity: Rachel is teaching her first class of the day (wrapping up the activity and discussing the outcomes with the class)",
+      5
+    ],
+    [
+      "[(ID:s0kBAp) Monday February 13 -- 09:00 AM] Activity: Rachel is teaching her first class of the day (summarizing the lesson and assigning homework)",
+      5
+    ],
+    [
+      "[(ID:o0wkf1) Monday February 13 -- 10:00 AM] Activity: Rachel is teaching her second class of the day",
+      60
+    ],
+    [
+      "[(ID:bDkJny) Monday February 13 -- 11:00 AM] Activity: Rachel is teaching her third class of the day",
+      60
+    ],
+    [
+      "[(ID:XJRewx) Monday February 13 -- 12:00 PM] Activity: Rachel is having lunch and preparing for her next class",
+      60
+    ],
+    [
+      "[(ID:pNkY2W) Monday February 13 -- 01:00 PM] Activity: Rachel is teaching her fourth class of the day",
+      60
+    ],
+    [
+      "[(ID:MtT4qX) Monday February 13 -- 02:00 PM] Activity: Rachel is teaching her fifth class of the day",
+      60
+    ],
+    [
+      "[(ID:XSODtK) Monday February 13 -- 03:00 PM] Activity: Rachel is teaching her sixth and final class of the day",
+      60
+    ],
+    [
+      "[(ID:wELXs4) Monday February 13 -- 04:00 PM] Activity: Rachel is running errands such as grocery shopping or picking up supplies for school",
+      60
+    ],
+    [
+      "[(ID:DhOs26) Monday February 13 -- 05:00 PM] Activity: Rachel is finishing up her errands and heading home",
+      60
+    ],
+    [
+      "preparing and having dinner with her family",
+      60
+    ],
+    [
+      "[(ID:cTF3kR) Monday February 13 -- 07:00 PM] Activity: Rachel is spending some quality time with her family, possibly discussing the day's events or helping her children with homework",
+      60
+    ],
+    [
+      "grading papers or planning lessons for the next day",
+      60
+    ],
+    [
+      "[(ID:Rant99) Monday February 13 -- 09:00 PM] Activity: Rachel is taking some time to unwind, possibly by reading or watching a show, before getting ready for bed",
+      60
+    ],
+    [
+      "getting ready for bed, including winding down with a calming routine like reading or meditating",
+      60
+    ],
+    [
+      "[(ID:7zg46O) Monday February 13 -- 11:00 PM] Activity: Rachel is asleep",
+      60
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ]
+  ],
+  "f_daily_schedule_hourly_org": [
+    [
+      "sleeping",
+      480
+    ],
+    [
+      "[(ID:px0qKO) Monday February 13 -- 08:00 AM] Activity: Rachel is waking up and completing her morning routine",
+      60
+    ],
+    [
+      "[(ID:s0kBAp) Monday February 13 -- 09:00 AM] Activity: Rachel is teaching her first class of the day",
+      60
+    ],
+    [
+      "[(ID:o0wkf1) Monday February 13 -- 10:00 AM] Activity: Rachel is teaching her second class of the day",
+      60
+    ],
+    [
+      "[(ID:bDkJny) Monday February 13 -- 11:00 AM] Activity: Rachel is teaching her third class of the day",
+      60
+    ],
+    [
+      "[(ID:XJRewx) Monday February 13 -- 12:00 PM] Activity: Rachel is having lunch and preparing for her next class",
+      60
+    ],
+    [
+      "[(ID:pNkY2W) Monday February 13 -- 01:00 PM] Activity: Rachel is teaching her fourth class of the day",
+      60
+    ],
+    [
+      "[(ID:MtT4qX) Monday February 13 -- 02:00 PM] Activity: Rachel is teaching her fifth class of the day",
+      60
+    ],
+    [
+      "[(ID:XSODtK) Monday February 13 -- 03:00 PM] Activity: Rachel is teaching her sixth and final class of the day",
+      60
+    ],
+    [
+      "[(ID:wELXs4) Monday February 13 -- 04:00 PM] Activity: Rachel is running errands such as grocery shopping or picking up supplies for school",
+      60
+    ],
+    [
+      "[(ID:DhOs26) Monday February 13 -- 05:00 PM] Activity: Rachel is finishing up her errands and heading home",
+      60
+    ],
+    [
+      "preparing and having dinner with her family",
+      60
+    ],
+    [
+      "[(ID:cTF3kR) Monday February 13 -- 07:00 PM] Activity: Rachel is spending some quality time with her family, possibly discussing the day's events or helping her children with homework",
+      60
+    ],
+    [
+      "grading papers or planning lessons for the next day",
+      60
+    ],
+    [
+      "[(ID:Rant99) Monday February 13 -- 09:00 PM] Activity: Rachel is taking some time to unwind, possibly by reading or watching a show, before getting ready for bed",
+      60
+    ],
+    [
+      "getting ready for bed, including winding down with a calming routine like reading or meditating",
+      60
+    ],
+    [
+      "[(ID:7zg46O) Monday February 13 -- 11:00 PM] Activity: Rachel is asleep",
+      60
+    ]
+  ],
+  "act_address": "the Ville:Nguyen family's house:common room:shelf",
+  "act_start_time": "February 13, 2023, 08:00:00",
+  "act_duration": 5,
+  "act_description": "[(ID:px0qKO) Monday February 13 -- 08:00 AM] Activity: Rachel is waking up and completing her morning routine (waking up and stretching in bed)",
+  "act_pronunciatio": "\ud83c\udf05\ud83d\udecc",
+  "act_event": [
+    "Rachel Nguyen",
+    "wake",
+    "up"
+  ],
+  "act_obj_description": "not being used",
+  "act_obj_pronunciatio": "\ud83d\udeab",
+  "act_obj_event": [
+    "shelf",
+    "is not",
+    "used"
+  ],
+  "chatting_with": null,
+  "chat": null,
+  "chatting_with_buffer": {},
+  "chatting_end_time": null,
+  "act_path_set": true,
+  "planned_path": []
+}

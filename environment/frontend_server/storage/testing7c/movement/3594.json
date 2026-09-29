@@ -1,0 +1,79 @@
+{
+  "persona": {
+    "Maya Okonkwo": {
+      "movement": [
+        66,
+        24
+      ],
+      "pronunciatio": "\ud83d\udcdd\ud83d\udcbe",
+      "description": "[(ID:Js4cYi) Monday February 13 -- 09:00 AM] Activity: Maya is working on her startup, focusing on product development and strategy planning (documenting the plan and saving it for the upcoming team meeting) @ the Ville:Maya Okonkwo's apartment:main room:computer desk",
+      "chat": null
+    },
+    "Luis Hernandez": {
+      "movement": [
+        54,
+        17
+      ],
+      "pronunciatio": "\ud83d\udd0c\ud83d\udccb",
+      "description": "[(ID:YmZTHL) Monday February 13 -- 10:00 AM] Activity: Luis is working on the job site, focusing on electrical installations and ensuring all safety protocols are followed (reviewing the electrical plans for the day) @ the Ville:Luis Hernandez's apartment:main room:desk",
+      "chat": null
+    },
+    "Denise Brooks": {
+      "movement": [
+        65,
+        38
+      ],
+      "pronunciatio": "\ud83d\udc4b\ud83d\ude0a",
+      "description": "[(ID:mlrl73) Monday February 13 -- 10:00 AM] Activity: Denise is continuing to assist customers in her shop, engaging with them and promoting special offers (greeting new customers as they enter the shop) @ the Ville:Harvey Oak Supply Store:supply store:supply store counter",
+      "chat": null
+    },
+    "Rachel Nguyen": {
+      "movement": [
+        108,
+        20
+      ],
+      "pronunciatio": "\ud83d\udcdd\ud83d\udcda",
+      "description": "[(ID:s0kBAp) Monday February 13 -- 09:00 AM] Activity: Rachel is teaching her first class of the day (summarizing the lesson and assigning homework) @ the Ville:Oak Hill College:classroom:blackboard",
+      "chat": null
+    },
+    "Tom Whitaker": {
+      "movement": [
+        75,
+        65
+      ],
+      "pronunciatio": "\ud83c\udf7d\ufe0f\ud83d\udcf0",
+      "description": "[(ID:F75YC8) Monday February 13 -- 09:00 AM] Activity: Tom is having breakfast and reading the morning news (cleaning up his breakfast dishes and putting away the newspaper) @ the Ville:Whitaker family's house:kitchen:kitchen sink",
+      "chat": null
+    },
+    "Aisha Rahman": {
+      "movement": [
+        16,
+        20
+      ],
+      "pronunciatio": "\ud83d\udca7\ud83d\udcbb",
+      "description": "[(ID:8DQmQ5) Monday February 13 -- 10:00 AM] Activity: Aisha is at the caf\u00e9, continuing her research on the environmental impacts of the proposed datacenter, focusing on water usage and emissions data (reviewing recent articles and reports on water usage related to datacenters) @ the Ville:artist's co-living space:Aisha Rahman's room:desk",
+      "chat": null
+    },
+    "Marcus Williams": {
+      "movement": [
+        68,
+        46
+      ],
+      "pronunciatio": "\ud83d\udcc5\u2705",
+      "description": "[(ID:mkJxUE) Monday February 13 -- 09:00 AM] Activity: Marcus is reviewing community feedback and preparing materials for the day's meetings (reviewing his agenda and ensuring all points are covered) @ the Ville:Harvey Oak Supply Store:supply store:supply store counter",
+      "chat": null
+    },
+    "Elena Chen": {
+      "movement": [
+        31,
+        59
+      ],
+      "pronunciatio": "\ud83d\udcdd\ud83d\udd0d",
+      "description": "[(ID:QjdHRW) Monday February 13 -- 09:00 AM] Activity: Elena is reviewing utility planning documents and checking emails related to the datacenter proposal (summarizing her findings and preparing a list of follow-up actions) @ the Ville:Elena Chen's house:main room:desk",
+      "chat": null
+    }
+  },
+  "meta": {
+    "curr_time": "February 13, 2023, 09:59:00"
+  }
+}

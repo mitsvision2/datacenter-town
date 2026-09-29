@@ -1,0 +1,163 @@
+{
+  "persona": {
+    "Maya Okonkwo": {
+      "movement": [
+        76,
+        23
+      ],
+      "pronunciatio": "\ud83d\udcac",
+      "description": "conversing about Maya Okonkwo and Denise Brooks discussing the potential benefits and concerns of a datacenter proposal near Johnson Park, including job opportunities and environmental impact, and planning to attend a community meeting at Hobbs Cafe to further address these issues. @ <persona> Denise Brooks",
+      "chat": [
+        [
+          "Maya Okonkwo",
+          "Hey Denise! It's great to see you. I've been thinking about the datacenter proposal near Johnson Park. I really believe it could bring some fantastic opportunities to our community, like high-skill jobs and more investment in the area. What are your thoughts on it?"
+        ],
+        [
+          "Denise Brooks",
+          "Hi Maya! It's great to see you too. I agree that there are definitely some potential benefits, like the high-skill jobs you mentioned. However, I'm also a bit concerned about things like the environmental impact and how it might affect our local businesses in the long run. We're actually organizing a community meeting to discuss these aspects and ensure we have all the information we need. Would you be interested in joining us?"
+        ],
+        [
+          "Maya Okonkwo",
+          "I completely understand your concerns, Denise. It's important to consider all aspects, especially the environmental impact and effects on local businesses. I'd love to join the community meeting to discuss this further and see how we can address these issues together. Please let me know when and where it's happening!"
+        ],
+        [
+          "Denise Brooks",
+          "That's wonderful, Maya! I'm glad to have your support. We're planning to hold the meeting at Hobbs Cafe this Thursday at 7 PM. I'll make sure to send you all the details. It's going to be a great opportunity for everyone to voice their concerns and share ideas. Looking forward to seeing you there!"
+        ]
+      ]
+    },
+    "Luis Hernandez": {
+      "movement": [
+        59,
+        25
+      ],
+      "pronunciatio": "\ud83d\udcac",
+      "description": "conversing about Marcus Williams and Luis Hernandez discussing plans to address transparency concerns in a datacenter proposal by involving Denise Brooks for her support on local union hires and fair wages, and organizing a meeting to draft a collaborative statement with community backing. @ <persona> Marcus Williams",
+      "chat": [
+        [
+          "Marcus Williams",
+          "Hey Luis! I heard you and Tom have been working on addressing transparency concerns for the datacenter proposal. I'm really interested in your plans to propose local union hires and fair wages. How can I help support your efforts, and do you think we should involve Denise Brooks in our discussions today?"
+        ],
+        [
+          "Luis Hernandez",
+          "Hey Marcus! Thanks for being interested in supporting our efforts. I think involving Denise Brooks would be a great idea since she's been supportive of the local-hire agreement. We can definitely discuss how we can collaborate to strengthen our proposal and ensure it includes strong commitments to local union hires and fair wages. Let's hear your thoughts on how we can work together."
+        ],
+        [
+          "Marcus Williams",
+          "I completely agree, Luis. Denise has been a strong advocate for community benefits, and her input would be invaluable. Let's make sure to emphasize those commitments in the proposal. How about we set up a meeting with her later this week to discuss this further and draft a statement that we can all support?"
+        ],
+        [
+          "Luis Hernandez",
+          "That sounds like a solid plan, Marcus. Let's coordinate schedules and see if we can meet with Denise later this week. I'll reach out to her and suggest we all get together to put our heads together on this. Once we have her feedback, we can draft a statement that addresses all our concerns. Thanks for being on board with this."
+        ],
+        [
+          "Marcus Williams",
+          "Great, Luis! I appreciate you reaching out to Denise. Once you confirm a time that works for all of us, I'll make sure to be there prepared with some points we can discuss. Let's also think about any other community members who might want to join in and lend their voices. Thanks for working together on this."
+        ],
+        [
+          "Luis Hernandez",
+          "Absolutely, Marcus. I'll reach out to Denise and see what her availability looks like. Once we have a time set, I'll let you know. And yes, involving more community members would be beneficial. I'll think about who else we can invite to ensure we have strong community backing. Looking forward to working together on this."
+        ]
+      ]
+    },
+    "Denise Brooks": {
+      "movement": [
+        75,
+        23
+      ],
+      "pronunciatio": "\ud83d\udcac",
+      "description": "conversing about Maya Okonkwo and Denise Brooks discussing the potential benefits and concerns of a datacenter proposal near Johnson Park, including job opportunities and environmental impact, and planning to attend a community meeting at Hobbs Cafe to further address these issues. @ <persona> Maya Okonkwo",
+      "chat": [
+        [
+          "Maya Okonkwo",
+          "Hey Denise! It's great to see you. I've been thinking about the datacenter proposal near Johnson Park. I really believe it could bring some fantastic opportunities to our community, like high-skill jobs and more investment in the area. What are your thoughts on it?"
+        ],
+        [
+          "Denise Brooks",
+          "Hi Maya! It's great to see you too. I agree that there are definitely some potential benefits, like the high-skill jobs you mentioned. However, I'm also a bit concerned about things like the environmental impact and how it might affect our local businesses in the long run. We're actually organizing a community meeting to discuss these aspects and ensure we have all the information we need. Would you be interested in joining us?"
+        ],
+        [
+          "Maya Okonkwo",
+          "I completely understand your concerns, Denise. It's important to consider all aspects, especially the environmental impact and effects on local businesses. I'd love to join the community meeting to discuss this further and see how we can address these issues together. Please let me know when and where it's happening!"
+        ],
+        [
+          "Denise Brooks",
+          "That's wonderful, Maya! I'm glad to have your support. We're planning to hold the meeting at Hobbs Cafe this Thursday at 7 PM. I'll make sure to send you all the details. It's going to be a great opportunity for everyone to voice their concerns and share ideas. Looking forward to seeing you there!"
+        ]
+      ]
+    },
+    "Rachel Nguyen": {
+      "movement": [
+        108,
+        23
+      ],
+      "pronunciatio": "\ud83d\udc69\u200d\ud83c\udfeb",
+      "description": "[(ID:o0wkf1) Monday February 13 -- 10:00 AM] Activity: Rachel is teaching her second class of the day (engaging students in a class discussion about the topic) @ the Ville:Oak Hill College:classroom:classroom podium",
+      "chat": null
+    },
+    "Tom Whitaker": {
+      "movement": [
+        81,
+        52
+      ],
+      "pronunciatio": "\ud83d\uded2\ud83e\udd66",
+      "description": "[(ID:bPaJXB) Monday February 13 -- 10:00 AM] Activity: Tom is running errands around the neighborhood, picking up groceries and checking in with neighbors (picking up groceries) @ the Ville:The Willows Market and Pharmacy:store:grocery store shelf",
+      "chat": null
+    },
+    "Aisha Rahman": {
+      "movement": [
+        41,
+        27
+      ],
+      "pronunciatio": "\ud83d\udca7\ud83d\udcca",
+      "description": "[(ID:8DQmQ5) Monday February 13 -- 10:00 AM] Activity: Aisha is at the caf\u00e9, continuing her research on the environmental impacts of the proposed datacenter, focusing on water usage and emissions data (comparing water usage data of the proposed datacenter with other similar facilities) @ the Ville:Oak Hill College:hallway:<random>",
+      "chat": null
+    },
+    "Marcus Williams": {
+      "movement": [
+        58,
+        25
+      ],
+      "pronunciatio": "\ud83d\udcac",
+      "description": "conversing about Marcus Williams and Luis Hernandez discussing plans to address transparency concerns in a datacenter proposal by involving Denise Brooks for her support on local union hires and fair wages, and organizing a meeting to draft a collaborative statement with community backing. @ <persona> Luis Hernandez",
+      "chat": [
+        [
+          "Marcus Williams",
+          "Hey Luis! I heard you and Tom have been working on addressing transparency concerns for the datacenter proposal. I'm really interested in your plans to propose local union hires and fair wages. How can I help support your efforts, and do you think we should involve Denise Brooks in our discussions today?"
+        ],
+        [
+          "Luis Hernandez",
+          "Hey Marcus! Thanks for being interested in supporting our efforts. I think involving Denise Brooks would be a great idea since she's been supportive of the local-hire agreement. We can definitely discuss how we can collaborate to strengthen our proposal and ensure it includes strong commitments to local union hires and fair wages. Let's hear your thoughts on how we can work together."
+        ],
+        [
+          "Marcus Williams",
+          "I completely agree, Luis. Denise has been a strong advocate for community benefits, and her input would be invaluable. Let's make sure to emphasize those commitments in the proposal. How about we set up a meeting with her later this week to discuss this further and draft a statement that we can all support?"
+        ],
+        [
+          "Luis Hernandez",
+          "That sounds like a solid plan, Marcus. Let's coordinate schedules and see if we can meet with Denise later this week. I'll reach out to her and suggest we all get together to put our heads together on this. Once we have her feedback, we can draft a statement that addresses all our concerns. Thanks for being on board with this."
+        ],
+        [
+          "Marcus Williams",
+          "Great, Luis! I appreciate you reaching out to Denise. Once you confirm a time that works for all of us, I'll make sure to be there prepared with some points we can discuss. Let's also think about any other community members who might want to join in and lend their voices. Thanks for working together on this."
+        ],
+        [
+          "Luis Hernandez",
+          "Absolutely, Marcus. I'll reach out to Denise and see what her availability looks like. Once we have a time set, I'll let you know. And yes, involving more community members would be beneficial. I'll think about who else we can invite to ensure we have strong community backing. Looking forward to working together on this."
+        ]
+      ]
+    },
+    "Elena Chen": {
+      "movement": [
+        31,
+        59
+      ],
+      "pronunciatio": "\ud83d\udcc4\ud83d\udd52",
+      "description": "reviewing grid reliability studies and interconnection feasibility reports related to the datacenter proposal (reviewing interconnection feasibility reports, focusing on timelines and technical requirements) @ the Ville:Elena Chen's house:main room:desk",
+      "chat": null
+    }
+  },
+  "meta": {
+    "curr_time": "February 13, 2023, 10:28:10"
+  }
+}

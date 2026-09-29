@@ -1,0 +1,313 @@
+{
+  "vision_r": 8,
+  "att_bandwidth": 8,
+  "retention": 8,
+  "curr_time": "February 13, 2023, 00:01:30",
+  "curr_tile": [
+    18,
+    25
+  ],
+  "daily_plan_req": "Aisha Rahman researches environmental impacts during the day and casually talks with residents about water and emissions risks from the datacenter. She is not too fixated on the topic, and does not keep talking about it all the time.",
+  "name": "Aisha Rahman",
+  "first_name": "Aisha",
+  "last_name": "Rahman",
+  "age": 29,
+  "innate": "principled, careful, articulate",
+  "learned": "Aisha Rahman is an environmental advocate focused on water use, emissions, habitat, and climate impacts of large infrastructure.",
+  "currently": "Aisha Rahman conditionally opposes the datacenter proposal until there are binding water, emissions, and habitat protections. She is organizing facts for a town discussion.",
+  "lifestyle": "Aisha Rahman goes to bed around 11:30pm, wakes up around 7am, and often works from the park or cafe.",
+  "living_area": "the Ville:artist's co-living space:Latoya Williams's room",
+  "concept_forget": 100,
+  "daily_reflection_time": 180,
+  "daily_reflection_size": 5,
+  "overlap_reflect_th": 4,
+  "kw_strg_event_reflect_th": 10,
+  "kw_strg_thought_reflect_th": 9,
+  "recency_w": 1,
+  "relevance_w": 1,
+  "importance_w": 1,
+  "recency_decay": 0.995,
+  "importance_trigger_max": 250,
+  "importance_trigger_curr": 244,
+  "importance_ele_n": 6,
+  "thought_count": 5,
+  "daily_req": [
+    "wake up and complete the morning routine at 8:00 am"
+  ],
+  "f_daily_schedule": [
+    [
+      "sleeping",
+      480
+    ],
+    [
+      "waking up and completing her morning routine, which includes breakfast and a quick review of her schedule for the day (waking up and getting out of bed)",
+      5
+    ],
+    [
+      "waking up and completing her morning routine, which includes breakfast and a quick review of her schedule for the day (stretching and doing a quick morning exercise routine)",
+      10
+    ],
+    [
+      "waking up and completing her morning routine, which includes breakfast and a quick review of her schedule for the day (heading to the bathroom to freshen up)",
+      10
+    ],
+    [
+      "waking up and completing her morning routine, which includes breakfast and a quick review of her schedule for the day (preparing breakfast in the kitchen)",
+      10
+    ],
+    [
+      "waking up and completing her morning routine, which includes breakfast and a quick review of her schedule for the day (eating breakfast while checking her phone for any important messages)",
+      10
+    ],
+    [
+      "waking up and completing her morning routine, which includes breakfast and a quick review of her schedule for the day (reviewing her schedule for the day and making any necessary adjustments)",
+      10
+    ],
+    [
+      "waking up and completing her morning routine, which includes breakfast and a quick review of her schedule for the day (tidying up the kitchen and getting ready to leave for the cafe)",
+      5
+    ],
+    [
+      "[(ID:LjDGR7) Monday February 13 -- 09:00 AM] Activity: Aisha is heading to a local cafe to start her workday. She plans to spend some time researching the environmental impacts of the proposed datacenter",
+      60
+    ],
+    [
+      "[(ID:j7sUf8) Monday February 13 -- 10:00 AM] Activity: Aisha is at the cafe, continuing her research on the environmental impacts of the datacenter proposal, focusing on water usage and emissions",
+      60
+    ],
+    [
+      "at the park, taking a short break to enjoy the outdoors and clear her mind. She casually chats with a few residents about their thoughts on the datacenter proposal, gathering insights on community concerns",
+      60
+    ],
+    [
+      "having lunch at a nearby cafe. She takes this time to relax and recharge while reviewing the notes she gathered from her morning research and conversations",
+      60
+    ],
+    [
+      "attending a virtual meeting with fellow environmental advocates to discuss strategies for the upcoming town discussion on the datacenter proposal. They are focusing on presenting a unified stance on water and emissions protections",
+      60
+    ],
+    [
+      "reviewing the outcomes of the virtual meeting and organizing her notes. She is preparing a brief outline for her contribution to the town discussion, ensuring her points on water and emissions protections are clear and concise",
+      60
+    ],
+    [
+      "reviewing recent studies on habitat impacts related to large infrastructure projects. She is taking notes on key findings that could be relevant for her presentation during the town discussion",
+      60
+    ],
+    [
+      "at a local community center, attending an informal gathering with residents who are concerned about the datacenter proposal. She listens to their concerns and shares her insights on the potential environmental impacts, particularly focusing on water and emissions issues",
+      60
+    ],
+    [
+      "at the community center, continuing her discussions with residents. She is also distributing informational pamphlets about the environmental impacts of the datacenter proposal, emphasizing the importance of water and emissions protections",
+      60
+    ],
+    [
+      "heading home from the community center. On her way, she stops by a local grocery store to pick up some essentials for the week",
+      60
+    ],
+    [
+      "preparing dinner at home. She takes this time to unwind and reflect on the day's activities, thinking about any key points she might want to bring up during the town discussion",
+      60
+    ],
+    [
+      "relaxing after dinner. She spends some time reading a book on environmental policy to unwind, while also jotting down any ideas that might be useful for her advocacy work",
+      60
+    ],
+    [
+      "watching a documentary on sustainable infrastructure projects. She hopes to gain insights and inspiration that could be useful for her advocacy efforts and the upcoming town discussion",
+      60
+    ],
+    [
+      "[(ID:bAtLVs) Monday February 13 -- 10:00 PM] Activity: Aisha is reviewing her notes and preparing her final thoughts for tomorrow's town discussion on the datacenter proposal. She ensures that her arguments about water and",
+      60
+    ],
+    [
+      "[(ID:opsmUr) Monday February 13 -- 11:00 PM] Activity: Aisha is winding down for the night. She takes a moment to reflect on the day's accomplishments and sets her alarm for the next morning. Afterward",
+      60
+    ],
+    [
+      "sleeping",
+      0
+    ]
+  ],
+  "f_daily_schedule_hourly_org": [
+    [
+      "sleeping",
+      480
+    ],
+    [
+      "waking up and completing her morning routine, which includes breakfast and a quick review of her schedule for the day",
+      60
+    ],
+    [
+      "[(ID:LjDGR7) Monday February 13 -- 09:00 AM] Activity: Aisha is heading to a local cafe to start her workday. She plans to spend some time researching the environmental impacts of the proposed datacenter",
+      60
+    ],
+    [
+      "[(ID:j7sUf8) Monday February 13 -- 10:00 AM] Activity: Aisha is at the cafe, continuing her research on the environmental impacts of the datacenter proposal, focusing on water usage and emissions",
+      60
+    ],
+    [
+      "at the park, taking a short break to enjoy the outdoors and clear her mind. She casually chats with a few residents about their thoughts on the datacenter proposal, gathering insights on community concerns",
+      60
+    ],
+    [
+      "having lunch at a nearby cafe. She takes this time to relax and recharge while reviewing the notes she gathered from her morning research and conversations",
+      60
+    ],
+    [
+      "attending a virtual meeting with fellow environmental advocates to discuss strategies for the upcoming town discussion on the datacenter proposal. They are focusing on presenting a unified stance on water and emissions protections",
+      60
+    ],
+    [
+      "reviewing the outcomes of the virtual meeting and organizing her notes. She is preparing a brief outline for her contribution to the town discussion, ensuring her points on water and emissions protections are clear and concise",
+      60
+    ],
+    [
+      "reviewing recent studies on habitat impacts related to large infrastructure projects. She is taking notes on key findings that could be relevant for her presentation during the town discussion",
+      60
+    ],
+    [
+      "at a local community center, attending an informal gathering with residents who are concerned about the datacenter proposal. She listens to their concerns and shares her insights on the potential environmental impacts, particularly focusing on water and emissions issues",
+      60
+    ],
+    [
+      "at the community center, continuing her discussions with residents. She is also distributing informational pamphlets about the environmental impacts of the datacenter proposal, emphasizing the importance of water and emissions protections",
+      60
+    ],
+    [
+      "heading home from the community center. On her way, she stops by a local grocery store to pick up some essentials for the week",
+      60
+    ],
+    [
+      "preparing dinner at home. She takes this time to unwind and reflect on the day's activities, thinking about any key points she might want to bring up during the town discussion",
+      60
+    ],
+    [
+      "relaxing after dinner. She spends some time reading a book on environmental policy to unwind, while also jotting down any ideas that might be useful for her advocacy work",
+      60
+    ],
+    [
+      "watching a documentary on sustainable infrastructure projects. She hopes to gain insights and inspiration that could be useful for her advocacy efforts and the upcoming town discussion",
+      60
+    ],
+    [
+      "[(ID:bAtLVs) Monday February 13 -- 10:00 PM] Activity: Aisha is reviewing her notes and preparing her final thoughts for tomorrow's town discussion on the datacenter proposal. She ensures that her arguments about water and",
+      60
+    ],
+    [
+      "[(ID:opsmUr) Monday February 13 -- 11:00 PM] Activity: Aisha is winding down for the night. She takes a moment to reflect on the day's accomplishments and sets her alarm for the next morning. Afterward",
+      60
+    ]
+  ],
+  "act_address": "the Ville:artist's co-living space:common room:common room sofa",
+  "act_start_time": "February 13, 2023, 00:00:00",
+  "act_duration": 480,
+  "act_description": "sleeping",
+  "act_pronunciatio": "\ud83d\ude34",
+  "act_event": [
+    "Aisha Rahman",
+    "is",
+    "sleep"
+  ],
+  "act_obj_description": "being used",
+  "act_obj_pronunciatio": "\ud83d\udee0\ufe0f",
+  "act_obj_event": [
+    "common room sofa",
+    "is",
+    "use"
+  ],
+  "chatting_with": null,
+  "chat": null,
+  "chatting_with_buffer": {},
+  "chatting_end_time": null,
+  "act_path_set": true,
+  "planned_path": [
+    [
+      20,
+      25
+    ],
+    [
+      21,
+      25
+    ],
+    [
+      22,
+      25
+    ],
+    [
+      23,
+      25
+    ],
+    [
+      24,
+      25
+    ],
+    [
+      25,
+      25
+    ],
+    [
+      26,
+      25
+    ],
+    [
+      27,
+      25
+    ],
+    [
+      28,
+      25
+    ],
+    [
+      29,
+      25
+    ],
+    [
+      30,
+      25
+    ],
+    [
+      31,
+      25
+    ],
+    [
+      32,
+      25
+    ],
+    [
+      33,
+      25
+    ],
+    [
+      34,
+      25
+    ],
+    [
+      35,
+      25
+    ],
+    [
+      35,
+      26
+    ],
+    [
+      35,
+      27
+    ],
+    [
+      35,
+      28
+    ],
+    [
+      35,
+      29
+    ],
+    [
+      35,
+      30
+    ]
+  ]
+}
