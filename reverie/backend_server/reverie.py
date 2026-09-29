@@ -219,6 +219,27 @@ class ReverieServer:
     log.info("Save complete for %s", self.sim_code)
 
 
+  def _load_whispers(self, clean_whispers):
+    """
+    Adds whispered memories via load_history_via_whisper. Personas that have
+    not stepped yet have no clock, which add_thought needs for timestamps, so
+    one is lent for the duration and then cleared again: a None clock is what
+    makes Persona.move() run first-day planning.
+    """
+    unclocked = [p for p in self.personas.values()
+                 if p.scratch.curr_time is None]
+    for p in unclocked:
+      p.scratch.curr_time = self.curr_time
+    try:
+      load_history_via_whisper(self.personas, clean_whispers)
+    finally:
+      for p in unclocked:
+        p.scratch.curr_time = None
+    # region agent log
+    with open("/Users/rituraj/Documents/projects and stuff/AP/AI town/code/datacenter-town/.cursor/debug-4daca5.log", "a") as _dbg: _dbg.write(json.dumps({"sessionId": "4daca5", "runId": "post-fix", "hypothesisId": "A", "location": "reverie.py:_load_whispers", "message": "clock after whispers", "data": {"n_whispers": len(clean_whispers), "unclocked_restored": [p.name for p in unclocked], "clocks": {n: str(p.scratch.curr_time) for n, p in self.personas.items()}}, "timestamp": int(time.time() * 1000)}) + "\n")
+    # endregion
+
+
   def start_path_tester_server(self): 
     """
     Starts the path tester server. This is for generating the spatial memory
@@ -649,10 +670,7 @@ class ReverieServer:
             for whisper in whispers: 
               clean_whispers += [[agent_name, whisper]]
 
-          for persona in self.personas.values():
-            if persona.scratch.curr_time is None:
-              persona.scratch.curr_time = self.curr_time
-          load_history_via_whisper(self.personas, clean_whispers)
+          self._load_whispers(clean_whispers)
           log.info("Loaded history: %s whispers from %s",
                    len(clean_whispers), curr_file)
           if getattr(self, "experiment_logger", None):
@@ -678,10 +696,7 @@ class ReverieServer:
             else:
               targets = [target_part]
             clean_whispers = [[name, whisper_text] for name in targets]
-            for persona in self.personas.values():
-              if persona.scratch.curr_time is None:
-                persona.scratch.curr_time = self.curr_time
-            load_history_via_whisper(self.personas, clean_whispers)
+            self._load_whispers(clean_whispers)
             log.info("Mid-run whisper to %s agent(s): %s",
                      len(clean_whispers), whisper_text[:160])
             if getattr(self, "experiment_logger", None):

@@ -108,6 +108,12 @@ Residents: Maya Okonkwo (AI founder), Luis Hernandez (union electrician), Denise
 - **Resume:** start `reverie.py` again and enter the saved simulation name (e.g. `dc-run-1`) as the forked simulation, with a new target name (e.g. `dc-run-1b`).
 - **Replay:** with the environment server running, open `http://localhost:8000/replay/dc-run-1/1/`.
 
+### The datacenter map (`the_ville_datacenter`)
+Stanford's planner only lets a resident choose a house or bedroom whose name contains that resident's last name (e.g. `Moreno family's house`). Instead of changing that logic, the datacenter base uses a copy of the Ville map, `the_ville_datacenter`, in which the homes are renamed after our residents (e.g. `Whitaker family's house`, `Nguyen family's house`, `Aisha Rahman's room`). The visuals are shared with `the_ville`; only the name data under `static_dirs/assets/the_ville_datacenter/matrix/` differs. The original Smallville simulations still use `the_ville`, unchanged.
+
+- **Rebuild the map** (after editing `HOME_RENAMES` in `scripts/datacenter_map.py`): `python scripts/datacenter_map.py build-map`.
+- **Move an older datacenter run onto the new map** (runs created before this map existed, e.g. `testing7b`): save the run, press Ctrl+C, then run `python scripts/datacenter_map.py migrate <sim_name>` and fork it into a new name. This renames the homes inside the run's saved memories and switches its `maze_name`.
+
 ### Where the outputs go
 - **Experiment data:** `environment/frontend_server/storage/<sim>/experiment/` contains `run_manifest.json` (models, personas, scenario), `conversations.jsonl`, `events.jsonl` (history and whisper injections), `agent_snapshots.jsonl` (written every `snapshot_every_n_steps` steps and on save), and `outcomes.jsonl` (written on save).
 - **Backend runtime log:** `reverie/backend_server/logs/datacenter-town.log`. It has step timing, per-agent actions, LLM call latency and failures, CLI commands, and every `print()` line (logger name `print`) and stderr line such as tracebacks (logger name `stderr`), all timestamped. Set `capture_prints = False` in `utils.py` to keep prints console-only.
@@ -119,7 +125,8 @@ Residents: Maya Okonkwo (AI founder), Luis Hernandez (union electrician), Denise
 - **Map loads but agents never move:** make sure `reverie.py` is waiting at `Enter option:` after a `run` command and the `simulator_home` tab is open and in focus.
 - **`chat_completion FAILED` in the logs:** check the API key and model name in `utils.py`; the traceback in `reverie/backend_server/logs/datacenter-town.log` shows the provider's error.
 - **`ModuleNotFoundError` when starting Django:** the venv is not active, or dependencies were installed with the wrong Python. Re-run Step 1.
-- **Rebuilding the 8-resident base simulation** (after editing personas in `scripts/build_datacenter_n8_base.py`): `python scripts/build_datacenter_n8_base.py`.
+- **Rebuilding the 8-resident base simulation** (after editing personas in `scripts/build_datacenter_n8_base.py`): `python scripts/build_datacenter_n8_base.py`. The script is the source of truth for persona text, so make persona edits there rather than in the generated `scratch.json` files, or a rebuild will overwrite them.
+- **`KeyError: 'none'` in `new_act_address`:** the run is on the old `the_ville` map, so a resident's home is hidden by the last-name filter. Migrate it as described in the datacenter map section above.
 
 ## <img src="https://joonsungpark.s3.amazonaws.com:443/static/assets/characters/profile/Klaus_Mueller.png" alt="Generative Klaus">   Running the Original Smallville Simulation 
 The steps below come from the original repository and use the stock 3-agent Smallville base. Complete the install and `utils.py` configuration from the Datacenter Town section above first. To run a new simulation, you will need to concurrently start two servers: the environment server and the agent simulation server.

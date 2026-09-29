@@ -1,0 +1,408 @@
+{
+  "vision_r": 8,
+  "att_bandwidth": 8,
+  "retention": 8,
+  "curr_time": "February 13, 2023, 10:46:30",
+  "curr_tile": [
+    79,
+    79
+  ],
+  "daily_plan_req": "Tom Whitaker tends to home and neighborhood errands, and raises concerns about the datacenter with anyone who will listen.",
+  "name": "Tom Whitaker",
+  "first_name": "Tom",
+  "last_name": "Whitaker",
+  "age": 52,
+  "innate": "stubborn, protective, straightforward",
+  "learned": "Tom Whitaker is a long-term homeowner who watches property values, noise, and utility rates closely. He has lived in the Ville for decades.",
+  "currently": "Tom Whitaker leans against the datacenter proposal. He worries about industrial noise, higher rates, and damage to nearby property values, and he tells people so.",
+  "lifestyle": "Tom Whitaker goes to bed around 10pm, wakes up around 6am, and spends mornings around the house and market.",
+  "living_area": "the Ville:Whitaker family's house:Tom Whitaker's bedroom",
+  "concept_forget": 100,
+  "daily_reflection_time": 180,
+  "daily_reflection_size": 5,
+  "overlap_reflect_th": 4,
+  "kw_strg_event_reflect_th": 10,
+  "kw_strg_thought_reflect_th": 9,
+  "recency_w": 1,
+  "relevance_w": 1,
+  "importance_w": 1,
+  "recency_decay": 0.995,
+  "importance_trigger_max": 250,
+  "importance_trigger_curr": 44,
+  "importance_ele_n": 64,
+  "thought_count": 5,
+  "daily_req": [
+    "wake up and complete the morning routine at 8:00 am"
+  ],
+  "f_daily_schedule": [
+    [
+      "sleeping",
+      480
+    ],
+    [
+      "[(ID:bDYyXF) Monday February 13 -- 08:00 AM] Activity: Tom is waking up and completing his morning routine (waking up and getting out of bed)",
+      5
+    ],
+    [
+      "[(ID:bDYyXF) Monday February 13 -- 08:00 AM] Activity: Tom is waking up and completing his morning routine (making his bed)",
+      5
+    ],
+    [
+      "[ (on the way to heading to the bathroom)",
+      0
+    ],
+    [
+      "[ (conversing about Denise Brooks and Tom Whitaker discussing their concerns about the datacenter proposal's potential impact on their community, including noise and property values, and planning to organize a meeting with neighbors to address these issues and ensure transparency.)",
+      6
+    ],
+    [
+      "[(ID:bDYyXF) Monday February 13 -- 08:00 AM] Activity: Tom is waking up and completing his morning routine (brushing his teeth)",
+      5
+    ],
+    [
+      "[(ID:bDYyXF) Monday February 13 -- 08:00 AM] Activity: Tom is waking up and completing his morning routine (shaving)",
+      10
+    ],
+    [
+      "[(ID:bDYyXF) Monday February 13 -- 08:00 AM] Activity: Tom is waking up and completing his morning routine (taking a shower)",
+      10
+    ],
+    [
+      "[(ID:bDYyXF) Monday February 13 -- 08:00 AM] Activity: Tom is waking up and completing his morning routine (getting dressed)",
+      10
+    ],
+    [
+      "[(ID:bDYyXF) Monday February 13 -- 08:00 AM] Activity: Tom is waking up and completing his morning routine (tidying up the bathroom)",
+      5
+    ],
+    [
+      "[(ID:bDYyXF) Monday February 13 -- 08:00 AM] Activity: Tom is waking up and completing his morning routine (heading to the kitchen to start breakfast)",
+      5
+    ],
+    [
+      "[(ID:F75YC8) Monday February 13 -- 09:00 AM] Activity: Tom is having breakfast and reading the morning news (preparing his breakfast)",
+      10
+    ],
+    [
+      "[(ID:F75YC8) Monday February 13 -- 09:00 AM] Activity: Tom is having breakfast and reading the morning news (sitting down at the table with his breakfast)",
+      5
+    ],
+    [
+      "[(ID:F75YC8) Monday February 13 -- 09:00 AM] Activity: Tom is having breakfast and reading the morning news (starting to read the front page of the newspaper)",
+      10
+    ],
+    [
+      "[(ID:F75YC8) Monday February 13 -- 09:00 AM] Activity: Tom is having breakfast and reading the morning news (reading the local news section)",
+      10
+    ],
+    [
+      "[(ID:F75YC8) Monday February 13 -- 09:00 AM] Activity: Tom is having breakfast and reading the morning news (reading the opinion section, focusing on articles about local issues)",
+      10
+    ],
+    [
+      "[(ID:F75YC8) Monday February 13 -- 09:00 AM] Activity: Tom is having breakfast and reading the morning news (finishing his breakfast while skimming through the sports section)",
+      10
+    ],
+    [
+      "[(ID:F75YC8) Monday February 13 -- 09:00 AM] Activity: Tom is having breakfast and reading the morning news (cleaning up his breakfast dishes and putting away the newspaper)",
+      4
+    ],
+    [
+      "[(ID:bPaJXB) Monday February 13 -- 10:00 AM] Activity: Tom is running errands around the neighborhood, picking up groceries and checking in with neighbors (heading out of his house)",
+      5
+    ],
+    [
+      "[ (on the way to walking to the local grocery store)",
+      0
+    ],
+    [
+      "[ (conversing about Tom Whitaker and Marcus Williams discussing concerns about the datacenter proposal, gathering community feedback, and planning to strengthen their case for transparency at the upcoming town hall meeting.)",
+      7
+    ],
+    [
+      "[(ID:bPaJXB) Monday February 13 -- 10:00 AM] Activity: Tom is running errands around the neighborhood, picking up groceries and checking in with neighbors (picking up groceries)",
+      15
+    ],
+    [
+      "[ (on the way to chatting with the cashier about the datacenter proposal)",
+      0
+    ],
+    [
+      "[ (conversing about Luis Hernandez and Tom Whitaker discussing their plans to address transparency concerns and propose local union hires and fair wages for the datacenter proposal, with plans to draft a statement together and involve Denise Brooks.)",
+      7
+    ],
+    [
+      "[(ID:bPaJXB) Monday February 13 -- 10:00 AM] Activity: Tom is running errands around the neighborhood, picking up groceries and checking in with neighbors (leaving the grocery store)",
+      5
+    ],
+    [
+      "[(ID:bPaJXB) Monday February 13 -- 10:00 AM] Activity: Tom is running errands around the neighborhood, picking up groceries and checking in with neighbors (walking to a neighbor's house)",
+      10
+    ],
+    [
+      "[(ID:bPaJXB) Monday February 13 -- 10:00 AM] Activity: Tom is running errands around the neighborhood, picking up groceries and checking in with neighbors (checking in with his neighbor and discussing the datacenter proposal)",
+      10
+    ],
+    [
+      "[(ID:lKRvwA) Monday February 13 -- 11:00 AM] Activity: Tom is discussing the datacenter proposal with a neighbor, expressing his concerns about potential noise and property value impact (greeting his neighbor and initiating the conversation)",
+      5
+    ],
+    [
+      "[(ID:lKRvwA) Monday February 13 -- 11:00 AM] Activity: Tom is discussing the datacenter proposal with a neighbor, expressing his concerns about potential noise and property value impact (explaining the basics of the datacenter proposal to his neighbor)",
+      10
+    ],
+    [
+      "[(ID:lKRvwA) Monday February 13 -- 11:00 AM] Activity: Tom is discussing the datacenter proposal with a neighbor, expressing his concerns about potential noise and property value impact (discussing potential noise issues that could arise from the datacenter)",
+      10
+    ],
+    [
+      "[(ID:lKRvwA) Monday February 13 -- 11:00 AM] Activity: Tom is discussing the datacenter proposal with a neighbor, expressing his concerns about potential noise and property value impact (expressing concerns about how the datacenter might affect property values)",
+      10
+    ],
+    [
+      "[(ID:lKRvwA) Monday February 13 -- 11:00 AM] Activity: Tom is discussing the datacenter proposal with a neighbor, expressing his concerns about potential noise and property value impact (listening to his neighbor's thoughts and concerns about the proposal)",
+      10
+    ],
+    [
+      "[(ID:lKRvwA) Monday February 13 -- 11:00 AM] Activity: Tom is discussing the datacenter proposal with a neighbor, expressing his concerns about potential noise and property value impact (suggesting ways to address these concerns, such as attending community meetings)",
+      10
+    ],
+    [
+      "[(ID:lKRvwA) Monday February 13 -- 11:00 AM] Activity: Tom is discussing the datacenter proposal with a neighbor, expressing his concerns about potential noise and property value impact (wrapping up the conversation and thanking his neighbor for listening)",
+      5
+    ],
+    [
+      "[(ID:xF74oG) Monday February 13 -- 12:00 PM] Activity: Tom is having lunch at home, continuing to think about the datacenter proposal",
+      58
+    ],
+    [
+      "[(ID:aMRrds) Monday February 13 -- 01:00 PM] Activity: Tom is visiting the local market to pick up some fresh produce and chat with vendors about the datacenter proposal",
+      60
+    ],
+    [
+      "[(ID:y36Fxf) Monday February 13 -- 02:00 PM] Activity: Tom is attending a community meeting at the local town hall to discuss the datacenter proposal with other residents and local officials",
+      60
+    ],
+    [
+      "[(ID:lF6oNL) Monday February 13 -- 03:00 PM] Activity: Tom is returning home from the community meeting, reflecting on the discussions and planning his next steps to oppose the datacenter proposal",
+      60
+    ],
+    [
+      "[(ID:yjsZkD) Monday February 13 -- 04:00 PM] Activity: Tom is writing a letter to the local newspaper editor, outlining his concerns about the datacenter proposal and its potential impact on the community",
+      60
+    ],
+    [
+      "[(ID:ZYrrgl) Monday February 13 -- 05:00 PM] Activity: Tom is reviewing his letter to the editor, making final edits before sending it off to the local newspaper",
+      60
+    ],
+    [
+      "[(ID:TgsYkm) Monday February 13 -- 06:00 PM] Activity: Tom is having dinner at home, discussing the day's events with his family and sharing updates on the datacenter proposal",
+      60
+    ],
+    [
+      "[(ID:FSuYuk) Monday February 13 -- 07:00 PM] Activity: Tom is relaxing in his living room, watching the evening news to stay updated on local developments, including any updates on the datacenter proposal",
+      60
+    ],
+    [
+      "[(ID:xLgRU5) Monday February 13 -- 08:00 PM] Activity: Tom is writing in his journal, documenting his thoughts and feelings about the day's events and the ongoing datacenter proposal discussions",
+      60
+    ],
+    [
+      "[(ID:4W8zHa) Monday February 13 -- 09:00 PM] Activity: Tom is preparing for bed, winding down by reading a book or listening to calming music before going to sleep",
+      60
+    ],
+    [
+      "preparing for bed, ensuring that everything is in order for the next day, and setting his alarm for an early start",
+      60
+    ],
+    [
+      "[(ID:MCEzpH) Monday February 13 -- 11:00 PM] Activity: Tom is asleep, having gone to bed at 10:00 PM",
+      60
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      3
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ]
+  ],
+  "f_daily_schedule_hourly_org": [
+    [
+      "sleeping",
+      480
+    ],
+    [
+      "[(ID:bDYyXF) Monday February 13 -- 08:00 AM] Activity: Tom is waking up and completing his morning routine",
+      60
+    ],
+    [
+      "[(ID:F75YC8) Monday February 13 -- 09:00 AM] Activity: Tom is having breakfast and reading the morning news",
+      60
+    ],
+    [
+      "[(ID:bPaJXB) Monday February 13 -- 10:00 AM] Activity: Tom is running errands around the neighborhood, picking up groceries and checking in with neighbors",
+      60
+    ],
+    [
+      "[(ID:lKRvwA) Monday February 13 -- 11:00 AM] Activity: Tom is discussing the datacenter proposal with a neighbor, expressing his concerns about potential noise and property value impact",
+      60
+    ],
+    [
+      "[(ID:xF74oG) Monday February 13 -- 12:00 PM] Activity: Tom is having lunch at home, continuing to think about the datacenter proposal",
+      60
+    ],
+    [
+      "[(ID:aMRrds) Monday February 13 -- 01:00 PM] Activity: Tom is visiting the local market to pick up some fresh produce and chat with vendors about the datacenter proposal",
+      60
+    ],
+    [
+      "[(ID:y36Fxf) Monday February 13 -- 02:00 PM] Activity: Tom is attending a community meeting at the local town hall to discuss the datacenter proposal with other residents and local officials",
+      60
+    ],
+    [
+      "[(ID:lF6oNL) Monday February 13 -- 03:00 PM] Activity: Tom is returning home from the community meeting, reflecting on the discussions and planning his next steps to oppose the datacenter proposal",
+      60
+    ],
+    [
+      "[(ID:yjsZkD) Monday February 13 -- 04:00 PM] Activity: Tom is writing a letter to the local newspaper editor, outlining his concerns about the datacenter proposal and its potential impact on the community",
+      60
+    ],
+    [
+      "[(ID:ZYrrgl) Monday February 13 -- 05:00 PM] Activity: Tom is reviewing his letter to the editor, making final edits before sending it off to the local newspaper",
+      60
+    ],
+    [
+      "[(ID:TgsYkm) Monday February 13 -- 06:00 PM] Activity: Tom is having dinner at home, discussing the day's events with his family and sharing updates on the datacenter proposal",
+      60
+    ],
+    [
+      "[(ID:FSuYuk) Monday February 13 -- 07:00 PM] Activity: Tom is relaxing in his living room, watching the evening news to stay updated on local developments, including any updates on the datacenter proposal",
+      60
+    ],
+    [
+      "[(ID:xLgRU5) Monday February 13 -- 08:00 PM] Activity: Tom is writing in his journal, documenting his thoughts and feelings about the day's events and the ongoing datacenter proposal discussions",
+      60
+    ],
+    [
+      "[(ID:4W8zHa) Monday February 13 -- 09:00 PM] Activity: Tom is preparing for bed, winding down by reading a book or listening to calming music before going to sleep",
+      60
+    ],
+    [
+      "preparing for bed, ensuring that everything is in order for the next day, and setting his alarm for an early start",
+      60
+    ],
+    [
+      "[(ID:MCEzpH) Monday February 13 -- 11:00 PM] Activity: Tom is asleep, having gone to bed at 10:00 PM",
+      60
+    ]
+  ],
+  "act_address": "the Ville:Whitaker family's house:garden:house garden",
+  "act_start_time": "February 13, 2023, 10:41:00",
+  "act_duration": 10,
+  "act_description": "[(ID:bPaJXB) Monday February 13 -- 10:00 AM] Activity: Tom is running errands around the neighborhood, picking up groceries and checking in with neighbors (walking to a neighbor's house)",
+  "act_pronunciatio": "\ud83d\udeb6\u200d\u2642",
+  "act_event": [
+    "Tom Whitaker",
+    "walk",
+    "neighbor's house"
+  ],
+  "act_obj_description": "unattended as Tom is running errands",
+  "act_obj_pronunciatio": "\ud83c\udfc3\ud83d\uded2",
+  "act_obj_event": [
+    "house garden",
+    "is",
+    "unattended"
+  ],
+  "chatting_with": null,
+  "chat": null,
+  "chatting_with_buffer": {
+    "Denise Brooks": -134,
+    "Marcus Williams": 574,
+    "Luis Hernandez": 646
+  },
+  "chatting_end_time": null,
+  "act_path_set": true,
+  "planned_path": []
+}

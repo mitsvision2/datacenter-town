@@ -1,0 +1,300 @@
+{
+  "vision_r": 8,
+  "att_bandwidth": 8,
+  "retention": 8,
+  "curr_time": "February 13, 2023, 06:59:50",
+  "curr_tile": [
+    75,
+    14
+  ],
+  "daily_plan_req": "Denise Brooks opens her shop in the morning, greets customers. Denise expresses her opinions on the datacenter when she sees it in a flyer, newspaper, internet or when someone mentions it.",
+  "name": "Denise Brooks",
+  "first_name": "Denise",
+  "last_name": "Brooks",
+  "age": 38,
+  "innate": "friendly, entrepreneurial, pragmatic",
+  "learned": "Denise Brooks owns a local shop and cares about foot traffic, the tax base, and keeping Main Street businesses alive.",
+  "currently": "Denise Brooks leans in favor of the datacenter proposal because she expects temporary construction spending and a stronger tax base, though she worries about power bills and long-term customer mix.",
+  "lifestyle": "Denise Brooks goes to bed around 11pm, wakes up around 6am, and keeps shop hours most weekdays.",
+  "living_area": "the Ville:Isabella Rodriguez's apartment:main room",
+  "concept_forget": 100,
+  "daily_reflection_time": 180,
+  "daily_reflection_size": 5,
+  "overlap_reflect_th": 4,
+  "kw_strg_event_reflect_th": 10,
+  "kw_strg_thought_reflect_th": 9,
+  "recency_w": 1,
+  "relevance_w": 1,
+  "importance_w": 1,
+  "recency_decay": 0.995,
+  "importance_trigger_max": 250,
+  "importance_trigger_curr": 148,
+  "importance_ele_n": 59,
+  "thought_count": 5,
+  "daily_req": [
+    "wake up and complete the morning routine at 6:00 am"
+  ],
+  "f_daily_schedule": [
+    [
+      "sleeping",
+      360
+    ],
+    [
+      "[(ID:fbsycm) Monday February 13 -- 06:00 AM] Activity: Denise is waking up and completing her morning routine, which includes getting ready for the day and having breakfast (waking up and stretching)",
+      5
+    ],
+    [
+      "[(ID:fbsycm) Monday February 13 -- 06:00 AM] Activity: Denise is waking up and completing her morning routine, which includes getting ready for the day and having breakfast (brushing her teeth and washing her face)",
+      10
+    ],
+    [
+      "[(ID:fbsycm) Monday February 13 -- 06:00 AM] Activity: Denise is waking up and completing her morning routine, which includes getting ready for the day and having breakfast (taking a quick shower)",
+      10
+    ],
+    [
+      "[(ID:fbsycm) Monday February 13 -- 06:00 AM] Activity: Denise is waking up and completing her morning routine, which includes getting ready for the day and having breakfast (getting dressed for the day)",
+      10
+    ],
+    [
+      "[(ID:fbsycm) Monday February 13 -- 06:00 AM] Activity: Denise is waking up and completing her morning routine, which includes getting ready for the day and having breakfast (preparing breakfast)",
+      10
+    ],
+    [
+      "[(ID:fbsycm) Monday February 13 -- 06:00 AM] Activity: Denise is waking up and completing her morning routine, which includes getting ready for the day and having breakfast (eating breakfast)",
+      10
+    ],
+    [
+      "[(ID:fbsycm) Monday February 13 -- 06:00 AM] Activity: Denise is waking up and completing her morning routine, which includes getting ready for the day and having breakfast (tidying up the kitchen after breakfast)",
+      5
+    ],
+    [
+      "[(ID:F9g3tu) Monday February 13 -- 07:00 AM] Activity: Denise is heading to her shop to prepare for opening, ensuring everything is in order for the day (heading out the door and locking up her house)",
+      5
+    ],
+    [
+      "[(ID:F9g3tu) Monday February 13 -- 07:00 AM] Activity: Denise is heading to her shop to prepare for opening, ensuring everything is in order for the day (walking to her shop, enjoying the morning air)",
+      10
+    ],
+    [
+      "[(ID:F9g3tu) Monday February 13 -- 07:00 AM] Activity: Denise is heading to her shop to prepare for opening, ensuring everything is in order for the day (unlocking the shop and turning off the alarm)",
+      5
+    ],
+    [
+      "[(ID:F9g3tu) Monday February 13 -- 07:00 AM] Activity: Denise is heading to her shop to prepare for opening, ensuring everything is in order for the day (turning on the lights and checking the thermostat)",
+      5
+    ],
+    [
+      "[(ID:F9g3tu) Monday February 13 -- 07:00 AM] Activity: Denise is heading to her shop to prepare for opening, ensuring everything is in order for the day (organizing the cash register and ensuring there's enough change)",
+      10
+    ],
+    [
+      "[(ID:F9g3tu) Monday February 13 -- 07:00 AM] Activity: Denise is heading to her shop to prepare for opening, ensuring everything is in order for the day (checking inventory and restocking shelves if needed)",
+      10
+    ],
+    [
+      "[(ID:F9g3tu) Monday February 13 -- 07:00 AM] Activity: Denise is heading to her shop to prepare for opening, ensuring everything is in order for the day (tidying up the shop floor and arranging displays)",
+      10
+    ],
+    [
+      "[(ID:F9g3tu) Monday February 13 -- 07:00 AM] Activity: Denise is heading to her shop to prepare for opening, ensuring everything is in order for the day (reviewing the day's schedule and any appointments)",
+      5
+    ],
+    [
+      "[(ID:KCUc9N) Monday February 13 -- 08:00 AM] Activity: Denise is opening her shop and welcoming early customers",
+      60
+    ],
+    [
+      "[(ID:ad3AZG) Monday February 13 -- 09:00 AM] Activity: Denise is assisting customers in her shop, helping them find products and answering any questions they may have",
+      60
+    ],
+    [
+      "[(ID:mlrl73) Monday February 13 -- 10:00 AM] Activity: Denise is continuing to assist customers in her shop, engaging with them and promoting special offers",
+      60
+    ],
+    [
+      "[(ID:3xT0fl) Monday February 13 -- 11:00 AM] Activity: Denise is checking inventory and restocking shelves to ensure her shop remains well-organized and fully stocked for customers",
+      60
+    ],
+    [
+      "[(ID:XOlzg6) Monday February 13 -- 12:00 PM] Activity: Denise is taking a lunch break, enjoying a quick meal while keeping an eye on the shop and chatting with any customers who come in during this time",
+      60
+    ],
+    [
+      "[(ID:PeVZkF) Monday February 13 -- 01:00 PM] Activity: Denise is engaging with customers, discussing the datacenter proposal if it comes up in conversation, and sharing her thoughts on its potential impact on the",
+      60
+    ],
+    [
+      "[(ID:E65waa) Monday February 13 -- 02:00 PM] Activity: Denise is reviewing her shop's sales data and analyzing trends to make informed decisions about inventory and promotions",
+      60
+    ],
+    [
+      "[(ID:Cnl7n1) Monday February 13 -- 03:00 PM] Activity: Denise is meeting with a supplier to discuss new products and negotiate pricing for her shop",
+      60
+    ],
+    [
+      "[(ID:9It7ec) Monday February 13 -- 04:00 PM] Activity: Denise is updating her shop's social media pages with promotions and engaging with her online community to attract more customers",
+      60
+    ],
+    [
+      "[(ID:kIX3TU) Monday February 13 -- 05:00 PM] Activity: Denise is tidying up her shop, organizing displays, and preparing for the end of the business day",
+      60
+    ],
+    [
+      "[(ID:8dxSht) Monday February 13 -- 06:00 PM] Activity: Denise is closing her shop for the day, ensuring everything is secure and ready for the next business day",
+      60
+    ],
+    [
+      "[(ID:3ZPuzW) Monday February 13 -- 07:00 PM] Activity: Denise is having dinner at home, relaxing after a busy day at the shop, and spending some time with her family or catching up on a",
+      60
+    ],
+    [
+      "[(ID:4kUBVz) Monday February 13 -- 08:00 PM] Activity: Denise is relaxing at home, perhaps watching a favorite TV show or reading a book to unwind from the day",
+      60
+    ],
+    [
+      "[(ID:xSozvC) Monday February 13 -- 09:00 PM] Activity: Denise is spending time with her family, perhaps playing a board game or discussing the events of the day",
+      60
+    ],
+    [
+      "[(ID:0FSLPa) Monday February 13 -- 10:00 PM] Activity: Denise is preparing for bed, perhaps reflecting on the day's events and planning for tomorrow. She might also quickly check her emails or social media for any",
+      60
+    ],
+    [
+      "[(ID:1ZIzj5) Monday February 13 -- 11:00 PM] Activity: Denise is going to bed, ensuring she gets enough rest for the next day",
+      60
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ]
+  ],
+  "f_daily_schedule_hourly_org": [
+    [
+      "sleeping",
+      360
+    ],
+    [
+      "[(ID:fbsycm) Monday February 13 -- 06:00 AM] Activity: Denise is waking up and completing her morning routine, which includes getting ready for the day and having breakfast",
+      60
+    ],
+    [
+      "[(ID:F9g3tu) Monday February 13 -- 07:00 AM] Activity: Denise is heading to her shop to prepare for opening, ensuring everything is in order for the day",
+      60
+    ],
+    [
+      "[(ID:KCUc9N) Monday February 13 -- 08:00 AM] Activity: Denise is opening her shop and welcoming early customers",
+      60
+    ],
+    [
+      "[(ID:ad3AZG) Monday February 13 -- 09:00 AM] Activity: Denise is assisting customers in her shop, helping them find products and answering any questions they may have",
+      60
+    ],
+    [
+      "[(ID:mlrl73) Monday February 13 -- 10:00 AM] Activity: Denise is continuing to assist customers in her shop, engaging with them and promoting special offers",
+      60
+    ],
+    [
+      "[(ID:3xT0fl) Monday February 13 -- 11:00 AM] Activity: Denise is checking inventory and restocking shelves to ensure her shop remains well-organized and fully stocked for customers",
+      60
+    ],
+    [
+      "[(ID:XOlzg6) Monday February 13 -- 12:00 PM] Activity: Denise is taking a lunch break, enjoying a quick meal while keeping an eye on the shop and chatting with any customers who come in during this time",
+      60
+    ],
+    [
+      "[(ID:PeVZkF) Monday February 13 -- 01:00 PM] Activity: Denise is engaging with customers, discussing the datacenter proposal if it comes up in conversation, and sharing her thoughts on its potential impact on the",
+      60
+    ],
+    [
+      "[(ID:E65waa) Monday February 13 -- 02:00 PM] Activity: Denise is reviewing her shop's sales data and analyzing trends to make informed decisions about inventory and promotions",
+      60
+    ],
+    [
+      "[(ID:Cnl7n1) Monday February 13 -- 03:00 PM] Activity: Denise is meeting with a supplier to discuss new products and negotiate pricing for her shop",
+      60
+    ],
+    [
+      "[(ID:9It7ec) Monday February 13 -- 04:00 PM] Activity: Denise is updating her shop's social media pages with promotions and engaging with her online community to attract more customers",
+      60
+    ],
+    [
+      "[(ID:kIX3TU) Monday February 13 -- 05:00 PM] Activity: Denise is tidying up her shop, organizing displays, and preparing for the end of the business day",
+      60
+    ],
+    [
+      "[(ID:8dxSht) Monday February 13 -- 06:00 PM] Activity: Denise is closing her shop for the day, ensuring everything is secure and ready for the next business day",
+      60
+    ],
+    [
+      "[(ID:3ZPuzW) Monday February 13 -- 07:00 PM] Activity: Denise is having dinner at home, relaxing after a busy day at the shop, and spending some time with her family or catching up on a",
+      60
+    ],
+    [
+      "[(ID:4kUBVz) Monday February 13 -- 08:00 PM] Activity: Denise is relaxing at home, perhaps watching a favorite TV show or reading a book to unwind from the day",
+      60
+    ],
+    [
+      "[(ID:xSozvC) Monday February 13 -- 09:00 PM] Activity: Denise is spending time with her family, perhaps playing a board game or discussing the events of the day",
+      60
+    ],
+    [
+      "[(ID:0FSLPa) Monday February 13 -- 10:00 PM] Activity: Denise is preparing for bed, perhaps reflecting on the day's events and planning for tomorrow. She might also quickly check her emails or social media for any",
+      60
+    ],
+    [
+      "[(ID:1ZIzj5) Monday February 13 -- 11:00 PM] Activity: Denise is going to bed, ensuring she gets enough rest for the next day",
+      60
+    ]
+  ],
+  "act_address": "the Ville:Isabella Rodriguez's apartment:main room:refrigerator",
+  "act_start_time": "February 13, 2023, 06:55:00",
+  "act_duration": 5,
+  "act_description": "[(ID:fbsycm) Monday February 13 -- 06:00 AM] Activity: Denise is waking up and completing her morning routine, which includes getting ready for the day and having breakfast (tidying up the kitchen after breakfast)",
+  "act_pronunciatio": "\ud83c\udf7d\ufe0f\ud83e\uddf9",
+  "act_event": [
+    "Denise Brooks",
+    "tidy",
+    "kitchen"
+  ],
+  "act_obj_description": "being used for breakfast preparation and tidied up afterwards",
+  "act_obj_pronunciatio": "\ud83c\udf73\ud83e\uddfd",
+  "act_obj_event": [
+    "refrigerator",
+    "be used",
+    "breakfast preparation"
+  ],
+  "chatting_with": null,
+  "chat": null,
+  "chatting_with_buffer": {},
+  "chatting_end_time": null,
+  "act_path_set": true,
+  "planned_path": []
+}

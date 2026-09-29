@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
 """
 Build base_the_ville_datacenter_n8 from selected n25 donor homes/sprites.
+Donor homes are renamed after the new residents and the sim uses the
+the_ville_datacenter map (build it first: scripts/datacenter_map.py build-map).
 Run from repo root or this script's directory.
 """
 import json
 import os
 import shutil
+
+from datacenter_map import DC_MAZE, rename_homes
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 STORAGE = os.path.join(ROOT, "environment", "frontend_server", "storage")
@@ -41,14 +45,14 @@ CAST = {
     "learned": "Denise Brooks owns a local shop and cares about foot traffic, the tax base, and keeping Main Street businesses alive.",
     "currently": "Denise Brooks leans in favor of the datacenter proposal because she expects temporary construction spending and a stronger tax base, though she worries about power bills and long-term customer mix.",
     "lifestyle": "Denise Brooks goes to bed around 11pm, wakes up around 6am, and keeps shop hours most weekdays.",
-    "daily_plan_req": "Denise Brooks opens her shop in the morning, greets customers, and discusses the datacenter proposal with people who stop by.",
+    "daily_plan_req": "Denise Brooks opens her shop in the morning, greets customers. Denise expresses her opinions on the datacenter when she sees it in a flyer, newspaper, internet or when someone mentions it.",
   },
   "Rachel Nguyen": {
     "donor": "Mei Lin",
     "age": 36,
     "innate": "thoughtful, empathetic, measured",
     "learned": "Rachel Nguyen is a teacher and parent who focuses on schools, household budgets, and whether big projects help kids in town.",
-    "currently": "Rachel Nguyen is undecided about the datacenter proposal. She wants clear answers on school funding, electricity rates, and whether the town will see lasting benefits for families.",
+    "currently": "Rachel Nguyen is undecided about the datacenter proposal. She wants clear answers on school funding, electricity rates, and whether the town will see lasting benefits for families. She is sometimes ignorant of the topic, and can move away from conversations about it.",
     "lifestyle": "Rachel Nguyen goes to bed around 10:30pm, wakes up around 6:30am, and spends evenings with family or grading.",
     "daily_plan_req": "Rachel Nguyen teaches during the day, runs errands after school, and listens carefully when neighbors debate the datacenter.",
   },
@@ -68,7 +72,7 @@ CAST = {
     "learned": "Aisha Rahman is an environmental advocate focused on water use, emissions, habitat, and climate impacts of large infrastructure.",
     "currently": "Aisha Rahman conditionally opposes the datacenter proposal until there are binding water, emissions, and habitat protections. She is organizing facts for a town discussion.",
     "lifestyle": "Aisha Rahman goes to bed around 11:30pm, wakes up around 7am, and often works from the park or cafe.",
-    "daily_plan_req": "Aisha Rahman researches environmental impacts during the day and talks with residents about water and emissions risks from the datacenter.",
+    "daily_plan_req": "Aisha Rahman researches environmental impacts during the day and casually talks with residents about water and emissions risks from the datacenter. She is not too fixated on the topic, and does not keep talking about it all the time.",
   },
   "Marcus Williams": {
     "donor": "Sam Moore",
@@ -148,7 +152,7 @@ def main():
       "currently": spec["currently"],
       "lifestyle": spec["lifestyle"],
       "daily_plan_req": spec["daily_plan_req"],
-      "living_area": donor_scratch["living_area"],
+      "living_area": rename_homes(donor_scratch["living_area"]),
       "act_event": [new_name, None, None],
       "curr_time": None,
       "curr_tile": None,
@@ -175,9 +179,10 @@ def main():
     with open(os.path.join(out_folder, "bootstrap_memory", "scratch.json"), "w") as f:
       json.dump(scratch, f, indent=2)
 
-    shutil.copy2(
-      os.path.join(donor_folder, "bootstrap_memory", "spatial_memory.json"),
-      os.path.join(out_folder, "bootstrap_memory", "spatial_memory.json"))
+    with open(os.path.join(donor_folder, "bootstrap_memory", "spatial_memory.json")) as f:
+      spatial = rename_homes(f.read())
+    with open(os.path.join(out_folder, "bootstrap_memory", "spatial_memory.json"), "w") as f:
+      f.write(spatial)
     empty_memory(os.path.join(out_folder, "bootstrap_memory", "associative_memory"))
 
     env0[new_name] = dict(n25_env[donor])
@@ -191,7 +196,7 @@ def main():
     "start_date": "February 13, 2023",
     "curr_time": "February 13, 2023, 00:00:00",
     "sec_per_step": 10,
-    "maze_name": "the_ville",
+    "maze_name": DC_MAZE,
     "persona_names": persona_names,
     "step": 0,
   }

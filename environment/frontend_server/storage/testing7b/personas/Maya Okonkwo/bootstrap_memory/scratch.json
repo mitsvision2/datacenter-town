@@ -1,0 +1,345 @@
+{
+  "vision_r": 8,
+  "att_bandwidth": 8,
+  "retention": 8,
+  "curr_time": "February 13, 2023, 08:00:00",
+  "curr_tile": [
+    69,
+    19
+  ],
+  "daily_plan_req": "Maya Okonkwo works on her startup during the day, takes meetings at Hobbs Cafe, and talks with residents about the datacenter proposal.",
+  "name": "Maya Okonkwo",
+  "first_name": "Maya",
+  "last_name": "Okonkwo",
+  "age": 34,
+  "innate": "ambitious, optimistic, persuasive",
+  "learned": "Maya Okonkwo is an AI founder who builds machine-learning products and champions regional tech growth. She networks widely and argues that modern infrastructure attracts talent.",
+  "currently": "Maya Okonkwo supports a proposed datacenter on the outskirts of the Ville. She believes it will create high-skill jobs, bring investment, and put the town on the innovation map. She is talking to neighbors about the upside.",
+  "lifestyle": "Maya Okonkwo goes to bed around midnight, wakes up around 7am, and often works from cafes in the afternoon.",
+  "living_area": "the Ville:Maya Okonkwo's apartment:main room",
+  "concept_forget": 100,
+  "daily_reflection_time": 180,
+  "daily_reflection_size": 5,
+  "overlap_reflect_th": 4,
+  "kw_strg_event_reflect_th": 10,
+  "kw_strg_thought_reflect_th": 9,
+  "recency_w": 1,
+  "relevance_w": 1,
+  "importance_w": 1,
+  "recency_decay": 0.995,
+  "importance_trigger_max": 250,
+  "importance_trigger_curr": 156,
+  "importance_ele_n": 50,
+  "thought_count": 5,
+  "daily_req": [
+    "wake up and complete the morning routine at 7:00 am"
+  ],
+  "f_daily_schedule": [
+    [
+      "sleeping",
+      420
+    ],
+    [
+      "[(ID:UVmWRb) Monday February 13 -- 07:00 AM] Activity: Maya is waking up and starting her morning routine, which includes meditation, a quick workout, and breakfast (waking up and getting out of bed)",
+      5
+    ],
+    [
+      "[(ID:UVmWRb) Monday February 13 -- 07:00 AM] Activity: Maya is waking up and starting her morning routine, which includes meditation, a quick workout, and breakfast (doing a short meditation session to start her day with focus)",
+      10
+    ],
+    [
+      "[(ID:UVmWRb) Monday February 13 -- 07:00 AM] Activity: Maya is waking up and starting her morning routine, which includes meditation, a quick workout, and breakfast (changing into workout clothes)",
+      5
+    ],
+    [
+      "[(ID:UVmWRb) Monday February 13 -- 07:00 AM] Activity: Maya is waking up and starting her morning routine, which includes meditation, a quick workout, and breakfast (doing a quick workout routine, which includes stretching and light exercises)",
+      20
+    ],
+    [
+      "[(ID:UVmWRb) Monday February 13 -- 07:00 AM] Activity: Maya is waking up and starting her morning routine, which includes meditation, a quick workout, and breakfast (cooling down and taking a quick shower)",
+      10
+    ],
+    [
+      "[(ID:UVmWRb) Monday February 13 -- 07:00 AM] Activity: Maya is waking up and starting her morning routine, which includes meditation, a quick workout, and breakfast (preparing a healthy breakfast)",
+      5
+    ],
+    [
+      "[(ID:UVmWRb) Monday February 13 -- 07:00 AM] Activity: Maya is waking up and starting her morning routine, which includes meditation, a quick workout, and breakfast (eating breakfast and planning her day mentally)",
+      5
+    ],
+    [
+      "[(ID:l2SL53) Monday February 13 -- 08:00 AM] Activity: Maya is reviewing her emails and planning her tasks for the day (opening her email application and scanning through new messages)",
+      10
+    ],
+    [
+      "[(ID:l2SL53) Monday February 13 -- 08:00 AM] Activity: Maya is reviewing her emails and planning her tasks for the day (prioritizing emails that require immediate attention)",
+      10
+    ],
+    [
+      "[(ID:l2SL53) Monday February 13 -- 08:00 AM] Activity: Maya is reviewing her emails and planning her tasks for the day (responding to urgent emails)",
+      15
+    ],
+    [
+      "[(ID:l2SL53) Monday February 13 -- 08:00 AM] Activity: Maya is reviewing her emails and planning her tasks for the day (flagging emails that need follow-up later)",
+      5
+    ],
+    [
+      "[(ID:l2SL53) Monday February 13 -- 08:00 AM] Activity: Maya is reviewing her emails and planning her tasks for the day (organizing her inbox by archiving or deleting unnecessary emails)",
+      10
+    ],
+    [
+      "[(ID:l2SL53) Monday February 13 -- 08:00 AM] Activity: Maya is reviewing her emails and planning her tasks for the day (reviewing her calendar for the day and noting important meetings or deadlines)",
+      5
+    ],
+    [
+      "[(ID:l2SL53) Monday February 13 -- 08:00 AM] Activity: Maya is reviewing her emails and planning her tasks for the day (creating a to-do list for the day, prioritizing tasks based on urgency and importance)",
+      5
+    ],
+    [
+      "[(ID:Js4cYi) Monday February 13 -- 09:00 AM] Activity: Maya is working on her startup, focusing on product development and strategy planning (reviewing the current product development roadmap)",
+      10
+    ],
+    [
+      "[(ID:Js4cYi) Monday February 13 -- 09:00 AM] Activity: Maya is working on her startup, focusing on product development and strategy planning (identifying key areas for improvement in the product)",
+      10
+    ],
+    [
+      "[(ID:Js4cYi) Monday February 13 -- 09:00 AM] Activity: Maya is working on her startup, focusing on product development and strategy planning (brainstorming new features and enhancements)",
+      10
+    ],
+    [
+      "[(ID:Js4cYi) Monday February 13 -- 09:00 AM] Activity: Maya is working on her startup, focusing on product development and strategy planning (prioritizing the new features based on impact and feasibility)",
+      10
+    ],
+    [
+      "[(ID:Js4cYi) Monday February 13 -- 09:00 AM] Activity: Maya is working on her startup, focusing on product development and strategy planning (drafting a strategy plan for implementing the prioritized features)",
+      10
+    ],
+    [
+      "[(ID:Js4cYi) Monday February 13 -- 09:00 AM] Activity: Maya is working on her startup, focusing on product development and strategy planning (reviewing the strategy plan and making final adjustments)",
+      5
+    ],
+    [
+      "[(ID:Js4cYi) Monday February 13 -- 09:00 AM] Activity: Maya is working on her startup, focusing on product development and strategy planning (documenting the plan and saving it for the upcoming team meeting)",
+      5
+    ],
+    [
+      "[(ID:QSeMiJ) Monday February 13 -- 10:00 AM] Activity: Maya is attending a virtual meeting with her development team to discuss progress and set goals for the week",
+      60
+    ],
+    [
+      "[(ID:x2J4Oy) Monday February 13 -- 11:00 AM] Activity: Maya is meeting with potential investors to discuss funding opportunities for her startup",
+      60
+    ],
+    [
+      "[(ID:SFzZyt) Monday February 13 -- 12:00 PM] Activity: Maya is having lunch and preparing notes for her afternoon meetings",
+      60
+    ],
+    [
+      "[(ID:b9qM9O) Monday February 13 -- 01:00 PM] Activity: Maya is meeting with local business leaders at Hobbs Cafe to discuss the potential economic benefits of the proposed datacenter",
+      60
+    ],
+    [
+      "[(ID:ToHW19) Monday February 13 -- 02:00 PM] Activity: Maya is working from Hobbs Cafe, focusing on refining her startup's business model and preparing for upcoming presentations",
+      60
+    ],
+    [
+      "[(ID:OR6z0u) Monday February 13 -- 03:00 PM] Activity: Maya is meeting with a group of local residents at Hobbs Cafe to address any concerns they have about the datacenter proposal and provide them with",
+      60
+    ],
+    [
+      "[(ID:MLT5Zw) Monday February 13 -- 04:00 PM] Activity: Maya is participating in a video conference with a regional tech group to discuss collaborative opportunities and regional tech growth initiatives",
+      60
+    ],
+    [
+      "[(ID:SIvg1g) Monday February 13 -- 05:00 PM] Activity: Maya is continuing her work at Hobbs Cafe, responding to emails and following up on tasks from earlier meetings",
+      60
+    ],
+    [
+      "[(ID:Pgu3NC) Monday February 13 -- 06:00 PM] Activity: Maya is taking a short break, enjoying a walk around the neighborhood to clear her mind and gather her thoughts",
+      60
+    ],
+    [
+      "[(ID:iO4rzv) Monday February 13 -- 07:00 PM] Activity: Maya is having dinner with a colleague to discuss potential partnerships for her startup",
+      60
+    ],
+    [
+      "[(ID:lg5Wo5) Monday February 13 -- 08:00 PM] Activity: Maya is reviewing her notes and preparing for a presentation on the benefits of the datacenter to be delivered later in the week",
+      60
+    ],
+    [
+      "[(ID:p2XESZ) Monday February 13 -- 09:00 PM] Activity: Maya is unwinding by reading a book on leadership and innovation to gain new insights and relax after a busy day",
+      60
+    ],
+    [
+      "[(ID:zhqmy0) Monday February 13 -- 10:00 PM] Activity: Maya is reflecting on her day, jotting down key takeaways and planning her priorities for the next day",
+      60
+    ],
+    [
+      "[(ID:w0eMmI) Monday February 13 -- 11:00 PM] Activity: Maya is winding down for the night, setting her alarm, and preparing for bed to ensure a restful sleep before another productive day",
+      60
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ],
+    [
+      "sleeping",
+      0
+    ]
+  ],
+  "f_daily_schedule_hourly_org": [
+    [
+      "sleeping",
+      420
+    ],
+    [
+      "[(ID:UVmWRb) Monday February 13 -- 07:00 AM] Activity: Maya is waking up and starting her morning routine, which includes meditation, a quick workout, and breakfast",
+      60
+    ],
+    [
+      "[(ID:l2SL53) Monday February 13 -- 08:00 AM] Activity: Maya is reviewing her emails and planning her tasks for the day",
+      60
+    ],
+    [
+      "[(ID:Js4cYi) Monday February 13 -- 09:00 AM] Activity: Maya is working on her startup, focusing on product development and strategy planning",
+      60
+    ],
+    [
+      "[(ID:QSeMiJ) Monday February 13 -- 10:00 AM] Activity: Maya is attending a virtual meeting with her development team to discuss progress and set goals for the week",
+      60
+    ],
+    [
+      "[(ID:x2J4Oy) Monday February 13 -- 11:00 AM] Activity: Maya is meeting with potential investors to discuss funding opportunities for her startup",
+      60
+    ],
+    [
+      "[(ID:SFzZyt) Monday February 13 -- 12:00 PM] Activity: Maya is having lunch and preparing notes for her afternoon meetings",
+      60
+    ],
+    [
+      "[(ID:b9qM9O) Monday February 13 -- 01:00 PM] Activity: Maya is meeting with local business leaders at Hobbs Cafe to discuss the potential economic benefits of the proposed datacenter",
+      60
+    ],
+    [
+      "[(ID:ToHW19) Monday February 13 -- 02:00 PM] Activity: Maya is working from Hobbs Cafe, focusing on refining her startup's business model and preparing for upcoming presentations",
+      60
+    ],
+    [
+      "[(ID:OR6z0u) Monday February 13 -- 03:00 PM] Activity: Maya is meeting with a group of local residents at Hobbs Cafe to address any concerns they have about the datacenter proposal and provide them with",
+      60
+    ],
+    [
+      "[(ID:MLT5Zw) Monday February 13 -- 04:00 PM] Activity: Maya is participating in a video conference with a regional tech group to discuss collaborative opportunities and regional tech growth initiatives",
+      60
+    ],
+    [
+      "[(ID:SIvg1g) Monday February 13 -- 05:00 PM] Activity: Maya is continuing her work at Hobbs Cafe, responding to emails and following up on tasks from earlier meetings",
+      60
+    ],
+    [
+      "[(ID:Pgu3NC) Monday February 13 -- 06:00 PM] Activity: Maya is taking a short break, enjoying a walk around the neighborhood to clear her mind and gather her thoughts",
+      60
+    ],
+    [
+      "[(ID:iO4rzv) Monday February 13 -- 07:00 PM] Activity: Maya is having dinner with a colleague to discuss potential partnerships for her startup",
+      60
+    ],
+    [
+      "[(ID:lg5Wo5) Monday February 13 -- 08:00 PM] Activity: Maya is reviewing her notes and preparing for a presentation on the benefits of the datacenter to be delivered later in the week",
+      60
+    ],
+    [
+      "[(ID:p2XESZ) Monday February 13 -- 09:00 PM] Activity: Maya is unwinding by reading a book on leadership and innovation to gain new insights and relax after a busy day",
+      60
+    ],
+    [
+      "[(ID:zhqmy0) Monday February 13 -- 10:00 PM] Activity: Maya is reflecting on her day, jotting down key takeaways and planning her priorities for the next day",
+      60
+    ],
+    [
+      "[(ID:w0eMmI) Monday February 13 -- 11:00 PM] Activity: Maya is winding down for the night, setting her alarm, and preparing for bed to ensure a restful sleep before another productive day",
+      60
+    ]
+  ],
+  "act_address": "the Ville:Maya Okonkwo's apartment:main room:computer desk",
+  "act_start_time": "February 13, 2023, 08:00:00",
+  "act_duration": 10,
+  "act_description": "[(ID:l2SL53) Monday February 13 -- 08:00 AM] Activity: Maya is reviewing her emails and planning her tasks for the day (opening her email application and scanning through new messages)",
+  "act_pronunciatio": "\ud83d\udce7\ud83d\udc40",
+  "act_event": [
+    "Maya Okonkwo",
+    "open",
+    "email application"
+  ],
+  "act_obj_description": "currently being used by Maya to review emails and plan tasks",
+  "act_obj_pronunciatio": "\ud83d\udce7\ud83d\uddd3\ufe0f",
+  "act_obj_event": [
+    "computer desk",
+    "is used",
+    "Maya"
+  ],
+  "chatting_with": null,
+  "chat": null,
+  "chatting_with_buffer": {},
+  "chatting_end_time": null,
+  "act_path_set": true,
+  "planned_path": [
+    [
+      67,
+      19
+    ],
+    [
+      66,
+      19
+    ],
+    [
+      66,
+      20
+    ],
+    [
+      66,
+      21
+    ],
+    [
+      66,
+      22
+    ],
+    [
+      66,
+      23
+    ],
+    [
+      66,
+      24
+    ]
+  ]
+}
