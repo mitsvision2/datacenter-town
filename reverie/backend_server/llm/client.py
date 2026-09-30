@@ -191,5 +191,11 @@ def extract_json_output(text: str):
     raise ValueError("no json object found")
   obj = json.loads(cleaned[start:end + 1])
   if isinstance(obj, dict) and "output" in obj:
-    return obj["output"]
+    out = obj["output"]
+    # The prompts' examples quote the value ({"output": "5"}) and the clean-up
+    # functions expect text, but some models (e.g. gpt-4o-mini) answer with a
+    # bare number ({"output": 8}). Lists and objects are left as they are.
+    if isinstance(out, (int, float)) and not isinstance(out, bool):
+      out = str(out)
+    return out
   return obj
