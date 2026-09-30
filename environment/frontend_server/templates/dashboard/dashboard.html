@@ -99,7 +99,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 /* ---------- layout ---------- */
 .board {
   display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(380px, 1fr);
-  gap: 16px; padding: 16px 20px 20px; height: calc(100vh - 81px);
+  gap: 16px; padding: 16px 20px 32px; align-items: start;
 }
 .col { display: flex; flex-direction: column; gap: 16px; min-height: 0; min-width: 0; }
 .card {
@@ -114,7 +114,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
   color: #f1f6ee; padding: 24px;
 }
 .map-empty p { margin: 0 0 12px; font-size: 15px; }
-.grow { flex: 1; }
+/* The page scrolls; these panels keep a fixed height and scroll inside. */
+.grow { height: 640px; flex: none; }
 
 .tabs { display: flex; gap: 2px; padding: 6px 8px 0; border-bottom: 1px solid var(--line); overflow-x: auto; }
 .tab {
@@ -211,9 +212,9 @@ details.llm pre { background: var(--paper); padding: 10px; border-radius: 8px; m
 .result .cmd { font-family: var(--mono); font-size: 12px; font-weight: 500; }
 .result .when { color: var(--faint); font-size: 12px; }
 .result pre { color: var(--muted); margin-top: 4px; max-height: 240px; overflow: auto; }
-.console-bar { display: flex; gap: 8px; padding: 10px 16px; border-top: 1px solid var(--line); }
+.console-bar { display: flex; gap: 8px; padding: 0 16px 12px; }
 .console-bar input { flex: 1; min-width: 0; font-family: var(--mono); font-size: 13px; border: 1px solid var(--line); background: var(--paper); border-radius: var(--radius-sm); padding: 8px 10px; }
-.chips { display: flex; gap: 6px; flex-wrap: wrap; padding: 0 16px 10px; }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; padding: 10px 16px; border-top: 1px solid var(--line); }
 .log { font-family: var(--mono); font-size: 12px; line-height: 1.6; }
 .log div { white-space: pre-wrap; word-break: break-word; }
 .log .warn { color: var(--amber); }
@@ -248,8 +249,7 @@ dialog .row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20
   .top { grid-template-columns: 1fr auto; }
   .controls { grid-column: 1 / -1; justify-content: flex-start; }
   .board { grid-template-columns: minmax(0, 1fr); height: auto; padding: 16px; }
-  .card.grow { min-height: 420px; }
-  .roster { max-height: 360px; }
+  .grow { height: 560px; }
 }
 @media (max-width: 560px) {
   .top { grid-template-columns: 1fr; padding: 12px 16px; }
@@ -343,7 +343,7 @@ dialog .row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20
   </div>
 
   <div class="col">
-    <section class="card" aria-label="Agents" style="flex: none; max-height: 42%;">
+    <section class="card" aria-label="Agents" style="flex: none;">
       <ul class="roster" id="roster"></ul>
     </section>
 
