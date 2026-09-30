@@ -507,6 +507,7 @@ document.querySelectorAll(".tabs").forEach((bar) => {
     if (tab.dataset.pane === "p-console") { $("console-input").focus(); }
     $("console-foot").hidden = !document.querySelector('[data-pane="p-console"][aria-selected="true"]');
     if (tab.dataset.pane === "p-log") loadLog();
+    if (tab.dataset.pane === "a-plan") scrollPlanToCurrent();
   });
 });
 
@@ -659,6 +660,10 @@ function renderAgent() {
   paint($("a-plan"), `
     ${(a.daily_req || []).length ? `<div class="section"><h3>Goals for today</h3><ol class="goals">${a.daily_req.map((g) => `<li>${esc(g)}</li>`).join("")}</ol></div>` : ""}
     <div class="section"><h3>Schedule</h3>${rows ? `<ul class="sched">${rows}</ul>` : `<div class="empty">No schedule yet. It's written when their day starts.</div>`}</div>`);
+  // Follow the current task when the agent or their task changes, but not on
+  // every poll, so scrolling back through the day isn't undone each second.
+  const planKey = `${a.name}:${idx}`;
+  if (planKey !== scrollPlanToCurrent.key && !$("a-plan").hidden) scrollPlanToCurrent();
 
   // Mind
   const [trig, trigMax] = a.reflect_trigger || [0, 0];
@@ -687,6 +692,17 @@ function renderAgent() {
     <div class="section"><h3>Personality</h3><p class="quote">${esc(a.innate)}</p></div>
     <div class="section"><h3>Background</h3><p class="quote">${esc(a.learned)}</p></div>
     <div class="section"><h3>Daily life</h3><p class="quote">${esc(a.lifestyle)}</p></div>`);
+}
+
+function scrollPlanToCurrent() {
+  const pane = $("a-plan");
+  const cur = pane.querySelector(".sched li.current");
+  const a = data?.sim?.agent;
+  scrollPlanToCurrent.key = a ? `${a.name}:${a.schedule_idx}` : null;
+  if (!cur) return;
+  // Scroll only the pane (scrollIntoView would also scroll the page).
+  const offset = cur.getBoundingClientRect().top - pane.getBoundingClientRect().top;
+  pane.scrollTop += offset - pane.clientHeight / 2 + cur.offsetHeight / 2;
 }
 
 function memList(nodes, empty) {
