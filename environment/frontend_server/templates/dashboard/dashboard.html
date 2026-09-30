@@ -232,6 +232,7 @@ details.llm pre { background: var(--paper); padding: 10px; border-radius: 8px; m
 .hist { list-style: none; margin: 0; padding: 0; }
 .hist li { border-left: 2px solid var(--line); padding: 0 0 12px 12px; }
 .hist li:last-child { border-left-color: var(--moss); }
+.env-badge { background: var(--amber-soft); color: var(--amber); font-size: 12px; font-weight: 600; padding: 1px 8px; border-radius: 999px; }
 .cost-pill { border: 0; background: none; padding: 0; color: var(--muted); cursor: pointer; font-size: 13px; text-decoration: underline dotted; text-underline-offset: 3px; }
 .cost-pill:hover { color: var(--ink); }
 .usage-top { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 18px; }
@@ -298,6 +299,7 @@ dialog .row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20
     <select id="run-select" class="run-select"></select>
     <div class="sub">
       <span class="status" id="status" data-s="stopped">Stopped</span>
+      <span class="env-badge" id="env-badge" hidden>Staging</span>
       <span id="sim-extra"></span>
       <button class="cost-pill" id="cost-pill" type="button" hidden></button>
       <button class="cost-pill" id="settings-pill" type="button"></button>
@@ -848,6 +850,14 @@ function renderHeader() {
   $("status").textContent = view ? "Saved run, read-only" : label;
   $("sim-extra").textContent = sim && (live || view) ? `from ${sim.fork_sim_code}, steps ${sim.start_step ?? "?"} to ${sim.step}` : "";
 
+  // Staging runs use a cheaper model; flag them wherever a run is shown.
+  // With no run loaded, show the mode the next run will start in.
+  const env = (live || view) ? (sim?.run_env || "production") : data?.run_env;
+  const model = (live || view) ? sim?.chat_model : null;
+  $("env-badge").hidden = env !== "staging";
+  $("env-badge").title = env === "staging"
+    ? `Staging: ${model || "the staging model"} and a default spending cap. Results aren't comparable with production runs.` : "";
+
   // Run picker: the live run first, then saved runs, newest first.
   const liveName = live ? liveSim : null;
   const opts = [];
@@ -981,9 +991,11 @@ async function loadForkSeeds() {
   const fork = $("r-fork").value;
   const sims = data?.sims || [];
   const base = fork.replace(/-\d+$/, "");
+  // Staging runs are named stg-<name> (the server adds it too).
+  const prefix = data?.run_env === "staging" && !base.startsWith("stg-") ? "stg-" : "";
   let n = 2;
-  while (sims.some((s) => s.name === `${base}-${n}`)) n += 1;
-  $("r-sim").value = `${base}-${n}`;
+  while (sims.some((s) => s.name === `${prefix}${base}-${n}`)) n += 1;
+  $("r-sim").value = `${prefix}${base}-${n}`;
   $("r-history-hint").textContent = "Checking this run's seed memories.";
   try {
     const res = await fetch(`/dashboard/run/${encodeURIComponent(fork)}/`);
@@ -1010,9 +1022,11 @@ function openRun(fork) {
   $("r-start").hidden = !start;
   $("r-sim").required = start;
   $("r-title").textContent = start ? "Start a run" : `Run ${data.liveSim}`;
-  $("r-intro").textContent = start
+  const env = start ? data?.run_env : data?.sim?.run_env;
+  $("r-intro").textContent = (start
     ? "Pick a saved run to continue from. It's copied, so the original stays as it is."
-    : s === "running" ? "A run is going now. This one starts when it ends." : "Choose what to load and how far to run.";
+    : s === "running" ? "A run is going now. This one starts when it ends." : "Choose what to load and how far to run.")
+    + (env === "staging" ? " Staging mode (run_env in utils.py): a cheaper model and a default spending cap, so results aren't comparable with production runs." : "");
   $("r-go").textContent = start ? "Start" : "Run";
   $("r-history").innerHTML = `<option value="">None</option>` + HISTORIES.map((h) => `<option>${esc(h)}</option>`).join("");
   if ($("r-steps").value === "") $("r-steps").value = 360;
@@ -1020,7 +1034,7 @@ function openRun(fork) {
   $("r-autosave").value = st.autosave_steps ?? 360;
   $("r-budget").value = st.budget_usd ?? "";
   const spent = live ? data?.sim?.run_cost : null;
-  $("r-budget-hint").textContent = `A run stops and saves when its estimated API cost reaches this. Leave empty for no cap.${spent != null ? ` This run has spent about ${usd(spent)}.` : ""}`;
+  $("r-budget-hint").textContent = `A run stops and saves when its estimated API cost reaches this. Leave empty for no cap${env === "staging" ? ", which in staging means staging_budget_usd from utils.py" : ""}.${spent != null ? ` This run has spent about ${usd(spent)}.` : ""}`;
   $("r-error").textContent = "";
   if (start) {
     const sims = data?.sims || [];
@@ -1162,7 +1176,10 @@ pollUsage();
 /* ---------------- auto-save + spending cap ---------------- */
 
 function renderSettings() {
-  const st = data?.settings || {};
+  // A loaded run reports the settings it actually uses (in staging, a
+  // missing cap becomes the staging cap); otherwise show what's saved.
+  const loaded = !view && (data?.status === "idle" || data?.status === "running");
+  const st = (loaded && data?.sim?.settings) || data?.settings || {};
   const sim = view ? null : data?.sim;
   const every = st.autosave_steps || 0;
   const cap = st.budget_usd;

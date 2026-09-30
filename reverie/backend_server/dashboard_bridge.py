@@ -20,8 +20,10 @@ import time
 import traceback
 from datetime import datetime
 
+import utils
 from utils import fs_temp_storage
 from llm import usage
+import run_env
 
 DASH_DIR = f"{fs_temp_storage}/dashboard"
 CMD_FILE = f"{DASH_DIR}/commands.jsonl"
@@ -52,18 +54,23 @@ def _append_jsonl(path, obj):
 
 
 def load_settings():
+  """The dashboard's settings. In staging, a run with no spending cap set
+  gets run_env.STAGING_BUDGET_USD."""
   try:
     mtime = os.path.getmtime(SETTINGS_FILE)
   except OSError:
-    return dict(DEFAULT_SETTINGS)
-  if mtime != _settings_cache["mtime"]:
+    mtime = None
+  if mtime is not None and mtime != _settings_cache["mtime"]:
     try:
       with open(SETTINGS_FILE) as f:
         _settings_cache["value"] = {**DEFAULT_SETTINGS, **json.load(f)}
       _settings_cache["mtime"] = mtime
     except (OSError, ValueError):
       pass  # half-written file; keep the last good settings
-  return dict(_settings_cache["value"])
+  value = dict(_settings_cache["value"] if mtime is not None else DEFAULT_SETTINGS)
+  if run_env.STAGING and value.get("budget_usd") is None:
+    value["budget_usd"] = run_env.STAGING_BUDGET_USD
+  return value
 
 
 def record_llm(persona_name, template, prompt, output):
@@ -189,6 +196,8 @@ def write_state(rs, status, run_left=0, force=True):
     "status": status, "run_left": run_left, "step": rs.step,
     "curr_time": rs.curr_time.strftime("%B %d, %Y, %H:%M:%S"),
     "sec_per_step": rs.sec_per_step, "updated_at": time.time(),
+    "run_env": run_env.RUN_ENV,
+    "chat_model": run_env.chat_model(getattr(utils, "chat_model", None)),
     "settings": load_settings(), "run_cost": usage.run_cost,
     "last_autosave": getattr(rs, "last_autosave", None),
     "budget_hit": getattr(rs, "budget_hit", False),

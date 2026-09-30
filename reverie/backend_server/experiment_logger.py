@@ -12,6 +12,8 @@ import json
 import os
 from datetime import datetime, timezone
 
+import run_env
+
 
 class ExperimentLogger:
   def __init__(self, sim_folder, sim_code, fork_sim_code, persona_names,
@@ -50,7 +52,8 @@ class ExperimentLogger:
       "persona_names": self.persona_names,
       "created_at": datetime.now(timezone.utc).isoformat(),
       "llm_provider": llm_provider,
-      "chat_model": chat_model,
+      "chat_model": run_env.chat_model(chat_model),
+      "run_env": run_env.RUN_ENV,
       "embedding_provider": embedding_provider,
       "embedding_model": embedding_model,
     }

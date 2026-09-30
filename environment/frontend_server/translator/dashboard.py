@@ -182,6 +182,8 @@ def dashboard_run(request, sim):
     "step": meta.get("step", 0), "curr_time": meta.get("curr_time"),
     "sec_per_step": meta.get("sec_per_step", 10), "start_step": start,
     "created_at": manifest.get("created_at"), "chat_model": manifest.get("chat_model"),
+    # Runs from before staging existed have no run_env; they were production.
+    "run_env": manifest.get("run_env") or "production",
     "persona_order": names,
     "roster": [{k: agents[n].get(k) for k in ROSTER_FIELDS} for n in names],
     "agent": agents.get(agent),
@@ -222,6 +224,7 @@ def dashboard_state(request):
   status = _backend_status(state)
   agent = request.GET.get("agent")
   data = {"status": status, "sims": _sims(), "settings": _settings(),
+          "run_env": _run_env(),
           "results": _tail_jsonl(RESULT_FILE, 40),
           "launch": _read_json(LAUNCH_FILE, {})}
   if state:
@@ -362,6 +365,27 @@ def dashboard_command(request):
 DEFAULT_SETTINGS = {"autosave_steps": 360, "budget_usd": None}
 
 
+STAGING_PREFIX = "stg-"  # same as reverie/backend_server/run_env.py
+
+
+def _run_env(utils_path=f"{BACKEND_DIR}/utils.py"):
+  """run_env from the backend's utils.py, read as text rather than imported
+  (it holds API keys). "production" when it isn't set."""
+  try:
+    with open(utils_path) as f:
+      m = re.search(r"""^run_env\s*=\s*["'](\w+)["']""", f.read(), re.M)
+  except OSError:
+    return "production"
+  return m.group(1) if m else "production"
+
+
+def _run_name(sim, env):
+  """Staging runs are named stg-<name>, matching run_env.run_name."""
+  if env == "staging" and not sim.startswith(STAGING_PREFIX):
+    return STAGING_PREFIX + sim
+  return sim
+
+
 def _settings():
   return {**DEFAULT_SETTINGS, **(_read_json(SETTINGS_FILE, {}) or {})}
 
@@ -416,6 +440,7 @@ def dashboard_launch(request):
   if not SIM_NAME.match(sim):
     return JsonResponse({"error": "Use letters, numbers, - or _ for the new "
                                   "name."}, status=400)
+  sim = _run_name(sim, _run_env())
   if os.path.exists(f"storage/{sim}"):
     return JsonResponse({"error": f"{sim} already exists. Pick a new name."},
                         status=400)
@@ -448,4 +473,4 @@ def dashboard_launch(request):
                "at": time.time()}, f)
   log.info("launched reverie pid=%s fork=%s sim=%s history=%s run_steps=%s",
            proc.pid, fork, sim, history, run_steps)
-  return JsonResponse({"pid": proc.pid})
+  return JsonResponse({"pid": proc.pid, "sim": sim})

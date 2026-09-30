@@ -1,6 +1,8 @@
 from django.test import SimpleTestCase
 
-from translator.dashboard import _cost, _price
+import tempfile
+
+from translator.dashboard import _cost, _price, _run_env, _run_name
 
 
 class CostTests(SimpleTestCase):
@@ -18,3 +20,25 @@ class CostTests(SimpleTestCase):
   def test_embedding_and_unpriced(self):
     self.assertAlmostEqual(_cost({"model": "text-embedding-3-small", "in": 1_000_000}), 0.02)
     self.assertIsNone(_cost({"model": "mystery-model", "in": 10}))
+
+
+class RunEnvTests(SimpleTestCase):
+  def env_of(self, text):
+    with tempfile.NamedTemporaryFile("w", suffix=".py") as f:
+      f.write(text)
+      f.flush()
+      return _run_env(f.name)
+
+  def test_reads_run_env_line(self):
+    self.assertEqual(self.env_of('openai_api_key = "x"\nrun_env = "staging"\n'), "staging")
+    self.assertEqual(self.env_of("run_env='production'\n"), "production")
+
+  def test_defaults_to_production(self):
+    self.assertEqual(self.env_of('chat_model = "gpt-4o"\n'), "production")
+    self.assertEqual(self.env_of('# run_env = "staging"\n'), "production")
+    self.assertEqual(_run_env("/nonexistent/utils.py"), "production")
+
+  def test_staging_names_get_prefix_once(self):
+    self.assertEqual(_run_name("run-1", "staging"), "stg-run-1")
+    self.assertEqual(_run_name("stg-run-1", "staging"), "stg-run-1")
+    self.assertEqual(_run_name("run-1", "production"), "run-1")

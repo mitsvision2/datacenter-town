@@ -39,6 +39,7 @@ from experiment_logger import ExperimentLogger, set_experiment_logger, get_exper
 from sim_logging import get_logger, setup_logging
 from dashboard_bridge import CommandFeed, record_result, write_state, load_settings
 from llm import usage
+import run_env
 
 log = get_logger("reverie")
 
@@ -855,7 +856,9 @@ if __name__ == '__main__':
   else:
     origin = input("Enter the name of the forked simulation: ").strip()
     target = input("Enter the name of the new simulation: ").strip()
-  log.info("User selected fork=%s target=%s", origin, target)
+  target = run_env.run_name(target)
+  log.info("User selected fork=%s target=%s (run_env=%s)", origin, target,
+           run_env.RUN_ENV)
 
   rs = ReverieServer(origin, target)
   rs.open_server(initial_commands)

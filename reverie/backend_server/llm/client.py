@@ -13,6 +13,7 @@ from typing import List, Optional
 from utils import *
 from sim_logging import get_logger
 from llm import usage
+import run_env
 
 log = get_logger("llm")
 
@@ -50,7 +51,8 @@ def chat_completion(messages,
   Returns assistant text content.
   """
   provider = (provider or globals().get("llm_provider", "openai")).lower()
-  model = _chat_model_name(model)
+  # Staging runs use a cheaper model for every chat call (run_env.py).
+  model = run_env.chat_model(_chat_model_name(model))
   prompt_chars = sum(len(m.get("content") or "") for m in messages)
   t0 = time.time()
   log.debug("chat_completion start provider=%s model=%s msgs=%s chars=%s",
