@@ -31,6 +31,7 @@ STATE_FILE = f"{DASH_DIR}/state.json"
 # Filled from print_run_prompts, so it needs debug = True in utils.py.
 _llm_trace = collections.defaultdict(lambda: collections.deque(maxlen=12))
 _last_state_write = 0.0
+_current_sim = None  # tags results so the dashboard can show them per run
 
 
 def _now():
@@ -55,7 +56,8 @@ def record_llm(persona_name, template, prompt, output):
 
 def record_result(cmd_id, cmd, ok, output):
   _append_jsonl(RESULT_FILE, {"id": cmd_id, "cmd": cmd, "ok": ok,
-                              "output": output, "time": _now()})
+                              "output": output, "time": _now(),
+                              "sim": _current_sim})
 
 
 class CommandFeed:
@@ -154,7 +156,8 @@ def _persona_state(p):
 def write_state(rs, status, run_left=0, force=True):
   """Atomically writes the live snapshot. Unforced writes are throttled so
   fast (sleeping) steps don't rewrite the file ten times a second."""
-  global _last_state_write
+  global _last_state_write, _current_sim
+  _current_sim = rs.sim_code
   if not force and time.time() - _last_state_write < 0.5:
     return
   _last_state_write = time.time()

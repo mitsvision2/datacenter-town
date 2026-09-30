@@ -70,9 +70,9 @@ def _tail_lines(path, n, max_bytes=256 * 1024):
   return lines[-n:]
 
 
-def _tail_jsonl(path, n):
+def _tail_jsonl(path, n, max_bytes=256 * 1024):
   out = []
-  for line in _tail_lines(path, n):
+  for line in _tail_lines(path, n, max_bytes):
     try:
       out.append(json.loads(line))
     except ValueError:
@@ -87,8 +87,113 @@ def _sims():
     name = meta_path.split("/")[1]
     sims.append({"name": name, "step": meta.get("step", 0),
                  "curr_time": meta.get("curr_time", ""),
+                 "fork": meta.get("fork_sim_code"),
+                 "maze": meta.get("maze_name"),
                  "mtime": os.path.getmtime(meta_path)})
   return sorted(sims, key=lambda s: -s["mtime"])
+
+
+def _run_start(sim):
+  """The step a run began at. A new run copies everything from the run it
+  continues, so anything logged before this step was inherited. Runs are
+  never continued in place, so the parent's saved step is where this began."""
+  meta = _read_json(f"storage/{sim}/reverie/meta.json", {})
+  fork = meta.get("fork_sim_code")
+  if not fork or fork == sim:
+    return 0
+  return _read_json(f"storage/{fork}/reverie/meta.json", {}).get("step", 0)
+
+
+def _run_log(sim, name, n, start):
+  rows = _tail_jsonl(f"storage/{sim}/experiment/{name}", n, max_bytes=2 << 20)
+  for r in rows:
+    r["inherited"] = (r.get("step") or 0) < start
+  return rows
+
+
+def _view_history(sim, persona):
+  """Each distinct "currently" an agent has had, from the periodic snapshots,
+  to show how their view changed over the run."""
+  out = []
+  for r in _tail_jsonl(f"storage/{sim}/experiment/agent_snapshots.jsonl",
+                       4000, max_bytes=8 << 20):
+    if r.get("name") == persona and r.get("currently") and (
+        not out or out[-1]["currently"] != r["currently"]):
+      out.append({"step": r.get("step"), "time": r.get("time"),
+                  "currently": r["currently"]})
+  return out
+
+
+def _schedule_index(schedule, curr_time):
+  # Same rule as Scratch.get_f_daily_schedule_index.
+  m = re.search(r"(\d{2}):(\d{2}):\d{2}$", curr_time or "")
+  if not m or not schedule:
+    return None
+  elapsed, total = int(m.group(1)) * 60 + int(m.group(2)), 0
+  for i, (_, duration) in enumerate(schedule):
+    total += duration
+    if total > elapsed:
+      return i
+  return len(schedule) - 1
+
+
+def _saved_agent(sim, name):
+  """A saved agent in the same shape the live state uses."""
+  mem = f"storage/{sim}/personas/{name}/bootstrap_memory"
+  s = _read_json(f"{mem}/scratch.json", {})
+  nodes = sorted((_read_json(f"{mem}/associative_memory/nodes.json", {}) or {}).values(),
+                 key=lambda n: -n.get("node_count", 0))
+  def pick(kind, n):
+    return [{"type": x["type"], "created": x.get("created"),
+             "description": x.get("description"), "poignancy": x.get("poignancy"),
+             **({"lines": x["filling"]} if kind == "chat" and isinstance(x.get("filling"), list) else {})}
+            for x in nodes if x.get("type") == kind][:n]
+  counts = {k: sum(1 for x in nodes if x.get("type") == k) for k in ("event", "thought", "chat")}
+  schedule = s.get("f_daily_schedule") or []
+  return {
+    "name": s.get("name", name), "first_name": s.get("first_name"), "age": s.get("age"),
+    "innate": s.get("innate"), "learned": s.get("learned"), "lifestyle": s.get("lifestyle"),
+    "living_area": s.get("living_area"), "currently": s.get("currently"),
+    "daily_plan_req": s.get("daily_plan_req"), "daily_req": s.get("daily_req"),
+    "act_description": s.get("act_description"), "act_pronunciatio": s.get("act_pronunciatio"),
+    "act_address": s.get("act_address"), "act_start_time": s.get("act_start_time"),
+    "act_duration": s.get("act_duration"), "chatting_with": s.get("chatting_with"),
+    "chat": s.get("chat"), "curr_tile": s.get("curr_tile"),
+    "path_left": len(s.get("planned_path") or []),
+    "schedule": schedule, "schedule_idx": _schedule_index(schedule, s.get("curr_time")),
+    "reflect_trigger": [s.get("importance_trigger_curr"), s.get("importance_trigger_max")],
+    "memory_counts": counts, "events": pick("event", 15),
+    "thoughts": pick("thought", 15), "chats": pick("chat", 6), "llm": [],
+  }
+
+
+def dashboard_run(request, sim):
+  """Read-only view of a saved run, in the same shape as dashboard_state."""
+  meta = _read_json(f"storage/{sim}/reverie/meta.json") if SIM_NAME.match(sim) else None
+  if not meta:
+    return JsonResponse({"error": f"No saved run named {sim}."}, status=404)
+  names = meta.get("persona_names", [])
+  agent = request.GET.get("agent")
+  agents = {n: _saved_agent(sim, n) for n in names}
+  start = _run_start(sim)
+  manifest = _read_json(f"storage/{sim}/experiment/run_manifest.json", {})
+  view = {
+    "sim_code": sim, "fork_sim_code": meta.get("fork_sim_code"),
+    "step": meta.get("step", 0), "curr_time": meta.get("curr_time"),
+    "sec_per_step": meta.get("sec_per_step", 10), "start_step": start,
+    "created_at": manifest.get("created_at"), "chat_model": manifest.get("chat_model"),
+    "persona_order": names,
+    "roster": [{k: agents[n].get(k) for k in ROSTER_FIELDS} for n in names],
+    "agent": agents.get(agent),
+  }
+  if view["agent"]:
+    view["agent"]["history"] = _view_history(sim, agent)
+  return JsonResponse({
+    "sim": view,
+    "conversations": _run_log(sim, "conversations.jsonl", 300, start),
+    "events": _run_log(sim, "events.jsonl", 300, start),
+    "results": [r for r in _tail_jsonl(RESULT_FILE, 400) if r.get("sim") == sim][-60:],
+  })
 
 
 def _backend_status(state):
@@ -124,9 +229,14 @@ def dashboard_state(request):
     state["roster"] = [{k: personas[n].get(k) for k in ROSTER_FIELDS}
                        for n in state.get("persona_order", []) if n in personas]
     state["agent"] = personas.get(agent)
-    exp = f"storage/{state['sim_code']}/experiment"
-    data["conversations"] = _tail_jsonl(f"{exp}/conversations.jsonl", 40)
-    data["events"] = _tail_jsonl(f"{exp}/events.jsonl", 60)
+    sim = state["sim_code"]
+    state["start_step"] = start = _run_start(sim)
+    if state["agent"]:
+      state["agent"]["history"] = _view_history(sim, agent)
+    data["conversations"] = _run_log(sim, "conversations.jsonl", 300, start)
+    data["events"] = _run_log(sim, "events.jsonl", 300, start)
+    # Results from before runs were tagged have no "sim"; keep showing those.
+    data["results"] = [r for r in data["results"] if r.get("sim") in (None, sim)]
   data["sim"] = state
   return JsonResponse(data)
 
@@ -196,8 +306,8 @@ def _group(rows, key):
 
 def dashboard_usage(request):
   rows = _usage_rows()
-  sim = (_read_json(STATE_FILE) or {}).get("sim_code")
-  sec_per_step = (_read_json(STATE_FILE) or {}).get("sec_per_step") or 10
+  sim = request.GET.get("sim") or (_read_json(STATE_FILE) or {}).get("sim_code")
+  sec_per_step = (_read_json(f"storage/{sim}/reverie/meta.json", {}) or {}).get("sec_per_step") or 10
   now = time.time()
   midnight = time.mktime(time.localtime(now)[:3] + (0, 0, 0, 0, 0, -1))
   run_rows = [r for r in rows if r.get("sim") == sim]

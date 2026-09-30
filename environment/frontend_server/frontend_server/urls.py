@@ -30,6 +30,7 @@ urlpatterns = [
     url(r'^dashboard/state/$', dashboard.dashboard_state, name='dashboard_state'),
     url(r'^dashboard/log/$', dashboard.dashboard_log, name='dashboard_log'),
     url(r'^dashboard/usage/$', dashboard.dashboard_usage, name='dashboard_usage'),
+    url(r'^dashboard/run/(?P<sim>[\w-]+)/$', dashboard.dashboard_run, name='dashboard_run'),
     url(r'^dashboard/command/$', dashboard.dashboard_command, name='dashboard_command'),
     url(r'^dashboard/launch/$', dashboard.dashboard_launch, name='dashboard_launch'),
     # Common misspellings of the simulator page (incl. trailing slash).

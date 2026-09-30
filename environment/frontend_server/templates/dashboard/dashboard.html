@@ -219,6 +219,26 @@ details.llm pre { background: var(--paper); padding: 10px; border-radius: 8px; m
 .log div { white-space: pre-wrap; word-break: break-word; }
 .log .warn { color: var(--amber); }
 .log .error { color: var(--brick); }
+.run-select {
+  font: 600 17px/1.3 var(--sans); letter-spacing: -0.01em; color: var(--ink);
+  border: 1px solid transparent; background: transparent; border-radius: var(--radius-sm);
+  padding: 2px 4px; margin-left: -5px; max-width: 100%; cursor: pointer;
+}
+.run-select:hover { border-color: var(--line); }
+.status[data-s="saved"]::before { background: var(--amber); }
+.viewing {
+  display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+  padding: 10px 20px; background: var(--amber-soft); border-bottom: 1px solid var(--line); font-size: 14px;
+}
+.viewing .grow-text { flex: 1; min-width: 240px; }
+.replay-box { display: flex; gap: 8px; align-items: center; justify-content: center; flex-wrap: wrap; }
+.replay-box input { width: 90px; border: 0; border-radius: var(--radius-sm); padding: 6px 8px; }
+.map-tag { position: absolute; left: 10px; top: 10px; background: rgb(20 26 22 / .7); color: #fff; font-size: 12px; padding: 3px 8px; border-radius: 6px; }
+.inherited { opacity: .6; }
+.inherited-note { color: var(--faint); font-size: 12px; font-weight: 500; margin-left: 6px; }
+.hist { list-style: none; margin: 0; padding: 0; }
+.hist li { border-left: 2px solid var(--line); padding: 0 0 12px 12px; }
+.hist li:last-child { border-left-color: var(--moss); }
 .cost-pill { border: 0; background: none; padding: 0; color: var(--muted); cursor: pointer; font-size: 13px; text-decoration: underline dotted; text-underline-offset: 3px; }
 .cost-pill:hover { color: var(--ink); }
 .usage-top { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 18px; }
@@ -284,7 +304,8 @@ dialog .row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20
 
 <header class="top">
   <div class="sim">
-    <h1 id="sim-name">No simulation</h1>
+    <label class="sr-only" for="run-select">Run to view</label>
+    <select id="run-select" class="run-select"></select>
     <div class="sub">
       <span class="status" id="status" data-s="stopped">Stopped</span>
       <span id="sim-extra"></span>
@@ -315,16 +336,27 @@ dialog .row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20
     <button class="btn primary" id="btn-new" type="button" hidden>Start simulation</button>
   </div>
 </header>
+<div class="viewing" id="viewing" hidden>
+  <span class="grow-text" id="viewing-text"></span>
+  <button class="btn small" id="btn-fork-here" type="button">Start a new run from here</button>
+  <button class="btn small" id="btn-back-live" type="button">Back to the live run</button>
+</div>
 
 <main class="board">
   <div class="col">
     <section class="card map-card" aria-label="Town map">
       <div class="map-wrap">
         <iframe id="map" title="Town map" hidden></iframe>
+        <span class="map-tag" id="map-tag" hidden></span>
         <div class="map-empty" id="map-empty">
           <div>
             <p id="map-empty-text">The town is quiet. Start a simulation to see it move.</p>
             <button class="btn" id="btn-new-2" type="button">Start simulation</button>
+            <div class="replay-box" id="replay-box" hidden>
+              <label for="replay-step">From step</label>
+              <input id="replay-step" type="number" min="0" inputmode="numeric">
+              <button class="btn" id="btn-replay" type="button">Replay on the map</button>
+            </div>
           </div>
         </div>
       </div>
@@ -426,7 +458,9 @@ const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({"&": "&amp;", "<
 
 let data = null;             // last /dashboard/state/ response
 let selected = null;         // selected agent name
-let mapKey = null;           // sim + pid the map iframe was loaded for
+let mapKey = null;           // what the map iframe is showing
+let view = null;             // saved run being viewed; null means the live run
+let liveSim = null;
 const pending = new Map();   // command id -> command text, until its result lands
 const drawn = {};            // section -> last rendered html, to skip no-op redraws
 
@@ -574,25 +608,38 @@ function renderResults() {
 
 /* ---------------- activity panes ---------------- */
 
+let showInherited = false;
+function inheritedToggle(all, own) {
+  const earlier = all.length - own.length;
+  return earlier ? `<label class="toggle"><input type="checkbox" data-inherited ${showInherited ? "checked" : ""}> Include ${earlier} from earlier runs</label>` : "";
+}
+document.addEventListener("change", (e) => {
+  if (e.target.matches("[data-inherited]")) { showInherited = e.target.checked; renderConvos(); renderEvents(); }
+});
+
 function renderConvos() {
-  const list = (data?.conversations || []).slice().reverse();
-  $("n-convos").textContent = list.length ? list.length : "";
-  paint($("p-convos"), list.length ? list.map((c) => `
-    <article class="convo">
-      <div class="head"><span class="pair">${esc((c.speakers || []).join(" and "))}</span><span>${esc(c.time || "")}</span></div>
+  const all = (data?.conversations || []).slice().reverse();
+  const own = all.filter((c) => !c.inherited);
+  const list = showInherited ? all : own;
+  $("n-convos").textContent = own.length ? own.length : "";
+  paint($("p-convos"), inheritedToggle(all, own) + (list.length ? list.map((c) => `
+    <article class="convo ${c.inherited ? "inherited" : ""}">
+      <div class="head"><span class="pair">${esc((c.speakers || []).join(" and "))}${c.inherited ? `<span class="inherited-note">earlier run</span>` : ""}</span><span>${esc(c.time || "")}</span></div>
       <p>${esc(c.summary || "")}</p>
       <details><summary>${(c.utterances || []).length} lines at ${esc(place(c.location))}</summary>
         <div class="lines">${(c.utterances || []).map((u) => `<div class="line"><b>${esc(u[0])}:</b> ${esc(u[1])}</div>`).join("")}</div>
       </details>
-    </article>`).join("") : `<div class="empty">No conversations yet. Agents start talking once they're awake and cross paths.</div>`);
+    </article>`).join("") : `<div class="empty">No conversations in this run yet. Agents start talking once they're awake and cross paths.</div>`));
 }
 
 function renderEvents() {
-  const list = (data?.events || []).slice().reverse();
-  $("n-events").textContent = list.length ? list.length : "";
-  paint($("p-events"), list.length ? `<ul class="mem">${list.map((e) => `
-    <li><div><b>${esc(e.agent)}</b> ${esc(e.text)}<div class="when">${esc(e.time || "")}, ${e.event_type === "history_whisper" ? "seed history" : "whisper"}</div></div></li>`).join("")}</ul>`
-    : `<div class="empty">Whispers you send, and seeded history, are listed here.</div>`);
+  const all = (data?.events || []).slice().reverse();
+  const own = all.filter((e) => !e.inherited);
+  const list = showInherited ? all : own;
+  $("n-events").textContent = own.length ? own.length : "";
+  paint($("p-events"), inheritedToggle(all, own) + (list.length ? `<ul class="mem">${list.map((e) => `
+    <li class="${e.inherited ? "inherited" : ""}"><div><b>${esc(e.agent)}</b> ${esc(e.text)}<div class="when">${esc(e.time || "")}, ${e.event_type === "history_whisper" ? "seed history" : "whisper"}${e.inherited ? ", earlier run" : ""}</div></div></li>`).join("")}</ul>`
+    : `<div class="empty">No whispers in this run. Whispers you send, and seeded history, are listed here.</div>`));
 }
 
 let logTimer = null;
@@ -661,8 +708,10 @@ function renderAgent() {
     <p class="now-action">${esc(a.act_pronunciatio || "")} ${esc(a.act_description || "Hasn't started yet")}</p>
     <p class="place">${esc(place(a.act_address))}${timing ? `. ${esc(timing)}` : ""}${a.path_left ? `. Walking, ${a.path_left} tiles to go` : ""}</p>
     ${chat}
-    <div class="section"><h3>How they see things right now</h3><p class="quote">${esc(a.currently || "")}</p></div>
-    <div class="section"><h3>Tell ${esc(a.first_name)} something</h3>
+    <div class="section"><h3>${view ? "How they saw things when the run was saved" : "How they see things right now"}</h3><p class="quote">${esc(a.currently || "")}</p></div>
+    ${(a.history || []).length > 1 ? `<div class="section"><h3>How their view changed</h3><ul class="hist">${a.history.map((h) => `
+      <li><div class="when">${esc(h.time || "")}, step ${h.step}</div>${esc(h.currently)}</li>`).join("")}</ul></div>` : ""}
+    <div class="section" ${view ? "hidden" : ""}><h3>Tell ${esc(a.first_name)} something</h3>
       <form class="form" data-whisper="${esc(a.name)}">
         <input name="text" autocomplete="off" placeholder="e.g. The council moved the vote to Friday">
         <button class="btn" type="submit">Whisper</button>
@@ -696,7 +745,7 @@ function renderAgent() {
     <div class="section"><h3>Next reflection</h3>
       <div class="meter"><div style="width:${fill}%"></div></div>
       <div class="hint">They stop to reflect when enough important things have happened. ${Math.round(fill)}% of the way there.</div></div>
-    <div class="section"><h3>Latest decisions</h3>${llm || `<div class="empty">Each question the agent answers while planning, reacting or talking appears here. It needs debug = True in utils.py.</div>`}</div>
+    <div class="section"><h3>Latest decisions</h3>${llm || `<div class="empty">Each question the agent answers while planning, reacting or talking appears here. ${view ? "They're only recorded while a run is loaded." : "It needs debug = True in utils.py."}</div>`}</div>
     <div class="section"><h3>Thoughts</h3>${memList(a.thoughts, "No thoughts yet.")}</div>`);
 
   // Memory
@@ -754,6 +803,8 @@ $("ask-form").onsubmit = (e) => {
 $("ask-reset").onclick = () => { if (selected) send(`call -- interview ${selected} ;; end_convo`, true); };
 
 function renderInterview() {
+  $("ask-form").hidden = !!view;
+  if (view) { paint($("ask-log"), `<div class="empty">Interviews need the run loaded. Use "Start a new run from here" to continue this run and talk to its agents.</div>`); return; }
   if (!selected) { paint($("ask-log"), `<div class="empty">Pick an agent to interview.</div>`); return; }
   const prefix = `call -- interview ${selected} ;; `;
   let bubbles = [];
@@ -779,34 +830,85 @@ function renderHeader() {
   const sim = data?.sim;
   const live = s === "idle" || s === "running";
   const label = {running: `Running, ${sim?.run_left ?? 0} steps left`, idle: "Ready", starting: "Starting", stopped: "Stopped", finished: "Finished"}[s] || s;
-  $("status").dataset.s = s;
-  $("status").textContent = label;
-  $("sim-name").textContent = live || s === "starting" ? (sim?.sim_code || data?.launch?.sim || "Starting") : "No simulation";
-  $("sim-extra").textContent = live && sim ? `from ${sim.fork_sim_code}, step ${sim.step}` : "";
+  $("status").dataset.s = view ? "saved" : s;
+  $("status").textContent = view ? "Saved run, read-only" : label;
+  $("sim-extra").textContent = sim && (live || view) ? `from ${sim.fork_sim_code}, steps ${sim.start_step ?? "?"} to ${sim.step}` : "";
 
-  const d = live ? parseGameTime(sim?.curr_time) : null;
+  // Run picker: the live run first, then saved runs, newest first.
+  const liveName = live ? liveSim : null;
+  const opts = [];
+  if (liveName) opts.push(`<option value="${esc(liveName)}">${esc(liveName)} (live)</option>`);
+  else opts.push(`<option value="">${s === "starting" ? `${esc(data?.launch?.sim || "Starting")} (starting)` : "No live run"}</option>`);
+  const option = (r) => {
+    const t = parseGameTime(r.curr_time);
+    return `<option value="${esc(r.name)}">${esc(r.name)}, saved ${t ? t.toLocaleDateString(undefined, {weekday: "short"}) + " " + t.toTimeString().slice(0, 5) : `at step ${r.step}`}</option>`;
+  };
+  const saved = (data?.sims || []).filter((r) => r.name !== liveName);
+  const dc = saved.filter((r) => r.maze === "the_ville_datacenter");
+  const other = saved.filter((r) => r.maze !== "the_ville_datacenter");
+  if (dc.length) opts.push(`<optgroup label="Datacenter runs">${dc.map(option).join("")}</optgroup>`);
+  if (other.length) opts.push(`<optgroup label="Other simulations">${other.map(option).join("")}</optgroup>`);
+  paint($("run-select"), opts.join(""));
+  $("run-select").value = view || liveName || "";
+
+  $("viewing").hidden = !view;
+  if (view && sim) {
+    const run = sim.step - (sim.start_step || 0);
+    $("viewing-text").textContent = `You're looking at ${view} as it was saved: ${run} steps (${spanLabel(run, sim.sec_per_step)} of game time) after continuing from ${sim.fork_sim_code || "the start"}. Nothing here can be changed.`;
+  }
+
+  const d = (live || view) ? parseGameTime(sim?.curr_time) : null;
   $("clock-time").textContent = d ? d.toTimeString().slice(0, 5) : "--:--";
   $("clock-date").textContent = d ? d.toLocaleDateString(undefined, {weekday: "long", month: "long", day: "numeric"}) : (s === "starting" ? "Loading the town" : "Start a simulation to begin");
 
-  for (const id of ["btn-run", "btn-save", "btn-fin"]) $(id).disabled = !live;
-  $("btn-stop").disabled = s !== "running";
+  for (const id of ["btn-run", "btn-save", "btn-fin"]) $(id).disabled = !live || !!view;
+  $("btn-stop").disabled = s !== "running" || !!view;
   $("btn-new").hidden = live || s === "starting";
+  $("console-form").hidden = !!view;
+  document.querySelector("#console-foot .chips").hidden = !!view;
   updateSpan();
 
-  const key = live ? `${sim.sim_code}:${sim.pid}` : null;
+  // The live map drives the live run, so it stays up while a run is going,
+  // even when you're looking at a saved run.
+  const liveKey = live ? `live:${data.liveSim}:${data.livePid}` : null;
+  const key = !view ? liveKey : s === "running" ? liveKey : replayKey;
+  $("map-tag").hidden = !(view && key);
+  $("map-tag").textContent = key === liveKey ? `Live map of ${data.liveSim}` : `Replaying ${view}`;
+  $("replay-box").hidden = !view || s === "running";
+  $("btn-new-2").hidden = !!view || s === "starting";
   if (key !== mapKey) {
     mapKey = key;
     $("map").hidden = !key;
     $("map-empty").hidden = !!key;
-    $("map").src = key ? "/simulator_home?embed=1" : "about:blank";
+    $("map").src = !key ? "about:blank" : key.startsWith("replay:") ? key.slice(7) : "/simulator_home?embed=1";
     // Phaser builds the scene shortly after load; then center on the open agent.
     $("map").onload = () => setTimeout(() => {
       if (selected) $("map").contentWindow?.postMessage({type: "focus", name: selected}, location.origin);
     }, 1500);
   }
-  $("map-empty-text").textContent = s === "starting" ? "Loading the town. This takes a few seconds." : "The town is quiet. Start a simulation to see it move.";
-  $("btn-new-2").hidden = s === "starting";
+  $("map-empty-text").textContent = view
+    ? "Replay this run on the map. It plays back every step from the one you pick."
+    : s === "starting" ? "Loading the town. This takes a few seconds." : "The town is quiet. Start a simulation to see it move.";
+  if (view && sim && !$("replay-step").value) $("replay-step").value = sim.start_step || 0;
 }
+
+let replayKey = null;
+$("btn-replay").onclick = () => {
+  const step = Math.max(0, parseInt($("replay-step").value, 10) || 0);
+  replayKey = `replay:/replay/${encodeURIComponent(view)}/${step}/?embed=1`;
+  poll();
+};
+
+function switchRun(name) {
+  view = name && name !== (data?.status === "idle" || data?.status === "running" ? data.liveSim : null) ? name : null;
+  replayKey = null;
+  $("replay-step").value = "";
+  pending.clear();
+  poll(); pollUsage();
+}
+$("run-select").onchange = (e) => switchRun(e.target.value);
+$("btn-back-live").onclick = () => switchRun(null);
+$("btn-fork-here").onclick = () => openLaunch(view);
 
 async function poll() {
   clearTimeout(poll.t);
@@ -814,6 +916,15 @@ async function poll() {
     const q = selected ? `?agent=${encodeURIComponent(selected)}` : "";
     const res = await fetch(`/dashboard/state/${q}`);
     data = await res.json();
+    data.liveSim = data.sim?.sim_code;
+    data.livePid = data.sim?.pid;
+    liveSim = data.liveSim;
+    if (view) {
+      // Saved run: same shape as the live state, read from its folder.
+      const runRes = await fetch(`/dashboard/run/${encodeURIComponent(view)}/${q}`);
+      if (runRes.ok) Object.assign(data, await runRes.json());
+      else { view = null; toast("That run couldn't be loaded."); }
+    }
     const names = (data.sim?.roster || []).map((a) => a.name);
     if (names.length && !names.includes(selected)) {
       let saved = null;
@@ -830,9 +941,14 @@ async function poll() {
 
 /* ---------------- launch ---------------- */
 
-function openLaunch() {
+function openLaunch(fork) {
+  if (data?.status === "idle" || data?.status === "running") {
+    toast(`Finish ${data.liveSim} first. Only one run can be loaded at a time.`);
+    return;
+  }
   const sims = data?.sims || [];
   $("l-fork").innerHTML = sims.map((s) => `<option value="${esc(s.name)}">${esc(s.name)} (${esc(s.curr_time || `step ${s.step}`)})</option>`).join("");
+  if (typeof fork === "string") $("l-fork").value = fork;
   $("l-history").innerHTML = `<option value="">None (already seeded)</option>` + HISTORIES.map((h) => `<option>${esc(h)}</option>`).join("");
   const suggest = () => {
     const f = $("l-fork").value;
@@ -849,8 +965,8 @@ function openLaunch() {
   $("l-error").textContent = "";
   $("launch").showModal();
 }
-$("btn-new").onclick = openLaunch;
-$("btn-new-2").onclick = openLaunch;
+$("btn-new").onclick = () => openLaunch();
+$("btn-new-2").onclick = () => openLaunch();
 $("l-go").onclick = async () => {
   if (!$("l-sim").reportValidity()) return;
   $("l-go").disabled = true;
@@ -859,6 +975,7 @@ $("l-go").onclick = async () => {
   $("l-go").disabled = false;
   if (!res.ok) { $("l-error").textContent = body.error; return; }
   $("launch").close();
+  view = null;
   toast("Starting. The map loads when the town is ready.");
   poll();
 };
@@ -887,7 +1004,7 @@ let usage = null;
 async function pollUsage() {
   clearTimeout(pollUsage.t);
   try {
-    usage = await (await fetch("/dashboard/usage/")).json();
+    usage = await (await fetch(`/dashboard/usage/${view ? `?sim=${encodeURIComponent(view)}` : ""}`)).json();
     renderUsage();
   } catch (e) { /* server restarting */ }
   pollUsage.t = setTimeout(pollUsage, 3000);
@@ -897,7 +1014,8 @@ function renderUsage() {
   const u = usage;
   const pill = $("cost-pill");
   pill.hidden = !u?.since;
-  if (u?.since) pill.textContent = `${usd(u.run.cost)} this run, ${num(u.run.calls)} API calls`;
+  if (u?.since) pill.textContent = !u.run.calls && view ? `API usage wasn't tracked for ${view}`
+    : `${usd(u.run.cost)} ${view ? "in " + view : "this run"}, ${num(u.run.calls)} API calls`;
   if (!u) return;
   if (!u.since) {
     paint($("p-usage"), `<div class="empty">No API calls recorded yet. Every call is tracked from now on, with its tokens and cost. Calls made before tracking started aren't counted.</div>`);

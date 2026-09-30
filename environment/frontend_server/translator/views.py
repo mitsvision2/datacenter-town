@@ -190,7 +190,9 @@ def replay(request, sim_code, step):
     x = i.split("/")[-1].strip()
     if x[0] != ".": 
       file_count += [int(x.split(".")[0])]
-  curr_json = f'storage/{sim_code}/environment/{str(max(file_count))}.json'
+  # Start agents where they were at <step>, not where the run ended.
+  start_step = step if step in file_count else max(file_count)
+  curr_json = f'storage/{sim_code}/environment/{str(start_step)}.json'
   with open(curr_json) as json_file:
     persona_init_pos_dict = json.load(json_file)
     for key, val in persona_init_pos_dict.items():
@@ -201,7 +203,8 @@ def replay(request, sim_code, step):
              "step": step,
              "persona_names": persona_names,
              "persona_init_pos": persona_init_pos,
-             "mode": "replay"}
+             "mode": "replay",
+             "embed": request.GET.get("embed") == "1"}
   template = "home/home.html"
   return render(request, template, context)
 
