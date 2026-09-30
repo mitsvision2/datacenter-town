@@ -102,3 +102,5 @@ ENV/
 .ropeproject
 .venv/
 .gstack/
+*.log.*
+environment/frontend_server/temp_storage/dashboard/

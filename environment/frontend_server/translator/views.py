@@ -21,7 +21,15 @@ import logging
 log = logging.getLogger("frontend.translator")
 
 
-def landing(request): 
+def _pid_alive(pid):
+  try:
+    os.kill(int(pid), 0)
+    return True
+  except (OSError, TypeError, ValueError):
+    return False
+
+
+def landing(request):
   context = {}
   template = "landing/landing.html"
   return render(request, template, context)
@@ -110,18 +118,27 @@ def home(request):
   f_curr_sim_code = "temp_storage/curr_sim_code.json"
   f_curr_step = "temp_storage/curr_step.json"
 
-  if not check_if_file_exists(f_curr_step): 
+  # curr_step.json is consumed by the first page load. After that, fall back
+  # to the dashboard's live state so the map can be reloaded mid-session.
+  live = {}
+  if check_if_file_exists("temp_storage/dashboard/state.json"):
+    with open("temp_storage/dashboard/state.json") as json_file:
+      live = json.load(json_file)
+  live_ok = live.get("status") in ("idle", "running") and _pid_alive(live.get("pid"))
+
+  if not check_if_file_exists(f_curr_step) and not live_ok:
     context = {}
     template = "home/error_start_backend.html"
     return render(request, template, context)
 
-  with open(f_curr_sim_code) as json_file:  
-    sim_code = json.load(json_file)["sim_code"]
-  
-  with open(f_curr_step) as json_file:  
-    step = json.load(json_file)["step"]
-
-  os.remove(f_curr_step)
+  if check_if_file_exists(f_curr_step):
+    with open(f_curr_sim_code) as json_file:
+      sim_code = json.load(json_file)["sim_code"]
+    with open(f_curr_step) as json_file:
+      step = json.load(json_file)["step"]
+    os.remove(f_curr_step)
+  else:
+    sim_code, step = live["sim_code"], live["step"]
 
   persona_names = []
   persona_names_set = set()
@@ -148,7 +165,9 @@ def home(request):
              "step": step, 
              "persona_names": persona_names,
              "persona_init_pos": persona_init_pos,
-             "mode": "simulate"}
+             "mode": "simulate",
+             # ?embed=1 renders only the map, for the dashboard's iframe.
+             "embed": request.GET.get("embed") == "1"}
   template = "home/home.html"
   return render(request, template, context)
 
@@ -172,16 +191,16 @@ def replay(request, sim_code, step):
     if x[0] != ".": 
       file_count += [int(x.split(".")[0])]
   curr_json = f'storage/{sim_code}/environment/{str(max(file_count))}.json'
-  with open(curr_json) as json_file:  
+  with open(curr_json) as json_file:
     persona_init_pos_dict = json.load(json_file)
-    for key, val in persona_init_pos_dict.items(): 
-      if key in persona_names_set: 
+    for key, val in persona_init_pos_dict.items():
+      if key in persona_names_set:
         persona_init_pos += [[key, val["x"], val["y"]]]
 
   context = {"sim_code": sim_code,
              "step": step,
              "persona_names": persona_names,
-             "persona_init_pos": persona_init_pos, 
+             "persona_init_pos": persona_init_pos,
              "mode": "replay"}
   template = "home/home.html"
   return render(request, template, context)
