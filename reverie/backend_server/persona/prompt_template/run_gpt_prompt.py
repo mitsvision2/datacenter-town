@@ -385,7 +385,9 @@ def run_gpt_prompt_task_decomp(persona,
       task = k[0]
       if task[-1] == ".": 
         task = task[:-1]
-      duration = int(k[1].split(",")[0].strip())
+      # First number after "duration in minutes:". Some models leave out
+      # ", minutes left: N", which left "120)" for int() to choke on.
+      duration = int(re.match(r"\s*(\d+)", k[1]).group(1))
       cr += [[task, duration]]
 
     total_expected_min = int(prompt.split("(total duration in minutes")[-1]
@@ -424,17 +426,17 @@ def run_gpt_prompt_task_decomp(persona,
     return cr
 
   def __func_validate(gpt_response, prompt=""): 
-    # TODO -- this sometimes generates error 
+    # Reject replies the clean-up can't parse, so they're retried and then
+    # replaced by the fail-safe rather than crashing the run.
     try: 
-      __func_clean_up(gpt_response)
-    except: 
-      pass
-      # return False
-    return gpt_response
+      return bool(__func_clean_up(gpt_response, prompt))
+    except Exception: 
+      return False
 
   def get_fail_safe(): 
-    fs = ["asleep"]
-    return fs
+    # Keep the task undivided. The result replaces one schedule entry, so it
+    # must be [task, minutes] pairs (the old ["asleep"] broke the schedule).
+    return [[task, duration]]
 
   gpt_param = {"engine": "text-davinci-003", "max_tokens": 1000, 
              "temperature": 0, "top_p": 1, "stream": False,
@@ -446,8 +448,11 @@ def run_gpt_prompt_task_decomp(persona,
 
   print ("?????")
   print (prompt)
-  output = safe_generate_response(prompt, gpt_param, 5, get_fail_safe(),
+  output = safe_generate_response(prompt, gpt_param, 5, fail_safe,
                                    __func_validate, __func_clean_up)
+  if output is fail_safe: 
+    # Not decomposed: return the task as it was, not "task (task)".
+    return fail_safe, [fail_safe, prompt, gpt_param, prompt_input, fail_safe]
 
   # TODO THERE WAS A BUG HERE... 
   # This is for preventing overflows...
