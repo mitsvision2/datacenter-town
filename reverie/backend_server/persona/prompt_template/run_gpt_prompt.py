@@ -217,17 +217,23 @@ def run_gpt_prompt_generate_hourly_schedule(persona,
     return prompt_input
 
   def __func_clean_up(gpt_response, prompt=""):
-    cr = gpt_response.strip()
+    # Completion models continue the trailing "[(ID:..) <date> -- <hour>]
+    # Activity: <Name> is" stub. Chat models echo that stub back (sometimes
+    # followed by later hours), so keep the first line and strip the stub.
+    cr = gpt_response.strip().split("\n")[0].strip()
+    cr = re.sub(r"^\[[^\]]*\]\s*Activity:\s*", "", cr)
+    cr = re.sub(rf"^{re.escape(persona.scratch.get_str_firstname())} is\s+",
+                "", cr)
     if cr[-1] == ".":
       cr = cr[:-1]
     return cr
 
-  def __func_validate(gpt_response, prompt=""): 
+  def __func_validate(gpt_response, prompt=""):
     try: __func_clean_up(gpt_response, prompt="")
     except: return False
     return True
 
-  def get_fail_safe(): 
+  def get_fail_safe():
     fs = "asleep"
     return fs
 
