@@ -836,13 +836,19 @@ if __name__ == '__main__':
   # rs.open_server()
 
   setup_logging()
-  # The dashboard launches: reverie.py <fork> <new sim> [--history <csv>]
-  # With no arguments, ask in the terminal as before.
+  # The dashboard launches:
+  #   reverie.py <fork> <new sim> [--history <csv>] [--run <steps>]
+  # History loads first, then the run starts. With no arguments, ask in the
+  # terminal as before.
   args = sys.argv[1:]
   initial_commands = []
   if "--history" in args:
     i = args.index("--history")
-    initial_commands = [f"call -- load history {args[i + 1]}"]
+    initial_commands += [f"call -- load history {args[i + 1]}"]
+    args = args[:i] + args[i + 2:]
+  if "--run" in args:
+    i = args.index("--run")
+    initial_commands += [f"run {int(args[i + 1])}"]
     args = args[:i] + args[i + 2:]
   if len(args) == 2:
     origin, target = args

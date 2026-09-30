@@ -78,12 +78,6 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .clock .date { font-size: 13px; color: var(--muted); margin-top: 6px; }
 
 .controls { display: flex; gap: 8px; justify-content: flex-end; align-items: center; flex-wrap: wrap; }
-.run-box {
-  display: flex; align-items: center; border: 1px solid var(--line);
-  border-radius: var(--radius-sm); background: var(--paper); overflow: hidden;
-}
-.run-box input { width: 76px; border: 0; background: transparent; padding: 7px 8px; text-align: right; }
-.run-box span { color: var(--muted); font-size: 13px; padding-right: 8px; white-space: nowrap; }
 .btn {
   border: 1px solid var(--line); background: var(--panel); border-radius: var(--radius-sm);
   padding: 7px 12px; cursor: pointer; font-weight: 500; white-space: nowrap;
@@ -93,8 +87,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .btn.primary { background: var(--moss); border-color: var(--moss); color: #fff; }
 .btn.danger { color: var(--brick); }
 .btn.small { padding: 3px 9px; font-size: 13px; }
-.presets { display: flex; gap: 4px; }
-.presets .btn { padding: 4px 8px; font-size: 13px; color: var(--muted); }
+.step-presets { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
 
 /* ---------- layout ---------- */
 .board {
@@ -263,6 +256,7 @@ table.usage th { color: var(--muted); font-weight: 600; }
 dialog {
   border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--panel);
   color: var(--ink); padding: 22px; width: min(460px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px); overflow: auto;
 }
 dialog::backdrop { background: rgb(20 26 22 / .45); }
 dialog h2 { margin: 0 0 4px; font-size: 18px; }
@@ -280,9 +274,6 @@ dialog .row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20
 .toast.show { opacity: 1; }
 
 /* ---------- small screens ---------- */
-@media (max-width: 1400px) {
-  .presets { display: none; }
-}
 @media (max-width: 1100px) {
   .top { grid-template-columns: 1fr auto; }
   .controls { grid-column: 1 / -1; justify-content: flex-start; }
@@ -293,7 +284,6 @@ dialog .row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20
   .top { grid-template-columns: 1fr; padding: 12px 16px; }
   .clock { text-align: left; }
   .clock .time { font-size: 32px; }
-  .presets { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before { animation: none !important; transition: none !important; }
@@ -320,21 +310,10 @@ dialog .row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20
   </div>
 
   <div class="controls">
-    <div class="presets" aria-label="Run length presets">
-      <button class="btn" data-steps="60" type="button">10 min</button>
-      <button class="btn" data-steps="360" type="button">1 hr</button>
-      <button class="btn" data-steps="2160" type="button">6 hr</button>
-    </div>
-    <label class="run-box">
-      <span class="sr-only">Steps to run</span>
-      <input id="run-steps" type="number" min="1" value="360" inputmode="numeric">
-      <span id="run-span">steps, 1h 0m</span>
-    </label>
     <button class="btn primary" id="btn-run" type="button">Run</button>
     <button class="btn" id="btn-stop" type="button">Stop</button>
     <button class="btn" id="btn-save" type="button">Save</button>
     <button class="btn danger" id="btn-fin" type="button">Finish</button>
-    <button class="btn primary" id="btn-new" type="button" hidden>Start simulation</button>
   </div>
 </header>
 <div class="viewing" id="budget-banner" hidden>
@@ -434,21 +413,42 @@ dialog .row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20
   </div>
 </main>
 
-<dialog id="launch">
-  <form method="dialog" id="launch-form">
-    <h2>Start a simulation</h2>
-    <p>Pick a saved simulation to continue from. It's copied, so the original stays as it is.</p>
-    <label for="l-fork">Continue from</label>
-    <select id="l-fork"></select>
-    <label for="l-sim">Name for the new run</label>
-    <input id="l-sim" required pattern="[A-Za-z0-9_\-]+" autocomplete="off">
-    <label for="l-history">Seed memories</label>
-    <select id="l-history"><option value="">None (already seeded)</option></select>
-    <div class="hint">Only fresh base simulations need seeding. Continued runs already have their memories.</div>
-    <div class="error-text" id="l-error" role="alert"></div>
+<dialog id="run-dialog">
+  <form method="dialog" id="run-form">
+    <h2 id="r-title">Run the simulation</h2>
+    <p id="r-intro"></p>
+    <div id="r-start">
+      <label for="r-fork">Continue from</label>
+      <select id="r-fork"></select>
+      <label for="r-sim">Name for the new run</label>
+      <input id="r-sim" pattern="[A-Za-z0-9_\-]+" autocomplete="off">
+    </div>
+    <label for="r-history">Seed memories</label>
+    <select id="r-history"></select>
+    <div class="hint" id="r-history-hint"></div>
+    <label for="r-steps">Steps to run</label>
+    <div class="form" style="margin-top:0">
+      <input id="r-steps" type="number" min="0" max="100000" step="1" inputmode="numeric">
+      <span class="hint" id="r-span" style="align-self:center;margin:0"></span>
+    </div>
+    <div class="step-presets" aria-label="Run length presets">
+      <button class="btn small" data-steps="60" type="button">10 min</button>
+      <button class="btn small" data-steps="360" type="button">1 hour</button>
+      <button class="btn small" data-steps="2160" type="button">6 hours</button>
+      <button class="btn small" data-steps="8640" type="button">1 day</button>
+    </div>
+    <label for="r-autosave">Auto-save every</label>
+    <div class="form" style="margin-top:0">
+      <input id="r-autosave" type="number" min="0" max="100000" step="1" inputmode="numeric">
+      <span class="hint" id="r-autosave-span" style="align-self:center;margin:0"></span>
+    </div>
+    <label for="r-budget">Spending cap for a run (USD)</label>
+    <input id="r-budget" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="No cap">
+    <div class="hint" id="r-budget-hint"></div>
+    <div class="error-text" id="r-error" role="alert"></div>
     <div class="row">
       <button class="btn" value="cancel" formnovalidate type="submit">Cancel</button>
-      <button class="btn primary" id="l-go" type="button">Start</button>
+      <button class="btn primary" id="r-go" type="button">Run</button>
     </div>
   </form>
 </dialog>
@@ -512,7 +512,9 @@ function parseGameTime(s) {
 }
 
 function spanLabel(steps, secPerStep) {
-  const mins = Math.round((steps * (secPerStep || 10)) / 60);
+  const secs = steps * (secPerStep || 10);
+  if (secs < 60) return `${secs}s`;
+  const mins = Math.round(secs / 60);
   return mins >= 60 ? `${Math.floor(mins / 60)}h ${mins % 60}m` : `${mins}m`;
 }
 
@@ -553,23 +555,12 @@ async function send(cmd, quiet) {
   return body.id;
 }
 
-$("btn-run").onclick = () => {
-  const n = parseInt($("run-steps").value, 10);
-  if (n > 0) send(`run ${n}`);
-};
+$("btn-run").onclick = () => openRun();
 $("btn-stop").onclick = () => send("stop");
 $("btn-save").onclick = () => send("save");
 $("btn-fin").onclick = () => {
   if (confirm("Save and stop the simulation server? You can continue later by starting from this run.")) send("fin");
 };
-document.querySelectorAll("[data-steps]").forEach((b) => {
-  b.onclick = () => { $("run-steps").value = b.dataset.steps; updateSpan(); };
-});
-function updateSpan() {
-  const n = parseInt($("run-steps").value, 10) || 0;
-  $("run-span").textContent = `steps, ${spanLabel(n, data?.sim?.sec_per_step)}`;
-}
-$("run-steps").oninput = updateSpan;
 
 /* ---------------- tabs ---------------- */
 
@@ -884,12 +875,11 @@ function renderHeader() {
   $("clock-time").textContent = d ? d.toTimeString().slice(0, 5) : "--:--";
   $("clock-date").textContent = d ? d.toLocaleDateString(undefined, {weekday: "long", month: "long", day: "numeric"}) : (s === "starting" ? "Loading the town" : "Start a simulation to begin");
 
-  for (const id of ["btn-run", "btn-save", "btn-fin"]) $(id).disabled = !live || !!view;
+  $("btn-run").disabled = !!view || s === "starting";
+  for (const id of ["btn-save", "btn-fin"]) $(id).disabled = !live || !!view;
   $("btn-stop").disabled = s !== "running" || !!view;
-  $("btn-new").hidden = live || s === "starting";
   $("console-form").hidden = !!view;
   document.querySelector("#console-foot .chips").hidden = !!view;
-  updateSpan();
 
   // The live map drives the live run, so it stays up while a run is going,
   // even when you're looking at a saved run.
@@ -931,7 +921,7 @@ function switchRun(name) {
 }
 $("run-select").onchange = (e) => switchRun(e.target.value);
 $("btn-back-live").onclick = () => switchRun(null);
-$("btn-fork-here").onclick = () => openLaunch(view);
+$("btn-fork-here").onclick = () => openRun(view);
 
 async function poll() {
   clearTimeout(poll.t);
@@ -966,43 +956,128 @@ async function poll() {
 
 /* ---------------- launch ---------------- */
 
-function openLaunch(fork) {
-  if (data?.status === "idle" || data?.status === "running") {
-    toast(`Finish ${data.liveSim} first. Only one run can be loaded at a time.`);
-    return;
-  }
-  const sims = data?.sims || [];
-  $("l-fork").innerHTML = sims.map((s) => `<option value="${esc(s.name)}">${esc(s.name)} (${esc(s.curr_time || `step ${s.step}`)})</option>`).join("");
-  if (typeof fork === "string") $("l-fork").value = fork;
-  $("l-history").innerHTML = `<option value="">None (already seeded)</option>` + HISTORIES.map((h) => `<option>${esc(h)}</option>`).join("");
-  const suggest = () => {
-    const f = $("l-fork").value;
-    const base = f.replace(/-\d+$/, "");
-    let n = 2;
-    while (sims.some((s) => s.name === `${base}-${n}`)) n += 1;
-    $("l-sim").value = `${base}-${n}`;
-    // Fresh base sims have no memories yet, so pre-select the matching seed file.
-    const seed = HISTORIES.find((h) => f.startsWith("base_") && h.includes(f.replace(/^base_the_ville_/, "")));
-    $("l-history").value = seed || "";
-  };
-  $("l-fork").onchange = suggest;
-  suggest();
-  $("l-error").textContent = "";
-  $("launch").showModal();
+// One dialog for every way of running: with no run loaded it starts one
+// (optionally loading seed memories and running straight away); with a run
+// loaded it can load seed memories and/or run more steps.
+let runMode = "live";
+
+function seedCount(events) {
+  return (events || []).filter((e) => e.event_type === "history_whisper").length;
 }
-$("btn-new").onclick = () => openLaunch();
-$("btn-new-2").onclick = () => openLaunch();
-$("l-go").onclick = async () => {
-  if (!$("l-sim").reportValidity()) return;
-  $("l-go").disabled = true;
-  const res = await fetch("/dashboard/launch/", {method: "POST", body: JSON.stringify({fork: $("l-fork").value, sim: $("l-sim").value.trim(), history: $("l-history").value})});
-  const body = await res.json();
-  $("l-go").disabled = false;
-  if (!res.ok) { $("l-error").textContent = body.error; return; }
-  $("launch").close();
-  view = null;
-  toast("Starting. The map loads when the town is ready.");
-  poll();
+
+function showSeedHint(count, forkName) {
+  if (count) {
+    $("r-history").value = "";
+    $("r-history-hint").textContent = `${runMode === "start" ? forkName : "This run"} already has ${count} seed memories. Loading a file again adds each one a second time.`;
+  } else {
+    // Fresh base simulations have none yet; pre-select the matching file.
+    const match = runMode === "start" ? HISTORIES.find((h) => forkName.startsWith("base_") && h.includes(forkName.replace(/^base_the_ville_/, ""))) : null;
+    $("r-history").value = match || "";
+    $("r-history-hint").textContent = "No seed memories yet. A fresh base simulation needs them so agents know about the proposal and each other.";
+  }
+}
+
+async function loadForkSeeds() {
+  const fork = $("r-fork").value;
+  const sims = data?.sims || [];
+  const base = fork.replace(/-\d+$/, "");
+  let n = 2;
+  while (sims.some((s) => s.name === `${base}-${n}`)) n += 1;
+  $("r-sim").value = `${base}-${n}`;
+  $("r-history-hint").textContent = "Checking this run's seed memories.";
+  try {
+    const res = await fetch(`/dashboard/run/${encodeURIComponent(fork)}/`);
+    const body = await res.json();
+    if (fork === $("r-fork").value) showSeedHint(seedCount(body.events), fork);
+  } catch (e) { $("r-history-hint").textContent = ""; }
+}
+
+function updateRunSpans() {
+  const sps = data?.sim?.sec_per_step;
+  const n = parseInt($("r-steps").value, 10) || 0;
+  $("r-span").textContent = n ? `steps (${spanLabel(n, sps)} of game time)` : runMode === "start" ? "steps (0 loads the run without running it)" : "steps";
+  const a = parseInt($("r-autosave").value, 10) || 0;
+  $("r-autosave-span").textContent = a ? `steps (${spanLabel(a, sps)} of game time)` : "steps (off)";
+}
+
+function openRun(fork) {
+  const s = data?.status;
+  const live = s === "idle" || s === "running";
+  if (s === "starting") { toast("A run is starting. Wait for it to load."); return; }
+  if (typeof fork === "string" && live) { toast(`Finish ${data.liveSim} first. Only one run can be loaded at a time.`); return; }
+  runMode = live ? "live" : "start";
+  const start = runMode === "start";
+  $("r-start").hidden = !start;
+  $("r-sim").required = start;
+  $("r-title").textContent = start ? "Start a run" : `Run ${data.liveSim}`;
+  $("r-intro").textContent = start
+    ? "Pick a saved run to continue from. It's copied, so the original stays as it is."
+    : s === "running" ? "A run is going now. This one starts when it ends." : "Choose what to load and how far to run.";
+  $("r-go").textContent = start ? "Start" : "Run";
+  $("r-history").innerHTML = `<option value="">None</option>` + HISTORIES.map((h) => `<option>${esc(h)}</option>`).join("");
+  if ($("r-steps").value === "") $("r-steps").value = 360;
+  const st = data?.settings || {};
+  $("r-autosave").value = st.autosave_steps ?? 360;
+  $("r-budget").value = st.budget_usd ?? "";
+  const spent = live ? data?.sim?.run_cost : null;
+  $("r-budget-hint").textContent = `A run stops and saves when its estimated API cost reaches this. Leave empty for no cap.${spent != null ? ` This run has spent about ${usd(spent)}.` : ""}`;
+  $("r-error").textContent = "";
+  if (start) {
+    const sims = data?.sims || [];
+    $("r-fork").innerHTML = sims.map((x) => `<option value="${esc(x.name)}">${esc(x.name)} (${esc(x.curr_time || `step ${x.step}`)})</option>`).join("");
+    if (typeof fork === "string") $("r-fork").value = fork;
+    loadForkSeeds();
+  } else {
+    showSeedHint(seedCount(data?.events), data.liveSim);
+  }
+  updateRunSpans();
+  $("run-dialog").showModal();
+}
+
+$("r-fork").onchange = loadForkSeeds;
+$("r-steps").oninput = updateRunSpans;
+$("r-autosave").oninput = updateRunSpans;
+document.querySelectorAll("[data-steps]").forEach((b) => {
+  b.onclick = () => { $("r-steps").value = b.dataset.steps; updateRunSpans(); };
+});
+$("btn-new-2").onclick = () => openRun();
+
+$("r-go").onclick = async () => {
+  const start = runMode === "start";
+  if (start && !$("r-sim").reportValidity()) return;
+  const steps = parseInt($("r-steps").value, 10) || 0;
+  const history = $("r-history").value;
+  if (!start && !steps && !history) { $("r-error").textContent = "Pick seed memories, a number of steps, or both."; return; }
+  if ("Notification" in window && Notification.permission === "default") Notification.requestPermission();
+  $("r-go").disabled = true;
+  try {
+    // Settings first, so the cap and auto-save apply from the first step.
+    const st = data?.settings || {};
+    const autosave = $("r-autosave").value;
+    const budget = $("r-budget").value.trim();
+    if (String(st.autosave_steps ?? "") !== autosave || String(st.budget_usd ?? "") !== budget) {
+      const res = await fetch("/dashboard/settings/", {method: "POST", body: JSON.stringify({autosave_steps: autosave, budget_usd: budget})});
+      const body = await res.json();
+      if (!res.ok) { $("r-error").textContent = body.error; return; }
+    }
+    if (start) {
+      const res = await fetch("/dashboard/launch/", {method: "POST", body: JSON.stringify({fork: $("r-fork").value, sim: $("r-sim").value.trim(), history, run_steps: steps})});
+      const body = await res.json();
+      if (!res.ok) { $("r-error").textContent = body.error; return; }
+      view = null;
+      toast(steps ? `Starting. Then ${history ? "loading seed memories and " : ""}running ${steps} steps.` : "Starting. The map loads when the town is ready.");
+    } else {
+      // Commands run in order: seed memories first, then the run.
+      if (history && !(await send(`call -- load history ${history}`, true))) return;
+      if (steps && !(await send(`run ${steps}`, true))) return;
+      const what = [history && "loading seed memories", steps && `running ${steps} steps`].filter(Boolean).join(", then ");
+      toast(data?.status === "running" ? `Queued: ${what}. It starts when the current run ends.` : `Started: ${what}.`);
+    }
+    $("run-dialog").close();
+    poll();
+  } finally {
+    $("r-go").disabled = false;
+  }
 };
 
 

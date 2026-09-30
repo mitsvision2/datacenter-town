@@ -422,10 +422,18 @@ def dashboard_launch(request):
   allowed = [p.split("static_dirs/assets/")[1] for p in glob.glob(HISTORY_GLOB)]
   if history and history not in allowed:
     return JsonResponse({"error": "Unknown history file."}, status=400)
+  try:
+    run_steps = int(body.get("run_steps") or 0)
+  except (TypeError, ValueError):
+    return JsonResponse({"error": "Steps must be a whole number."}, status=400)
+  if not 0 <= run_steps <= 100000:
+    return JsonResponse({"error": "Steps must be between 0 and 100000."}, status=400)
 
   args = [sys.executable, "-u", "reverie.py", fork, sim]
   if history:
     args += ["--history", history]
+  if run_steps:
+    args += ["--run", str(run_steps)]
   os.makedirs(f"{BACKEND_DIR}/logs", exist_ok=True)
   out = open(f"{BACKEND_DIR}/logs/reverie_console.log", "a")
   proc = subprocess.Popen(args, cwd=BACKEND_DIR, stdin=subprocess.DEVNULL,
@@ -438,6 +446,6 @@ def dashboard_launch(request):
   with open(LAUNCH_FILE, "w") as f:
     json.dump({"pid": proc.pid, "fork": fork, "sim": sim, "history": history,
                "at": time.time()}, f)
-  log.info("launched reverie pid=%s fork=%s sim=%s history=%s",
-           proc.pid, fork, sim, history)
+  log.info("launched reverie pid=%s fork=%s sim=%s history=%s run_steps=%s",
+           proc.pid, fork, sim, history, run_steps)
   return JsonResponse({"pid": proc.pid})
