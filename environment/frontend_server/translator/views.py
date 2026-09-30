@@ -287,8 +287,15 @@ def process_environment(request):
   log.info("process_environment sim=%s step=%s agents=%s",
            sim_code, step, list(environment.keys()) if isinstance(environment, dict) else "?")
 
-  with open(f"storage/{sim_code}/environment/{step}.json", "w") as outfile:
-    outfile.write(json.dumps(environment, indent=2))
+  # The simulation now writes each step's positions itself (so it runs with
+  # the map hidden). Never overwrite one: a map that loaded mid-run or is
+  # replaying a saved run would otherwise rewrite positions it only displays.
+  env_file = f"storage/{sim_code}/environment/{step}.json"
+  if not os.path.exists(env_file):
+    tmp = f"{env_file}.tmp"
+    with open(tmp, "w") as outfile:
+      outfile.write(json.dumps(environment, indent=2))
+    os.replace(tmp, env_file)
 
   return HttpResponse("received")
 

@@ -43,6 +43,14 @@ from llm import usage
 log = get_logger("reverie")
 
 
+def _write_json_atomic(path, obj): 
+  # Readers (the frontend, the next loop pass) never see a half-written file.
+  tmp = f"{path}.tmp"
+  with open(tmp, "w") as outfile: 
+    outfile.write(json.dumps(obj, indent=2))
+  os.replace(tmp, path)
+
+
 ##############################################################################
 #                                  REVERIE                                   #
 ##############################################################################
@@ -373,6 +381,9 @@ class ReverieServer:
       # new environment file that matches our step count. That's when we run 
       # the content of this for loop. Otherwise, we just wait. 
       curr_env_file = f"{sim_folder}/environment/{self.step}.json"
+      # Reset every pass: a failed read must not reuse the last step's
+      # positions (or hit an unset name on the first pass).
+      env_retrieved = False
       if check_if_file_exists(curr_env_file):
         # If we have an environment file, it means we have a new perception
         # input to our personas. So we first retrieve it.
@@ -475,8 +486,18 @@ class ReverieServer:
           #  "persona": {"Klaus Mueller": {"movement": [38, 12]}}, 
           #  "meta": {curr_time: <datetime>}}
           curr_move_file = f"{sim_folder}/movement/{self.step}.json"
-          with open(curr_move_file, "w") as outfile:
-            outfile.write(json.dumps(movements, indent=2))
+          _write_json_atomic(curr_move_file, movements)
+
+          # Write the next step's positions ourselves instead of waiting for
+          # the browser map to report them, so runs keep going in a hidden
+          # tab or with no map open. The map only ever set each agent onto
+          # its movement tile, so these are the positions it would report;
+          # it now just displays them (process_environment won't overwrite).
+          _write_json_atomic(
+            f"{sim_folder}/environment/{self.step + 1}.json",
+            {name: {"maze": self.maze.maze_name, "x": m["movement"][0], 
+                    "y": m["movement"][1]}
+             for name, m in movements["persona"].items()})
 
           # After this cycle, the world takes one step forward, and the 
           # current time moves by <sec_per_step> amount. 

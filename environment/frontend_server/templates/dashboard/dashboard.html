@@ -956,7 +956,9 @@ async function poll() {
       poll.t = setTimeout(poll, 0);
       return;
     }
+    watchRuns();
     renderHeader(); renderSettings(); renderRoster(); renderAgent(); renderInterview();
+    renderTitle();
     renderConvos(); renderEvents(); renderResults();
   } catch (e) { /* frontend server restarting */ }
   poll.t = setTimeout(poll, 1000);
@@ -1134,6 +1136,59 @@ $("s-go").onclick = async () => {
   toast("Settings saved. They apply from the next step.");
   poll();
 };
+
+/* ---------------- run finished: notify, tab title ---------------- */
+
+const seenResults = new Set();
+let resultsPrimed = false;
+let finishedUnseen = false;
+
+function announce(title, body) {
+  toast(`${title}. ${body}`);
+  if (document.hidden) {
+    finishedUnseen = true;
+    if ("Notification" in window && Notification.permission === "granted") {
+      new Notification(title, {body, tag: "town-run"});
+    }
+  }
+}
+
+function watchRuns() {
+  // Only the live run's results; a saved run's history isn't news.
+  if (view) return;
+  const results = data?.results || [];
+  const key = (r) => r.id || `${r.time}|${r.cmd}`;
+  if (!resultsPrimed) { results.forEach((r) => seenResults.add(key(r))); resultsPrimed = true; return; }
+  for (const r of results) {
+    if (seenResults.has(key(r))) continue;
+    seenResults.add(key(r));
+    if (/^run \d+/i.test(r.cmd)) {
+      announce(r.ok ? (/Stopped early/.test(r.output) ? "Run stopped at the spending cap" : "Run finished") : "Run failed",
+               r.ok ? r.output : "The Console tab has the error.");
+    }
+  }
+}
+
+function renderTitle() {
+  const s = data?.status;
+  const left = data?.sim?.run_left;
+  document.title = finishedUnseen ? "Run finished, Town Control"
+    : !view && s === "running" ? `${left ?? ""} steps left, Town Control` : "Town Control";
+}
+
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) return;
+  finishedUnseen = false;
+  renderTitle();
+  // The map pauses while the tab is hidden but the run doesn't, so reload it
+  // at the current step instead of letting it replay the backlog.
+  if (mapKey && mapKey.startsWith("live:")) { mapKey = null; poll(); }
+});
+
+// Ask once, from a click, so the browser allows it.
+$("btn-run").addEventListener("click", () => {
+  if ("Notification" in window && Notification.permission === "default") Notification.requestPermission();
+});
 poll();
 </script>
 </body>
