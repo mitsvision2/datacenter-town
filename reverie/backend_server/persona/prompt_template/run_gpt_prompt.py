@@ -2771,26 +2771,20 @@ def run_gpt_generate_safety_score(persona, comment, test_input=None, verbose=Fal
     prompt_input = [comment]
     return prompt_input
 
-  def __chat_func_clean_up(gpt_response, prompt=""): 
-    gpt_response = json.loads(gpt_response)
-    return gpt_response["output"]
+  # Chat models often wrap the JSON in ```json fences, which json.loads
+  # rejects; extract_first_json_dict finds the object inside.
+  def __chat_func_clean_up(gpt_response, prompt=""):
+    return extract_first_json_dict(gpt_response)["output"]
 
-  def __chat_func_validate(gpt_response, prompt=""): 
-    try: 
-      fields = ["output"]
-      response = json.loads(gpt_response)
-      for field in fields: 
-        if field not in response: 
-          return False
-      return True
-    except:
-      return False 
+  def __chat_func_validate(gpt_response, prompt=""):
+    response = extract_first_json_dict(gpt_response)
+    return bool(response) and "output" in response
 
   def get_fail_safe():
     return None
 
   print ("11")
-  prompt_template = "persona/prompt_template/safety/anthromorphosization_v1.txt" 
+  prompt_template = "persona/prompt_template/safety/anthromorphosization_v1.txt"
   prompt_input = create_prompt_input(comment) 
   print ("22")
   prompt = generate_prompt(prompt_input, prompt_template)
