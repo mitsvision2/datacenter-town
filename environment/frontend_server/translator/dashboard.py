@@ -365,7 +365,8 @@ def dashboard_command(request):
 DEFAULT_SETTINGS = {"autosave_steps": 360, "budget_usd": None}
 
 
-STAGING_PREFIX = "stg-"  # same as reverie/backend_server/run_env.py
+# Same as reverie/backend_server/run_env.py. Git tracks prod-* runs only.
+RUN_PREFIXES = {"staging": "stg-", "production": "prod-"}
 
 
 def _run_env(utils_path=f"{BACKEND_DIR}/utils.py"):
@@ -380,10 +381,13 @@ def _run_env(utils_path=f"{BACKEND_DIR}/utils.py"):
 
 
 def _run_name(sim, env):
-  """Staging runs are named stg-<name>, matching run_env.run_name."""
-  if env == "staging" and not sim.startswith(STAGING_PREFIX):
-    return STAGING_PREFIX + sim
-  return sim
+  """stg-<name> in staging, prod-<name> in production, matching
+  run_env.run_name: a prefix from the other mode is replaced, not stacked."""
+  for prefix in RUN_PREFIXES.values():
+    if sim.startswith(prefix):
+      sim = sim[len(prefix):]
+      break
+  return RUN_PREFIXES.get(env, RUN_PREFIXES["staging"]) + sim
 
 
 def _settings():

@@ -990,9 +990,10 @@ function showSeedHint(count, forkName) {
 async function loadForkSeeds() {
   const fork = $("r-fork").value;
   const sims = data?.sims || [];
-  const base = fork.replace(/-\d+$/, "");
-  // Staging runs are named stg-<name> (the server adds it too).
-  const prefix = data?.run_env === "staging" && !base.startsWith("stg-") ? "stg-" : "";
+  // Runs are named stg-<name> in staging and prod-<name> in production (the
+  // server applies it too); a prefix from the other mode is swapped.
+  const prefix = data?.run_env === "production" ? "prod-" : "stg-";
+  const base = fork.replace(/-\d+$/, "").replace(/^(stg|prod)-/, "");
   let n = 2;
   while (sims.some((s) => s.name === `${prefix}${base}-${n}`)) n += 1;
   $("r-sim").value = `${prefix}${base}-${n}`;
@@ -1026,7 +1027,8 @@ function openRun(fork) {
   $("r-intro").textContent = (start
     ? "Pick a saved run to continue from. It's copied, so the original stays as it is."
     : s === "running" ? "A run is going now. This one starts when it ends." : "Choose what to load and how far to run.")
-    + (env === "staging" ? " Staging mode (run_env in utils.py): a cheaper model and a default spending cap, so results aren't comparable with production runs." : "");
+    + (env === "staging" ? " Staging mode (run_env in utils.py): a cheaper model and a default spending cap, so results aren't comparable with production runs. Staging runs stay out of git."
+      : start ? " Production mode: the run is named prod-… and can be committed to git." : "");
   $("r-go").textContent = start ? "Start" : "Run";
   $("r-history").innerHTML = `<option value="">None</option>` + HISTORIES.map((h) => `<option>${esc(h)}</option>`).join("");
   if ($("r-steps").value === "") $("r-steps").value = 360;

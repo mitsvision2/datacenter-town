@@ -38,7 +38,12 @@ class RunEnvTests(SimpleTestCase):
     self.assertEqual(self.env_of('# run_env = "production"\n'), "staging")
     self.assertEqual(_run_env("/nonexistent/utils.py"), "staging")
 
-  def test_staging_names_get_prefix_once(self):
+  def test_names_get_their_mode_prefix_once(self):
     self.assertEqual(_run_name("run-1", "staging"), "stg-run-1")
     self.assertEqual(_run_name("stg-run-1", "staging"), "stg-run-1")
-    self.assertEqual(_run_name("run-1", "production"), "run-1")
+    self.assertEqual(_run_name("run-1", "production"), "prod-run-1")
+    self.assertEqual(_run_name("prod-run-1", "production"), "prod-run-1")
+
+  def test_other_mode_prefix_is_swapped(self):
+    self.assertEqual(_run_name("prod-run-1", "staging"), "stg-run-1")
+    self.assertEqual(_run_name("stg-run-1", "production"), "prod-run-1")

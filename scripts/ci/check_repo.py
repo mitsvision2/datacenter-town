@@ -2,7 +2,8 @@
 Repository rules checked in CI (.github/workflows/ci.yml). Run from the
 repo root: python scripts/ci/check_repo.py
 
-- Only the base simulations are tracked under storage/; runs stay local.
+- Only the base simulations and production runs (prod-*) are tracked under
+  storage/; staging and other runs stay local.
 - No tracked file is larger than 10 MB (the largest today is a 6.1 MB map image).
 - No code opens a file under a personal home directory, such as the
   leftover debug logging that wrote to /Users/<name>/... .
@@ -21,11 +22,13 @@ files = [f for f in subprocess.run(["git", "ls-files", "-z"], capture_output=Tru
                                    text=True, check=True).stdout.split("\0") if f]
 problems = []
 
+TRACKED_RUNS = ("base_", "prod-")
 runs = sorted({f[len(STORAGE):].split("/")[0] for f in files
-               if f.startswith(STORAGE) and not f[len(STORAGE):].startswith("base_")})
+               if f.startswith(STORAGE) and not f[len(STORAGE):].startswith(TRACKED_RUNS)})
 for run in runs:
-  problems.append(f"{STORAGE}{run}: simulation runs aren't committed, only "
-                  f"storage/base_*. Remove it with: git rm -r --cached {STORAGE}{run}")
+  problems.append(f"{STORAGE}{run}: only base simulations and production runs "
+                  f"(prod-*) are committed. Remove it with: "
+                  f"git rm -r --cached {STORAGE}{run}")
 
 for f in files:
   if os.path.isfile(f) and os.path.getsize(f) > MAX_BYTES:

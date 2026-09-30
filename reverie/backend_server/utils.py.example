@@ -46,7 +46,9 @@ capture_prints = True    # also write print()/stderr output to the log file
 # dashboard, and new run names start with "stg-". A different model
 # behaves differently, so staging results aren't comparable with
 # production runs.
-# "production": the models above, for real experiments.
+# "production": the models above, for real experiments. Production run
+# names start with "prod-", and git tracks those runs; staging runs stay
+# out of git.
 run_env = "staging"
 staging_chat_model = "gpt-4o-mini"
 staging_budget_usd = 1.00
