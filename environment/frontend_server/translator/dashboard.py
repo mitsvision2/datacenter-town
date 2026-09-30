@@ -370,13 +370,13 @@ STAGING_PREFIX = "stg-"  # same as reverie/backend_server/run_env.py
 
 def _run_env(utils_path=f"{BACKEND_DIR}/utils.py"):
   """run_env from the backend's utils.py, read as text rather than imported
-  (it holds API keys). "production" when it isn't set."""
+  (it holds API keys). "staging" when it isn't set, matching run_env.py."""
   try:
     with open(utils_path) as f:
       m = re.search(r"""^run_env\s*=\s*["'](\w+)["']""", f.read(), re.M)
   except OSError:
-    return "production"
-  return m.group(1) if m else "production"
+    return "staging"
+  return m.group(1) if m else "staging"
 
 
 def _run_name(sim, env):

@@ -33,10 +33,10 @@ class RunEnvTests(SimpleTestCase):
     self.assertEqual(self.env_of('openai_api_key = "x"\nrun_env = "staging"\n'), "staging")
     self.assertEqual(self.env_of("run_env='production'\n"), "production")
 
-  def test_defaults_to_production(self):
-    self.assertEqual(self.env_of('chat_model = "gpt-4o"\n'), "production")
-    self.assertEqual(self.env_of('# run_env = "staging"\n'), "production")
-    self.assertEqual(_run_env("/nonexistent/utils.py"), "production")
+  def test_defaults_to_staging(self):
+    self.assertEqual(self.env_of('chat_model = "gpt-4o"\n'), "staging")
+    self.assertEqual(self.env_of('# run_env = "production"\n'), "staging")
+    self.assertEqual(_run_env("/nonexistent/utils.py"), "staging")
 
   def test_staging_names_get_prefix_once(self):
     self.assertEqual(_run_name("run-1", "staging"), "stg-run-1")

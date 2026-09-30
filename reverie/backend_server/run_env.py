@@ -1,5 +1,6 @@
 """
-Staging vs production runs, chosen by run_env in utils.py.
+Staging vs production runs, chosen by run_env in utils.py. Staging is
+the default; set run_env = "production" for real experiments.
 
 staging: every chat call uses staging_chat_model (default gpt-4o-mini), a
   run gets a spending cap of staging_budget_usd when none is set, and new
@@ -10,7 +11,7 @@ production: the models and settings in utils.py as they are.
 """
 import utils
 
-RUN_ENV = getattr(utils, "run_env", "production")
+RUN_ENV = getattr(utils, "run_env", "staging")
 if RUN_ENV not in ("staging", "production"):
   raise ValueError(f'run_env in utils.py must be "staging" or "production", '
                    f'not {RUN_ENV!r}')
