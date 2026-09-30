@@ -235,9 +235,6 @@ class ReverieServer:
     finally:
       for p in unclocked:
         p.scratch.curr_time = None
-    # region agent log
-    with open("/Users/rituraj/Documents/projects and stuff/AP/AI town/code/datacenter-town/.cursor/debug-4daca5.log", "a") as _dbg: _dbg.write(json.dumps({"sessionId": "4daca5", "runId": "post-fix", "hypothesisId": "A", "location": "reverie.py:_load_whispers", "message": "clock after whispers", "data": {"n_whispers": len(clean_whispers), "unclocked_restored": [p.name for p in unclocked], "clocks": {n: str(p.scratch.curr_time) for n, p in self.personas.items()}}, "timestamp": int(time.time() * 1000)}) + "\n")
-    # endregion
 
 
   def start_path_tester_server(self): 

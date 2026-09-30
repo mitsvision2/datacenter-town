@@ -374,11 +374,6 @@ def run_gpt_prompt_task_decomp(persona,
         continue
       m = re.match(r"^\d+\)\s*\S+\s+is\s+(.*)$", i)
       _cr += [m.group(1) if m else i]
-    # region agent log
-    if prompt:
-      import json as _j, time as _t
-      with open("/Users/rituraj/Documents/projects and stuff/AP/AI town/code/datacenter-town/.cursor/debug-4daca5.log", "a") as _dbg: _dbg.write(_j.dumps({"sessionId": "4daca5", "runId": "post-fix", "hypothesisId": "D", "location": "run_gpt_prompt.py:task_decomp_clean_up", "message": "parsed subtasks", "data": {"raw_lines": len(temp), "blank_lines": sum(1 for t in temp if not t), "parsed": len(_cr), "first_task": _cr[0][:80] if _cr else None}, "timestamp": int(_t.time() * 1000)}) + "\n")
-    # endregion
     for count, i in enumerate(_cr): 
       k = [j.strip() for j in i.split("(duration in minutes:")]
       task = k[0]
