@@ -21,11 +21,18 @@ import traceback
 from datetime import datetime
 
 from utils import fs_temp_storage
+from llm import usage
 
 DASH_DIR = f"{fs_temp_storage}/dashboard"
 CMD_FILE = f"{DASH_DIR}/commands.jsonl"
 RESULT_FILE = f"{DASH_DIR}/results.jsonl"
 STATE_FILE = f"{DASH_DIR}/state.json"
+SETTINGS_FILE = f"{DASH_DIR}/settings.json"
+# autosave_steps: save every N steps during a run (0 = off).
+# budget_usd: stop and save once this run's estimated API cost reaches it
+# (None = no cap). Written by the dashboard, re-read after every step.
+DEFAULT_SETTINGS = {"autosave_steps": 360, "budget_usd": None}
+_settings_cache = {"mtime": None, "value": dict(DEFAULT_SETTINGS)}
 
 # Recent LLM calls per persona: the closest thing to watching an agent think.
 # Filled from print_run_prompts, so it needs debug = True in utils.py.
@@ -42,6 +49,21 @@ def _append_jsonl(path, obj):
   os.makedirs(DASH_DIR, exist_ok=True)
   with open(path, "a") as f:
     f.write(json.dumps(obj, default=str) + "\n")
+
+
+def load_settings():
+  try:
+    mtime = os.path.getmtime(SETTINGS_FILE)
+  except OSError:
+    return dict(DEFAULT_SETTINGS)
+  if mtime != _settings_cache["mtime"]:
+    try:
+      with open(SETTINGS_FILE) as f:
+        _settings_cache["value"] = {**DEFAULT_SETTINGS, **json.load(f)}
+      _settings_cache["mtime"] = mtime
+    except (OSError, ValueError):
+      pass  # half-written file; keep the last good settings
+  return dict(_settings_cache["value"])
 
 
 def record_llm(persona_name, template, prompt, output):
@@ -167,6 +189,9 @@ def write_state(rs, status, run_left=0, force=True):
     "status": status, "run_left": run_left, "step": rs.step,
     "curr_time": rs.curr_time.strftime("%B %d, %Y, %H:%M:%S"),
     "sec_per_step": rs.sec_per_step, "updated_at": time.time(),
+    "settings": load_settings(), "run_cost": usage.run_cost,
+    "last_autosave": getattr(rs, "last_autosave", None),
+    "budget_hit": getattr(rs, "budget_hit", False),
     "persona_order": list(rs.personas.keys()),
     "personas": {n: _persona_state(p) for n, p in rs.personas.items()},
   }

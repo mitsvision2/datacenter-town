@@ -33,6 +33,7 @@ urlpatterns = [
     url(r'^dashboard/run/(?P<sim>[\w-]+)/$', dashboard.dashboard_run, name='dashboard_run'),
     url(r'^dashboard/command/$', dashboard.dashboard_command, name='dashboard_command'),
     url(r'^dashboard/launch/$', dashboard.dashboard_launch, name='dashboard_launch'),
+    url(r'^dashboard/settings/$', dashboard.dashboard_settings, name='dashboard_settings'),
     # Common misspellings of the simulator page (incl. trailing slash).
     url(r'^(?:simulation_home|simulator_home/|simulation_home/)$',
         RedirectView.as_view(pattern_name='home', permanent=False)),

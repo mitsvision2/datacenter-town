@@ -310,6 +310,7 @@ dialog .row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20
       <span class="status" id="status" data-s="stopped">Stopped</span>
       <span id="sim-extra"></span>
       <button class="cost-pill" id="cost-pill" type="button" hidden></button>
+      <button class="cost-pill" id="settings-pill" type="button"></button>
     </div>
   </div>
 
@@ -336,6 +337,10 @@ dialog .row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20
     <button class="btn primary" id="btn-new" type="button" hidden>Start simulation</button>
   </div>
 </header>
+<div class="viewing" id="budget-banner" hidden>
+  <span class="grow-text" id="budget-text"></span>
+  <button class="btn small" id="btn-budget-edit" type="button">Change the cap</button>
+</div>
 <div class="viewing" id="viewing" hidden>
   <span class="grow-text" id="viewing-text"></span>
   <button class="btn small" id="btn-fork-here" type="button">Start a new run from here</button>
@@ -444,6 +449,24 @@ dialog .row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20
     <div class="row">
       <button class="btn" value="cancel" formnovalidate type="submit">Cancel</button>
       <button class="btn primary" id="l-go" type="button">Start</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="settings">
+  <form method="dialog" id="settings-form">
+    <h2>Auto-save and spending cap</h2>
+    <p>These apply to the live run from its next step, and stay set for future runs.</p>
+    <label for="s-autosave">Auto-save every</label>
+    <div class="form" style="margin-top:0"><input id="s-autosave" type="number" min="0" max="100000" step="1" inputmode="numeric"><span class="hint" id="s-autosave-span" style="align-self:center;margin:0"></span></div>
+    <div class="hint">Steps between saves. 360 steps is one game hour. 0 turns auto-save off.</div>
+    <label for="s-budget">Spending cap for a run (USD)</label>
+    <input id="s-budget" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="No cap">
+    <div class="hint" id="s-budget-hint">When a run's estimated API cost reaches this, it stops after the current step and saves. Leave empty for no cap.</div>
+    <div class="error-text" id="s-error" role="alert"></div>
+    <div class="row">
+      <button class="btn" value="cancel" formnovalidate type="submit">Cancel</button>
+      <button class="btn primary" id="s-go" type="button">Save settings</button>
     </div>
   </form>
 </dialog>
@@ -933,7 +956,7 @@ async function poll() {
       poll.t = setTimeout(poll, 0);
       return;
     }
-    renderHeader(); renderRoster(); renderAgent(); renderInterview();
+    renderHeader(); renderSettings(); renderRoster(); renderAgent(); renderInterview();
     renderConvos(); renderEvents(); renderResults();
   } catch (e) { /* frontend server restarting */ }
   poll.t = setTimeout(poll, 1000);
@@ -1058,6 +1081,59 @@ function renderUsage() {
 $("cost-pill").onclick = () => $("tab-usage").click();
 
 pollUsage();
+
+/* ---------------- auto-save + spending cap ---------------- */
+
+function renderSettings() {
+  const st = data?.settings || {};
+  const sim = view ? null : data?.sim;
+  const every = st.autosave_steps || 0;
+  const cap = st.budget_usd;
+  const spent = sim?.run_cost;
+  const parts = [every ? `Auto-save every ${spanLabel(every, sim?.sec_per_step)}` : "Auto-save off"];
+  parts.push(cap == null ? "no spending cap" : spent != null ? `${usd(spent)} of ${usd(cap)} cap` : `${usd(cap)} cap`);
+  if (sim?.last_autosave != null && sim.curr_time) {
+    const t = parseGameTime(sim.curr_time);
+    if (t) {
+      t.setSeconds(t.getSeconds() - (sim.step - sim.last_autosave) * (sim.sec_per_step || 10));
+      parts.push(`last saved ${t.toTimeString().slice(0, 5)}`);
+    }
+  }
+  $("settings-pill").textContent = parts.join(", ");
+  $("settings-pill").hidden = !!view;
+
+  // Hide once the cap is raised above what's been spent, or removed.
+  const hit = !view && sim?.budget_hit && cap != null && spent != null && spent >= cap;
+  $("budget-banner").hidden = !hit;
+  if (hit) $("budget-text").textContent = `The run stopped at the ${usd(cap)} spending cap (${usd(spent)} spent) and was saved. Raise the cap to keep running.`;
+}
+
+function openSettings() {
+  const st = data?.settings || {};
+  $("s-autosave").value = st.autosave_steps ?? 360;
+  $("s-budget").value = st.budget_usd ?? "";
+  const spent = view ? null : data?.sim?.run_cost;
+  $("s-budget-hint").textContent = `When a run's estimated API cost reaches this, it stops after the current step and saves. Leave empty for no cap.${spent != null ? ` This run has spent about ${usd(spent)} so far.` : ""}`;
+  updateAutosaveSpan();
+  $("s-error").textContent = "";
+  $("settings").showModal();
+}
+function updateAutosaveSpan() {
+  const n = parseInt($("s-autosave").value, 10) || 0;
+  $("s-autosave-span").textContent = n ? `steps (${spanLabel(n, data?.sim?.sec_per_step)} of game time)` : "steps (off)";
+}
+$("s-autosave").oninput = updateAutosaveSpan;
+$("settings-pill").onclick = openSettings;
+$("btn-budget-edit").onclick = openSettings;
+$("s-go").onclick = async () => {
+  const res = await fetch("/dashboard/settings/", {method: "POST", body: JSON.stringify({
+    autosave_steps: $("s-autosave").value, budget_usd: $("s-budget").value.trim()})});
+  const body = await res.json();
+  if (!res.ok) { $("s-error").textContent = body.error; return; }
+  $("settings").close();
+  toast("Settings saved. They apply from the next step.");
+  poll();
+};
 poll();
 </script>
 </body>

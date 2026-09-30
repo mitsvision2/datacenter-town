@@ -6,6 +6,7 @@ reverie/backend_server/dashboard_bridge.py). Paths are relative to
 environment/frontend_server, like the rest of translator/views.py.
 """
 import glob
+import importlib.util
 import json
 import logging
 import os
@@ -33,17 +34,16 @@ BACKEND_DIR = "../../reverie/backend_server"
 BACKEND_LOG = f"{BACKEND_DIR}/logs/datacenter-town.log"
 USAGE_FILE = f"{BACKEND_DIR}/logs/api_usage.jsonl"
 
-# USD per 1M tokens: (input, cached input, output). Standard tier, from
-# developers.openai.com/api/docs/pricing (checked 2026-09-29). Edit here if
-# prices change; every past call is re-costed from its stored token counts.
-PRICES = {
-  "gpt-4o": (2.50, 1.25, 10.00),
-  "gpt-4o-mini": (0.15, 0.075, 0.60),
-  "gpt-4.1": (2.00, 0.50, 8.00),
-  "gpt-4.1-mini": (0.40, 0.10, 1.60),
-  "text-embedding-3-small": (0.02, 0.02, 0.0),
-  "text-embedding-3-large": (0.13, 0.13, 0.0),
-}
+SETTINGS_FILE = f"{DASH_DIR}/settings.json"
+
+# Prices and the cost formula live in the backend's llm/usage.py, shared with
+# the simulation's spending cap. That file imports nothing from the backend,
+# so it's loaded straight from its path.
+_spec = importlib.util.spec_from_file_location(
+  "llm_usage", f"{BACKEND_DIR}/llm/usage.py")
+_llm_usage = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_llm_usage)
+PRICES = _llm_usage.PRICES
 HISTORY_GLOB = "static_dirs/assets/the_ville/agent_history_init_*.csv"
 SIM_NAME = re.compile(r"^[\w-]+$")
 # Fields the roster needs every second; the rest is sent for the open agent.
@@ -221,7 +221,7 @@ def dashboard_state(request):
   state = _read_json(STATE_FILE)
   status = _backend_status(state)
   agent = request.GET.get("agent")
-  data = {"status": status, "sims": _sims(),
+  data = {"status": status, "sims": _sims(), "settings": _settings(),
           "results": _tail_jsonl(RESULT_FILE, 40),
           "launch": _read_json(LAUNCH_FILE, {})}
   if state:
@@ -241,20 +241,12 @@ def dashboard_state(request):
   return JsonResponse(data)
 
 
-def _price(model):
-  # Longest matching prefix, so "gpt-4o-mini" isn't priced as "gpt-4o" and
-  # dated names like "gpt-4o-2024-08-06" still match.
-  keys = [k for k in PRICES if (model or "").startswith(k)]
-  return PRICES[max(keys, key=len)] if keys else None
+_price = _llm_usage.price
 
 
 def _cost(row):
-  p = _price(row.get("model"))
-  if not p:
-    return None
-  cached = min(row.get("cached", 0), row.get("in", 0))
-  return ((row.get("in", 0) - cached) * p[0] + cached * p[1]
-          + row.get("out", 0) * p[2]) / 1e6
+  return _llm_usage.cost(row.get("model"), row.get("in", 0),
+                         row.get("cached", 0), row.get("out", 0))
 
 
 # Rows parsed so far, read incrementally so each poll only parses new lines.
@@ -365,6 +357,49 @@ def dashboard_command(request):
     f.write(json.dumps({"id": cmd_id, "cmd": cmd}) + "\n")
   log.info("dashboard command %s: %s", cmd_id, cmd)
   return JsonResponse({"id": cmd_id})
+
+
+DEFAULT_SETTINGS = {"autosave_steps": 360, "budget_usd": None}
+
+
+def _settings():
+  return {**DEFAULT_SETTINGS, **(_read_json(SETTINGS_FILE, {}) or {})}
+
+
+def dashboard_settings(request):
+  """GET returns the auto-save and spending-cap settings; POST updates them.
+  The running simulation re-reads the file after every step."""
+  if request.method != "POST":
+    return JsonResponse(_settings())
+  body = json.loads(request.body or "{}")
+  new = _settings()
+  if "autosave_steps" in body:
+    try:
+      steps = int(body["autosave_steps"] or 0)
+    except (TypeError, ValueError):
+      return JsonResponse({"error": "Auto-save needs a whole number of steps."}, status=400)
+    if not 0 <= steps <= 100000:
+      return JsonResponse({"error": "Auto-save must be between 0 (off) and 100000 steps."}, status=400)
+    new["autosave_steps"] = steps
+  if "budget_usd" in body:
+    raw = body["budget_usd"]
+    if raw in (None, ""):
+      new["budget_usd"] = None
+    else:
+      try:
+        cap = float(raw)
+      except (TypeError, ValueError):
+        return JsonResponse({"error": "The spending cap needs to be a dollar amount."}, status=400)
+      if not 0 < cap <= 10000:
+        return JsonResponse({"error": "The spending cap must be more than $0 and at most $10,000."}, status=400)
+      new["budget_usd"] = round(cap, 2)
+  os.makedirs(DASH_DIR, exist_ok=True)
+  tmp = SETTINGS_FILE + ".tmp"
+  with open(tmp, "w") as f:
+    json.dump(new, f)
+  os.replace(tmp, SETTINGS_FILE)
+  log.info("dashboard settings: %s", new)
+  return JsonResponse(new)
 
 
 @require_POST

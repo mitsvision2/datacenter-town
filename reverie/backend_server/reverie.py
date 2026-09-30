@@ -37,7 +37,7 @@ from maze import *
 from persona.persona import *
 from experiment_logger import ExperimentLogger, set_experiment_logger, get_experiment_logger
 from sim_logging import get_logger, setup_logging
-from dashboard_bridge import CommandFeed, record_result, write_state
+from dashboard_bridge import CommandFeed, record_result, write_state, load_settings
 from llm import usage
 
 log = get_logger("reverie")
@@ -492,6 +492,24 @@ class ReverieServer:
           log.info("Step %s done in %.2fs -> next_step=%s",
                    self.step - 1, time.time() - step_t0, self.step)
           int_counter -= 1
+
+          # Settings come from the dashboard and apply mid-run.
+          settings = load_settings()
+          every = settings.get("autosave_steps") or 0
+          if every and self.step % every == 0: 
+            log.info("Auto-saving at step %s (every %s steps)", self.step, every)
+            self.save()
+            self.last_autosave = self.step
+          cap = settings.get("budget_usd")
+          if cap is not None and usage.run_cost >= cap: 
+            log.warning("Spending cap $%.2f reached ($%.4f spent); stopping "
+                        "and saving at step %s", cap, usage.run_cost, self.step)
+            self.budget_hit = True
+            if getattr(self, "last_autosave", None) != self.step:
+              self.save()
+              self.last_autosave = self.step
+            write_state(self, "running", 0)
+            break
           write_state(self, "running", int_counter, force=False)
 
       # Sleep so we don't burn our machines. 
@@ -569,11 +587,21 @@ class ReverieServer:
           # Runs the number of steps specified in the prompt.
           # Example: run 1000
           int_count = int(sim_command.split()[-1])
-          log.info("Run requested for %s steps", int_count)
-          write_state(self, "running", int_count)
-          self.start_server(int_count)
-          ret_str += (f"Now at step {self.step}, "
-                      f"{self.curr_time.strftime('%B %d, %H:%M')}.")
+          cap = load_settings().get("budget_usd")
+          if cap is not None and usage.run_cost >= cap: 
+            ret_str += (f"Not started: this run has spent ${usage.run_cost:.4f}, "
+                        f"which is over the ${cap:.2f} spending cap. Raise the "
+                        f"cap to keep going.")
+          else: 
+            log.info("Run requested for %s steps", int_count)
+            self.budget_hit = False
+            write_state(self, "running", int_count)
+            self.start_server(int_count)
+            ret_str += (f"Now at step {self.step}, "
+                        f"{self.curr_time.strftime('%B %d, %H:%M')}.")
+            if self.budget_hit: 
+              ret_str += (f" Stopped early: the ${load_settings().get('budget_usd') or 0:.2f} spending cap was "
+                          f"reached (${usage.run_cost:.4f} spent). Saved.")
 
         elif ("print persona schedule" 
               in sim_command[:22].lower()): 
