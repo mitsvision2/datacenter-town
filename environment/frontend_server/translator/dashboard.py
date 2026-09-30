@@ -31,6 +31,19 @@ RESULT_FILE = f"{DASH_DIR}/results.jsonl"
 LAUNCH_FILE = f"{DASH_DIR}/launch.json"
 BACKEND_DIR = "../../reverie/backend_server"
 BACKEND_LOG = f"{BACKEND_DIR}/logs/datacenter-town.log"
+USAGE_FILE = f"{BACKEND_DIR}/logs/api_usage.jsonl"
+
+# USD per 1M tokens: (input, cached input, output). Standard tier, from
+# developers.openai.com/api/docs/pricing (checked 2026-09-29). Edit here if
+# prices change; every past call is re-costed from its stored token counts.
+PRICES = {
+  "gpt-4o": (2.50, 1.25, 10.00),
+  "gpt-4o-mini": (0.15, 0.075, 0.60),
+  "gpt-4.1": (2.00, 0.50, 8.00),
+  "gpt-4.1-mini": (0.40, 0.10, 1.60),
+  "text-embedding-3-small": (0.02, 0.02, 0.0),
+  "text-embedding-3-large": (0.13, 0.13, 0.0),
+}
 HISTORY_GLOB = "static_dirs/assets/the_ville/agent_history_init_*.csv"
 SIM_NAME = re.compile(r"^[\w-]+$")
 # Fields the roster needs every second; the rest is sent for the open agent.
@@ -116,6 +129,112 @@ def dashboard_state(request):
     data["events"] = _tail_jsonl(f"{exp}/events.jsonl", 60)
   data["sim"] = state
   return JsonResponse(data)
+
+
+def _price(model):
+  # Longest matching prefix, so "gpt-4o-mini" isn't priced as "gpt-4o" and
+  # dated names like "gpt-4o-2024-08-06" still match.
+  keys = [k for k in PRICES if (model or "").startswith(k)]
+  return PRICES[max(keys, key=len)] if keys else None
+
+
+def _cost(row):
+  p = _price(row.get("model"))
+  if not p:
+    return None
+  cached = min(row.get("cached", 0), row.get("in", 0))
+  return ((row.get("in", 0) - cached) * p[0] + cached * p[1]
+          + row.get("out", 0) * p[2]) / 1e6
+
+
+# Rows parsed so far, read incrementally so each poll only parses new lines.
+_usage = {"offset": 0, "rows": []}
+
+
+def _usage_rows():
+  try:
+    size = os.path.getsize(USAGE_FILE)
+  except OSError:
+    return []
+  if size < _usage["offset"]:
+    _usage.update(offset=0, rows=[])  # file was replaced
+  if size > _usage["offset"]:
+    with open(USAGE_FILE, "rb") as f:
+      f.seek(_usage["offset"])
+      chunk = f.read()
+    complete = chunk[:chunk.rfind(b"\n") + 1]
+    _usage["offset"] += len(complete)
+    for line in complete.decode("utf-8", "replace").splitlines():
+      try:
+        row = json.loads(line)
+      except ValueError:
+        continue
+      row["cost"] = _cost(row)
+      _usage["rows"].append(row)
+  return _usage["rows"]
+
+
+def _totals(rows):
+  t = {"calls": len(rows), "chat": 0, "embedding": 0, "errors": 0,
+       "in": 0, "cached": 0, "out": 0, "cost": 0.0}
+  for r in rows:
+    t[r.get("kind", "chat")] = t.get(r.get("kind", "chat"), 0) + 1
+    t["errors"] += not r.get("ok", True)
+    for k in ("in", "cached", "out"):
+      t[k] += r.get(k, 0)
+    t["cost"] += r["cost"] or 0
+  return t
+
+
+def _group(rows, key):
+  groups = {}
+  for r in rows:
+    groups.setdefault(r.get(key) or "other", []).append(r)
+  return sorted(({"name": k, **_totals(v)} for k, v in groups.items()),
+                key=lambda g: -g["cost"])
+
+
+def dashboard_usage(request):
+  rows = _usage_rows()
+  sim = (_read_json(STATE_FILE) or {}).get("sim_code")
+  sec_per_step = (_read_json(STATE_FILE) or {}).get("sec_per_step") or 10
+  now = time.time()
+  midnight = time.mktime(time.localtime(now)[:3] + (0, 0, 0, 0, 0, -1))
+  run_rows = [r for r in rows if r.get("sim") == sim]
+  recent = [r for r in rows if r["ts"] > now - 300]
+
+  # Average cost per game hour over the steps this run has simulated.
+  steps = [r["step"] for r in run_rows if r.get("source") == "step"
+           and r.get("step") is not None]
+  step_cost = sum(r["cost"] or 0 for r in run_rows if r.get("source") == "step")
+  game_hours = ((max(steps) - min(steps) + 1) * sec_per_step / 3600
+                if steps else 0)
+
+  ok_chat = [r["secs"] for r in rows if r.get("ok") and r.get("kind") == "chat"][-200:]
+  ok_chat_sorted = sorted(ok_chat)
+  return JsonResponse({
+    "since": rows[0]["ts"] if rows else None,
+    "sim": sim,
+    "run": _totals(run_rows),
+    "today": _totals([r for r in rows if r["ts"] >= midnight]),
+    "all": _totals(rows),
+    "last5": {**_totals(recent), "minutes": 5},
+    "per_game_hour": step_cost / game_hours if game_hours else None,
+    "game_hours": game_hours,
+    "latency": {
+      "avg": sum(ok_chat) / len(ok_chat) if ok_chat else None,
+      "p95": ok_chat_sorted[int(len(ok_chat_sorted) * 0.95)] if ok_chat else None,
+      "n": len(ok_chat)},
+    "agents": _group([r for r in run_rows if r.get("persona")], "persona"),
+    "sources": _group(run_rows, "source"),
+    "models": _group(rows, "model"),
+    "unpriced": sorted({r.get("model") for r in rows if r["cost"] is None}),
+    "errors": [{"ts": r["ts"], "model": r.get("model"),
+                "status": r.get("status"), "error": r.get("error"),
+                "persona": r.get("persona")}
+               for r in rows if not r.get("ok", True)][-8:][::-1],
+    "prices": {k: list(v) for k, v in PRICES.items()},
+  })
 
 
 def dashboard_log(request):

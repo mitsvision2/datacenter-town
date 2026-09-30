@@ -38,6 +38,7 @@ from persona.persona import *
 from experiment_logger import ExperimentLogger, set_experiment_logger, get_experiment_logger
 from sim_logging import get_logger, setup_logging
 from dashboard_bridge import CommandFeed, record_result, write_state
+from llm import usage
 
 log = get_logger("reverie")
 
@@ -63,6 +64,7 @@ class ReverieServer:
     # copy everything that's in <fork_sim_code>, but edit its 
     # reverie/meta/json's fork variable. 
     self.sim_code = sim_code
+    usage.context["sim"] = sim_code
     sim_folder = f"{fs_storage}/{self.sim_code}"
     copyanything(fork_folder, sim_folder)
     # Git does not track empty dirs, so base sims ship without movement/.
@@ -440,10 +442,13 @@ class ReverieServer:
             #   writing her next novel (editing her novel) 
             #   @ double studio:double studio:common room:sofa
             agent_t0 = time.time()
+            usage.context.update(persona=persona_name, source="step",
+                                 step=self.step)
             next_tile, pronunciatio, description = persona.move(
               self.maze, self.personas, self.personas_tile[persona_name], 
               self.curr_time)
             agent_dt = time.time() - agent_t0
+            usage.context["persona"] = None
             movements["persona"][persona_name] = {}
             movements["persona"][persona_name]["movement"] = next_tile
             movements["persona"][persona_name]["pronunciatio"] = pronunciatio
@@ -524,6 +529,9 @@ class ReverieServer:
       ret_str = ""
       finished = False
       log.info("CLI command: %r", sim_command)
+      # Calls made by this command (whispers, interviews) are billed to it.
+      usage.context.update(persona=None, step=self.step,
+                           source=" ".join(sim_command.split(";;")[0].split()[:3]))
 
       try:
         if sim_command.lower() in ["f", "fin", "finish", "save and finish"]:
@@ -684,6 +692,7 @@ class ReverieServer:
           name, line = [x.strip() for x in
                         sim_command[len("call -- interview"):].split(";;", 1)]
           persona = self.personas[name]
+          usage.context["persona"] = name
           convo = self._interviews.setdefault(name, [])
           if line == "end_convo":
             self._interviews.pop(name, None)

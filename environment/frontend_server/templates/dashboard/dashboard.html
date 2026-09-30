@@ -219,6 +219,24 @@ details.llm pre { background: var(--paper); padding: 10px; border-radius: 8px; m
 .log div { white-space: pre-wrap; word-break: break-word; }
 .log .warn { color: var(--amber); }
 .log .error { color: var(--brick); }
+.cost-pill { border: 0; background: none; padding: 0; color: var(--muted); cursor: pointer; font-size: 13px; text-decoration: underline dotted; text-underline-offset: 3px; }
+.cost-pill:hover { color: var(--ink); }
+.usage-top { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 18px; }
+.usage-top div { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+.usage-top b { display: block; font-size: 22px; font-weight: 600; letter-spacing: -0.01em; }
+.usage-top span { color: var(--muted); font-size: 13px; }
+table.usage { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 18px; }
+table.usage th, table.usage td { text-align: right; padding: 6px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+table.usage th:first-child, table.usage td:first-child { text-align: left; }
+table.usage th { color: var(--muted); font-weight: 600; }
+.bars { display: grid; gap: 6px; }
+.bar { display: grid; grid-template-columns: 150px minmax(0, 1fr) 90px; gap: 10px; align-items: center; font-size: 13px; }
+.bar .track { height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; }
+.bar .track div { height: 100%; background: var(--moss); }
+.bar .v { text-align: right; color: var(--muted); }
+.warn-box { background: var(--amber-soft); border-radius: 10px; padding: 10px 12px; font-size: 14px; margin-bottom: 14px; }
+.err-row { border-left: 3px solid var(--brick); padding: 2px 0 2px 10px; margin-bottom: 8px; font-size: 13px; }
+@media (max-width: 700px) { .usage-top { grid-template-columns: repeat(2, minmax(0, 1fr)); } .bar { grid-template-columns: 110px minmax(0, 1fr) 70px; } }
 .toggle { display: inline-flex; gap: 6px; align-items: center; color: var(--muted); font-size: 13px; margin-bottom: 8px; }
 
 /* ---------- dialog ---------- */
@@ -270,6 +288,7 @@ dialog .row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20
     <div class="sub">
       <span class="status" id="status" data-s="stopped">Stopped</span>
       <span id="sim-extra"></span>
+      <button class="cost-pill" id="cost-pill" type="button" hidden></button>
     </div>
   </div>
 
@@ -317,12 +336,14 @@ dialog .row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20
         <button class="tab" role="tab" aria-selected="false" data-pane="p-console">Console</button>
         <button class="tab" role="tab" aria-selected="false" data-pane="p-events">Whispers<span class="count" id="n-events"></span></button>
         <button class="tab" role="tab" aria-selected="false" data-pane="p-log">Log</button>
+        <button class="tab" role="tab" aria-selected="false" data-pane="p-usage" id="tab-usage">API usage</button>
       </div>
       <div class="pane" id="p-convos"></div>
       <div class="pane" id="p-console" hidden>
         <div class="results" id="results"></div>
       </div>
       <div class="pane" id="p-events" hidden></div>
+      <div class="pane" id="p-usage" hidden></div>
       <div class="pane" id="p-log" hidden>
         <label class="toggle"><input type="checkbox" id="log-quiet" checked> Steps and actions only</label>
         <div class="log" id="log"></div>
@@ -842,6 +863,83 @@ $("l-go").onclick = async () => {
   poll();
 };
 
+
+/* ---------------- API usage ---------------- */
+
+const usd = (n) => n == null ? "n/a" : n >= 100 ? `$${n.toFixed(0)}` : n >= 1 ? `$${n.toFixed(2)}` : n >= 0.01 ? `$${n.toFixed(3)}` : n >= 0.0001 ? `$${n.toFixed(4)}` : n > 0 ? "under $0.0001" : "$0";
+const num = (n) => n >= 1e6 ? `${(n / 1e6).toFixed(2)}M` : n >= 1e4 ? `${(n / 1e3).toFixed(1)}k` : String(Math.round(n || 0));
+
+function usageRow(label, t) {
+  return `<tr><td>${label}</td><td>${num(t.calls)}</td><td>${num(t.chat)}</td><td>${num(t.embedding)}</td>
+    <td>${num(t.in)}</td><td>${num(t.cached)}</td><td>${num(t.out)}</td><td>${t.errors || 0}</td><td><b>${usd(t.cost)}</b></td></tr>`;
+}
+
+function bars(groups, empty) {
+  if (!groups.length) return `<div class="empty">${empty}</div>`;
+  const max = Math.max(...groups.map((g) => g.cost), 1e-9);
+  return `<div class="bars">${groups.map((g) => `
+    <div class="bar"><span>${esc(g.name)}</span>
+      <div class="track" title="${num(g.calls)} calls, ${num(g.in + g.out)} tokens"><div style="width:${(g.cost / max) * 100}%"></div></div>
+      <span class="v">${usd(g.cost)}</span></div>`).join("")}</div>`;
+}
+
+let usage = null;
+async function pollUsage() {
+  clearTimeout(pollUsage.t);
+  try {
+    usage = await (await fetch("/dashboard/usage/")).json();
+    renderUsage();
+  } catch (e) { /* server restarting */ }
+  pollUsage.t = setTimeout(pollUsage, 3000);
+}
+
+function renderUsage() {
+  const u = usage;
+  const pill = $("cost-pill");
+  pill.hidden = !u?.since;
+  if (u?.since) pill.textContent = `${usd(u.run.cost)} this run, ${num(u.run.calls)} API calls`;
+  if (!u) return;
+  if (!u.since) {
+    paint($("p-usage"), `<div class="empty">No API calls recorded yet. Every call is tracked from now on, with its tokens and cost. Calls made before tracking started aren't counted.</div>`);
+    return;
+  }
+  const r5 = u.last5;
+  const perMin = (x) => x / (r5.minutes || 5);
+  const since = new Date(u.since * 1000).toLocaleString(undefined, {month: "short", day: "numeric", hour: "2-digit", minute: "2-digit"});
+  const lat = u.latency;
+  paint($("p-usage"), `
+    ${u.unpriced.length ? `<div class="warn-box">No price set for ${u.unpriced.map(esc).join(", ")}, so those calls count as $0. Add it to PRICES in translator/dashboard.py.</div>` : ""}
+    <div class="usage-top">
+      <div><b>${usd(u.run.cost)}</b><span>this run</span></div>
+      <div><b>${num(u.run.calls)}</b><span>API calls this run</span></div>
+      <div><b>${num(u.run.in + u.run.out)}</b><span>tokens this run</span></div>
+      <div><b>${u.per_game_hour == null ? "n/a" : usd(u.per_game_hour)}</b><span>${u.per_game_hour == null ? "per game hour, shown after a run" : "per game hour, on average"}</span></div>
+    </div>
+    <table class="usage">
+      <thead><tr><th></th><th>Calls</th><th>Chat</th><th>Embed</th><th>Input tok</th><th>Cached</th><th>Output tok</th><th>Failed</th><th>Cost</th></tr></thead>
+      <tbody>
+        ${usageRow("Last 5 min", r5)}
+        ${usageRow(`This run (${esc(u.sim || "none")})`, u.run)}
+        ${usageRow("Today", u.today)}
+        ${usageRow("All time", u.all)}
+      </tbody>
+    </table>
+    <div class="section"><h3>Right now</h3>
+      <p style="margin:0">${r5.calls ? `${perMin(r5.calls).toFixed(1)} calls and ${num(perMin(r5.in + r5.out))} tokens a minute, about ${usd(perMin(r5.cost) * 60)} per real hour at this pace.` : "No calls in the last 5 minutes."}
+      ${lat.avg != null ? ` Responses take ${lat.avg.toFixed(1)}s on average; the slowest 5% take over ${lat.p95.toFixed(1)}s.` : ""}
+      ${u.run.cached ? ` ${Math.round((u.run.cached / Math.max(u.run.in, 1)) * 100)}% of input tokens this run were cached and billed at half price.` : ""}</p>
+    </div>
+    <div class="section"><h3>Cost by agent, this run</h3>${bars(u.agents, "No agent calls yet this run.")}</div>
+    <div class="section"><h3>What triggered the calls, this run</h3>${bars(u.sources.map((g) => ({...g, name: g.name === "step" ? "simulation steps" : g.name})), "No calls yet this run.")}</div>
+    <div class="section"><h3>By model, all time</h3>${bars(u.models, "")}</div>
+    <div class="section"><h3>Failed calls</h3>${u.errors.length ? u.errors.map((e) => `
+      <div class="err-row"><b>${new Date(e.ts * 1000).toLocaleTimeString()}</b> ${esc(e.model)}${e.status ? `, HTTP ${e.status}` : ""}${e.persona ? `, ${esc(e.persona)}` : ""}<div class="mono">${esc(e.error)}</div></div>`).join("")
+      : `<div class="empty" style="padding:0">None. Failed calls, such as rate limits (HTTP 429), would show up here.</div>`}</div>
+    <div class="hint">Tracking since ${since}. Costs are estimates from token counts and the prices in translator/dashboard.py (${Object.entries(u.prices).filter(([k]) => u.models.some((m) => m.name.startsWith(k))).map(([k, p]) => `${k}: $${p[0]} in, $${p[1]} cached, $${p[2]} out per 1M`).join("; ") || "standard tier"}). Check the OpenAI usage page for the exact bill.</div>`);
+}
+$("cost-pill").onclick = () => $("tab-usage").click();
+
+pollUsage();
 poll();
 </script>
 </body>

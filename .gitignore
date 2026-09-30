@@ -104,3 +104,5 @@ ENV/
 .gstack/
 *.log.*
 environment/frontend_server/temp_storage/dashboard/
+reverie/backend_server/logs/
+environment/frontend_server/logs/
