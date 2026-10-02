@@ -12,6 +12,8 @@ from typing import List, Optional
 
 from utils import *
 from sim_logging import get_logger
+from llm import usage
+import run_env
 
 log = get_logger("llm")
 
@@ -49,31 +51,36 @@ def chat_completion(messages,
   Returns assistant text content.
   """
   provider = (provider or globals().get("llm_provider", "openai")).lower()
-  model = _chat_model_name(model)
+  # Staging runs use a cheaper model for every chat call (run_env.py).
+  model = run_env.chat_model(_chat_model_name(model))
   prompt_chars = sum(len(m.get("content") or "") for m in messages)
   t0 = time.time()
   log.debug("chat_completion start provider=%s model=%s msgs=%s chars=%s",
             provider, model, len(messages), prompt_chars)
   try:
     if provider == "anthropic":
-      out = _anthropic_chat(messages, model, temperature, max_tokens, stop)
+      out, tokens = _anthropic_chat(messages, model, temperature, max_tokens, stop)
     elif provider == "openai_compatible":
-      out = _openai_chat(
+      out, tokens = _openai_chat(
         messages, model, temperature, max_tokens, stop,
         api_key=globals().get("openai_compatible_api_key") or globals().get("openai_api_key"),
         base_url=globals().get("openai_compatible_base_url") or None,
       )
     else:
-      out = _openai_chat(
+      out, tokens = _openai_chat(
         messages, model, temperature, max_tokens, stop,
         api_key=globals().get("openai_api_key"),
         base_url=None,
       )
     dt = time.time() - t0
-    log.info("chat_completion ok provider=%s model=%s %.2fs out_chars=%s",
-             provider, model, dt, len(out or ""))
+    usage.record("chat", provider, model, *tokens, secs=dt)
+    log.info("chat_completion ok provider=%s model=%s %.2fs out_chars=%s "
+             "tokens_in=%s tokens_out=%s", provider, model, dt, len(out or ""),
+             tokens[0], tokens[1])
     return out
-  except Exception:
+  except Exception as e:
+    usage.record("chat", provider, model, secs=time.time() - t0, ok=False,
+                 error=e)
     log.exception("chat_completion FAILED provider=%s model=%s after %.2fs",
                   provider, model, time.time() - t0)
     raise
@@ -90,7 +97,11 @@ def _openai_chat(messages, model, temperature, max_tokens, stop, api_key, base_u
   if stop:
     kwargs["stop"] = stop
   resp = client.chat.completions.create(**kwargs)
-  return resp.choices[0].message.content or ""
+  u = resp.usage
+  details = getattr(u, "prompt_tokens_details", None) if u else None
+  tokens = (getattr(u, "prompt_tokens", 0), getattr(u, "completion_tokens", 0),
+            getattr(details, "cached_tokens", 0) or 0)
+  return resp.choices[0].message.content or "", tokens
 
 
 def _anthropic_chat(messages, model, temperature, max_tokens, stop):
@@ -122,7 +133,10 @@ def _anthropic_chat(messages, model, temperature, max_tokens, stop):
   for block in resp.content:
     if getattr(block, "type", None) == "text":
       parts.append(block.text)
-  return "".join(parts)
+  u = resp.usage
+  tokens = (getattr(u, "input_tokens", 0), getattr(u, "output_tokens", 0),
+            getattr(u, "cache_read_input_tokens", 0) or 0)
+  return "".join(parts), tokens
 
 
 def get_embedding_vector(text: str, model: Optional[str] = None) -> List[float]:
@@ -146,10 +160,14 @@ def get_embedding_vector(text: str, model: Optional[str] = None) -> List[float]:
 
     resp = client.embeddings.create(input=[text], model=model)
     vec = resp.data[0].embedding
+    usage.record("embedding", provider, model,
+                 getattr(resp.usage, "prompt_tokens", 0), secs=time.time() - t0)
     log.debug("embedding ok provider=%s model=%s %.2fs dims=%s",
               provider, model, time.time() - t0, len(vec))
     return vec
-  except Exception:
+  except Exception as e:
+    usage.record("embedding", provider, model, secs=time.time() - t0,
+                 ok=False, error=e)
     log.exception("embedding FAILED provider=%s model=%s after %.2fs",
                   provider, model, time.time() - t0)
     raise
@@ -173,5 +191,11 @@ def extract_json_output(text: str):
     raise ValueError("no json object found")
   obj = json.loads(cleaned[start:end + 1])
   if isinstance(obj, dict) and "output" in obj:
-    return obj["output"]
+    out = obj["output"]
+    # The prompts' examples quote the value ({"output": "5"}) and the clean-up
+    # functions expect text, but some models (e.g. gpt-4o-mini) answer with a
+    # bare number ({"output": 8}). Lists and objects are left as they are.
+    if isinstance(out, (int, float)) and not isinstance(out, bool):
+      out = str(out)
+    return out
   return obj

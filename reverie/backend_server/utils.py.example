@@ -39,6 +39,20 @@ log_to_file = True
 log_dir = "logs"         # relative to reverie/backend_server/, or an absolute path
 capture_prints = True    # also write print()/stderr output to the log file
 
+# --- Run environment (run_env.py) ---
+# "staging" (the default, also when this line is missing): for trying
+# code cheaply. Every chat call uses staging_chat_model, runs get
+# staging_budget_usd as their spending cap unless one is set on the
+# dashboard, and new run names start with "stg-". A different model
+# behaves differently, so staging results aren't comparable with
+# production runs.
+# "production": the models above, for real experiments. Production run
+# names start with "prod-", and git tracks those runs; staging runs stay
+# out of git.
+run_env = "staging"
+staging_chat_model = "gpt-4o-mini"
+staging_budget_usd = 1.00
+
 # Experiment logging
 experiment_scenario_id = "datacenter_proposal_v1"
 snapshot_every_n_steps = 50

@@ -21,10 +21,19 @@ from django.conf.urls.static import static
 from django.views.generic.base import RedirectView
 
 from translator import views as translator_views
+from translator import dashboard
 
 urlpatterns = [
     url(r'^$', translator_views.landing, name='landing'),
     url(r'^simulator_home$', translator_views.home, name='home'),
+    url(r'^dashboard/?$', dashboard.dashboard, name='dashboard'),
+    url(r'^dashboard/state/$', dashboard.dashboard_state, name='dashboard_state'),
+    url(r'^dashboard/log/$', dashboard.dashboard_log, name='dashboard_log'),
+    url(r'^dashboard/usage/$', dashboard.dashboard_usage, name='dashboard_usage'),
+    url(r'^dashboard/run/(?P<sim>[\w-]+)/$', dashboard.dashboard_run, name='dashboard_run'),
+    url(r'^dashboard/command/$', dashboard.dashboard_command, name='dashboard_command'),
+    url(r'^dashboard/launch/$', dashboard.dashboard_launch, name='dashboard_launch'),
+    url(r'^dashboard/settings/$', dashboard.dashboard_settings, name='dashboard_settings'),
     # Common misspellings of the simulator page (incl. trailing slash).
     url(r'^(?:simulation_home|simulator_home/|simulation_home/)$',
         RedirectView.as_view(pattern_name='home', permanent=False)),

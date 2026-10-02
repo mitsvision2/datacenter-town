@@ -217,17 +217,23 @@ def run_gpt_prompt_generate_hourly_schedule(persona,
     return prompt_input
 
   def __func_clean_up(gpt_response, prompt=""):
-    cr = gpt_response.strip()
+    # Completion models continue the trailing "[(ID:..) <date> -- <hour>]
+    # Activity: <Name> is" stub. Chat models echo that stub back (sometimes
+    # followed by later hours), so keep the first line and strip the stub.
+    cr = gpt_response.strip().split("\n")[0].strip()
+    cr = re.sub(r"^\[[^\]]*\]\s*Activity:\s*", "", cr)
+    cr = re.sub(rf"^{re.escape(persona.scratch.get_str_firstname())} is\s+",
+                "", cr)
     if cr[-1] == ".":
       cr = cr[:-1]
     return cr
 
-  def __func_validate(gpt_response, prompt=""): 
+  def __func_validate(gpt_response, prompt=""):
     try: __func_clean_up(gpt_response, prompt="")
     except: return False
     return True
 
-  def get_fail_safe(): 
+  def get_fail_safe():
     fs = "asleep"
     return fs
 
@@ -374,17 +380,14 @@ def run_gpt_prompt_task_decomp(persona,
         continue
       m = re.match(r"^\d+\)\s*\S+\s+is\s+(.*)$", i)
       _cr += [m.group(1) if m else i]
-    # region agent log
-    if prompt:
-      import json as _j, time as _t
-      with open("/Users/rituraj/Documents/projects and stuff/AP/AI town/code/datacenter-town/.cursor/debug-4daca5.log", "a") as _dbg: _dbg.write(_j.dumps({"sessionId": "4daca5", "runId": "post-fix", "hypothesisId": "D", "location": "run_gpt_prompt.py:task_decomp_clean_up", "message": "parsed subtasks", "data": {"raw_lines": len(temp), "blank_lines": sum(1 for t in temp if not t), "parsed": len(_cr), "first_task": _cr[0][:80] if _cr else None}, "timestamp": int(_t.time() * 1000)}) + "\n")
-    # endregion
     for count, i in enumerate(_cr): 
       k = [j.strip() for j in i.split("(duration in minutes:")]
       task = k[0]
       if task[-1] == ".": 
         task = task[:-1]
-      duration = int(k[1].split(",")[0].strip())
+      # First number after "duration in minutes:". Some models leave out
+      # ", minutes left: N", which left "120)" for int() to choke on.
+      duration = int(re.match(r"\s*(\d+)", k[1]).group(1))
       cr += [[task, duration]]
 
     total_expected_min = int(prompt.split("(total duration in minutes")[-1]
@@ -423,17 +426,17 @@ def run_gpt_prompt_task_decomp(persona,
     return cr
 
   def __func_validate(gpt_response, prompt=""): 
-    # TODO -- this sometimes generates error 
+    # Reject replies the clean-up can't parse, so they're retried and then
+    # replaced by the fail-safe rather than crashing the run.
     try: 
-      __func_clean_up(gpt_response)
-    except: 
-      pass
-      # return False
-    return gpt_response
+      return bool(__func_clean_up(gpt_response, prompt))
+    except Exception: 
+      return False
 
   def get_fail_safe(): 
-    fs = ["asleep"]
-    return fs
+    # Keep the task undivided. The result replaces one schedule entry, so it
+    # must be [task, minutes] pairs (the old ["asleep"] broke the schedule).
+    return [[task, duration]]
 
   gpt_param = {"engine": "text-davinci-003", "max_tokens": 1000, 
              "temperature": 0, "top_p": 1, "stream": False,
@@ -445,8 +448,11 @@ def run_gpt_prompt_task_decomp(persona,
 
   print ("?????")
   print (prompt)
-  output = safe_generate_response(prompt, gpt_param, 5, get_fail_safe(),
+  output = safe_generate_response(prompt, gpt_param, 5, fail_safe,
                                    __func_validate, __func_clean_up)
+  if output is fail_safe: 
+    # Not decomposed: return the task as it was, not "task (task)".
+    return fail_safe, [fail_safe, prompt, gpt_param, prompt_input, fail_safe]
 
   # TODO THERE WAS A BUG HERE... 
   # This is for preventing overflows...
@@ -2770,26 +2776,20 @@ def run_gpt_generate_safety_score(persona, comment, test_input=None, verbose=Fal
     prompt_input = [comment]
     return prompt_input
 
-  def __chat_func_clean_up(gpt_response, prompt=""): 
-    gpt_response = json.loads(gpt_response)
-    return gpt_response["output"]
+  # Chat models often wrap the JSON in ```json fences, which json.loads
+  # rejects; extract_first_json_dict finds the object inside.
+  def __chat_func_clean_up(gpt_response, prompt=""):
+    return extract_first_json_dict(gpt_response)["output"]
 
-  def __chat_func_validate(gpt_response, prompt=""): 
-    try: 
-      fields = ["output"]
-      response = json.loads(gpt_response)
-      for field in fields: 
-        if field not in response: 
-          return False
-      return True
-    except:
-      return False 
+  def __chat_func_validate(gpt_response, prompt=""):
+    response = extract_first_json_dict(gpt_response)
+    return bool(response) and "output" in response
 
   def get_fail_safe():
     return None
 
   print ("11")
-  prompt_template = "persona/prompt_template/safety/anthromorphosization_v1.txt" 
+  prompt_template = "persona/prompt_template/safety/anthromorphosization_v1.txt"
   prompt_input = create_prompt_input(comment) 
   print ("22")
   prompt = generate_prompt(prompt_input, prompt_template)
