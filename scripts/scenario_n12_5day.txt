@@ -1,0 +1,85 @@
+# DRAFT scenario for base_the_ville_datacenter_n12: 5 game days (43,200 steps).
+# Event wording is taken from the kickoff deck's one-line descriptions; no numbers
+# are invented. The team must agree the exact text (and a canonical fact sheet)
+# before a real run. Run from reverie/backend_server:
+#   python reverie.py base_the_ville_datacenter_n12 <run-name> --script ../../scripts/scenario_n12_5day.txt
+# 1 step = 10 game seconds, 360 steps = 1 hour, 8640 = 1 day. Day 1 has no events.
+# 'checkpoint' saves and keeps a copy named <run>-ckpt-<step>. One before each event
+# (clean pre-event state) and one every 6 game hours. If a run stops early, or a
+# command fails, the rest of this script is skipped, so no event fires at the wrong time.
+
+call -- load history the_ville/agent_history_init_datacenter_n12.csv
+checkpoint
+run 2160
+checkpoint
+run 2160
+checkpoint
+run 2160
+checkpoint
+run 2160
+checkpoint
+run 2160
+checkpoint
+run 1080
+checkpoint
+# Day 2, 09:00 - Proposal
+call -- whisper all ;; The company filed its datacenter proposal. It includes tax incentives and projected construction jobs.
+run 1080
+checkpoint
+run 1080
+checkpoint
+# Day 2, 15:00 - Independent report
+call -- whisper all ;; An independent report on the proposal was published. It found many temporary construction jobs but fewer permanent roles.
+run 1080
+checkpoint
+run 2160
+checkpoint
+run 2160
+checkpoint
+run 1080
+checkpoint
+# Day 3, 09:00 - Utility warning
+call -- whisper all ;; The utility warned that the datacenter could lead to an increase in household electricity rates.
+run 1080
+checkpoint
+run 1080
+checkpoint
+# Day 3, 15:00 - Company revision
+call -- whisper all ;; The company revised its plan to use recycled water and dedicated clean power.
+run 1080
+checkpoint
+run 2160
+checkpoint
+run 2160
+checkpoint
+run 1080
+checkpoint
+# Day 4, 09:00 - External shock
+call -- whisper all ;; A heat wave hit the region and was followed by a grid emergency.
+run 1080
+checkpoint
+run 1080
+checkpoint
+# Day 4, 15:00 - Trust shock
+call -- whisper all ;; A leaked memo was published that conflicts with an earlier claim by the company.
+run 1080
+checkpoint
+run 2160
+checkpoint
+run 2160
+checkpoint
+run 1080
+checkpoint
+# Day 5, 09:00 - Social signal
+call -- whisper all ;; A union endorsed the datacenter, and a group of residents organized opposition to it.
+run 1080
+checkpoint
+run 1080
+checkpoint
+# Day 5, 15:00 - Negotiation
+call -- whisper all ;; The company and community groups announced an enforceable community benefits agreement.
+run 1080
+checkpoint
+run 2160
+checkpoint
+fin

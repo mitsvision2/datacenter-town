@@ -232,6 +232,34 @@ class ReverieServer:
     log.info("Save complete for %s", self.sim_code)
 
 
+  def checkpoint(self):
+    """
+    Saves, then copies the run to <sim>-ckpt-<step> so that its state at this
+    step can still be forked and questioned after later saves overwrite it.
+    The copy leaves out the per-step movement files and every environment
+    file except the current one, which is all a fork needs.
+    """
+    self.save()
+    src = f"{fs_storage}/{self.sim_code}"
+    dst = f"{src}-ckpt-{self.step:06d}"
+    keep_env = f"{self.step}.json"
+
+    def ignore(folder, names):
+      where = os.path.basename(folder)
+      if where == "movement":
+        return names
+      if where == "environment":
+        return [n for n in names if n != keep_env]
+      return []
+
+    shutil.copytree(src, dst, ignore=ignore)
+    log.info("Checkpoint written: %s", dst)
+    if getattr(self, "experiment_logger", None):
+      self.experiment_logger.log_event(
+        self.step, self.curr_time, "checkpoint", text=os.path.basename(dst))
+    return dst
+
+
   def _load_whispers(self, clean_whispers):
     """
     Adds whispered memories via load_history_via_whisper. Personas that have
@@ -538,13 +566,15 @@ class ReverieServer:
       time.sleep(self.server_sleep)
 
 
-  def open_server(self, initial_commands=()): 
+  def open_server(self, initial_commands=(), script=()):
     """
-    Open up an interactive terminal prompt that lets you run the simulation 
-    step by step and probe agent state. 
+    Open up an interactive terminal prompt that lets you run the simulation
+    step by step and probe agent state.
 
-    INPUT 
-      None
+    INPUT
+      script: commands to run in order before asking the terminal. If one
+              fails, or a run stops early (spending cap, stop button), the
+              rest are dropped so later events never fire at the wrong step.
     OUTPUT
       None
     """
@@ -560,11 +590,15 @@ class ReverieServer:
     self._stop_requested = False
     self._interviews = dict()
     feed = CommandFeed(on_stop=self.request_stop, initial=initial_commands)
+    self._script = list(script)
     write_state(self, "idle")
 
     while True:
       print ("Enter option: ", end="", flush=True)
-      cmd_id, sim_command = feed.get()
+      if self._script:
+        cmd_id, sim_command = None, self._script.pop(0)
+      else:
+        cmd_id, sim_command = feed.get()
       sim_command = sim_command.strip()
       ret_str = ""
       finished = False
@@ -605,6 +639,11 @@ class ReverieServer:
           self.save()
           ret_str += f"Saved at step {self.step}."
 
+        elif sim_command.lower() == "checkpoint":
+          # Saves, and keeps a copy of the run as it is now.
+          # Example: checkpoint
+          ret_str += f"Checkpoint at step {self.step}: {self.checkpoint()}"
+
         elif sim_command[:3].lower() == "run":
           # Runs the number of steps specified in the prompt.
           # Example: run 1000
@@ -614,16 +653,19 @@ class ReverieServer:
             ret_str += (f"Not started: this run has spent ${usage.run_cost:.4f}, "
                         f"which is over the ${cap:.2f} spending cap. Raise the "
                         f"cap to keep going.")
-          else: 
+            self._drop_script("spending cap reached")
+          else:
             log.info("Run requested for %s steps", int_count)
             self.budget_hit = False
             write_state(self, "running", int_count)
             self.start_server(int_count)
             ret_str += (f"Now at step {self.step}, "
                         f"{self.curr_time.strftime('%B %d, %H:%M')}.")
-            if self.budget_hit: 
+            if self.budget_hit:
               ret_str += (f" Stopped early: the ${load_settings().get('budget_usd') or 0:.2f} spending cap was "
                           f"reached (${usage.run_cost:.4f} spent). Saved.")
+            if self.budget_hit or self._stop_requested:
+              self._drop_script("run stopped early")
 
         elif ("print persona schedule" 
               in sim_command[:22].lower()): 
@@ -817,12 +859,20 @@ class ReverieServer:
         traceback.print_exc()
         log.exception("CLI command failed: %r", sim_command)
         print ("Error.")
+        self._drop_script("a command failed")
         record_result(cmd_id, sim_command, False, traceback.format_exc())
 
       if finished:
         write_state(self, "finished")
         break
       write_state(self, "idle")
+
+
+  def _drop_script(self, why):
+    if self._script:
+      log.warning("Script stopped (%s): %s command(s) not run, first was %r",
+                  why, len(self._script), self._script[0])
+      self._script = []
 
 
   def request_stop(self):
@@ -851,6 +901,17 @@ if __name__ == '__main__':
     i = args.index("--run")
     initial_commands += [f"run {int(args[i + 1])}"]
     args = args[:i] + args[i + 2:]
+  # --script <file>: one command per line (blank lines and # comments are
+  # skipped), run in order after any --history/--run. See scripts/ for examples.
+  script_commands = []
+  if "--script" in args:
+    i = args.index("--script")
+    with open(args[i + 1], encoding="utf-8") as script_file:
+      script_commands = [line.strip() for line in script_file
+                         if line.strip() and not line.lstrip().startswith("#")]
+    args = args[:i] + args[i + 2:]
+    script_commands = initial_commands + script_commands
+    initial_commands = []
   if len(args) == 2:
     origin, target = args
   else:
@@ -861,7 +922,7 @@ if __name__ == '__main__':
            run_env.RUN_ENV)
 
   rs = ReverieServer(origin, target)
-  rs.open_server(initial_commands)
+  rs.open_server(initial_commands, script_commands)
 
 
 

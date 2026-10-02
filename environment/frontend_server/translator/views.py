@@ -23,9 +23,27 @@ log = logging.getLogger("frontend.translator")
 
 def _pid_alive(pid):
   try:
-    os.kill(int(pid), 0)
+    pid = int(pid)
+  except (TypeError, ValueError):
+    return False
+  if os.name == "nt":
+    # On Windows os.kill(pid, 0) is not a liveness check: signal 0 is
+    # CTRL_C_EVENT, which fails with WinError 87 and can interrupt a process.
+    import ctypes
+    kernel32 = ctypes.windll.kernel32
+    handle = kernel32.OpenProcess(0x1000, False, pid)  # QUERY_LIMITED_INFO
+    if not handle:
+      return False
+    try:
+      code = ctypes.c_ulong()
+      return (bool(kernel32.GetExitCodeProcess(handle, ctypes.byref(code)))
+              and code.value == 259)  # STILL_ACTIVE
+    finally:
+      kernel32.CloseHandle(handle)
+  try:
+    os.kill(pid, 0)
     return True
-  except (OSError, TypeError, ValueError):
+  except OSError:
     return False
 
 

@@ -41,6 +41,11 @@ HOME_RENAMES = [
   ("Isabella Rodriguez's apartment", "Denise Brooks's apartment"),
   ("Latoya Williams's bathroom", "Aisha Rahman's bathroom"),
   ("Latoya Williams's room", "Aisha Rahman's room"),
+  ("Adam Smith's house", "Nora Wadia's house"),
+  ("Giorgio Rossi's apartment", "Daniel Kim's apartment"),
+  ("Carlos Gomez's apartment", "Sofia Alvarez's apartment"),
+  ("Rajiv Patel's bathroom", "Caleb Rivera's bathroom"),
+  ("Rajiv Patel's room", "Caleb Rivera's room"),
 ]
 
 

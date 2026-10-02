@@ -99,10 +99,16 @@ Other useful commands:
 | `call -- analysis Elena Chen` | Interviews a resident without saving anything to memory (type `end_convo` to stop) |
 | `print all persona schedule` | Shows every resident's current plan |
 | `save` | Saves progress and keeps the session open |
+| `checkpoint` | Saves, then keeps a copy of the run as `<run>-ckpt-<step>` (without the per-step movement files), so that state can be forked and questioned later |
 | `fin` | Saves and exits |
 | `exit` | Exits and **deletes** the current simulation folder |
 
 Residents: Maya Okonkwo (AI founder), Luis Hernandez (union electrician), Denise Brooks (business owner), Rachel Nguyen (teacher and parent), Tom Whitaker (long-term homeowner), Aisha Rahman (environmental advocate), Marcus Williams (community organizer), Elena Chen (utility planner).
+
+### The 12-resident base and scripted runs
+`base_the_ville_datacenter_n12` adds Caleb Rivera (job-seeking graduate), Daniel Kim (farmer), Nora Wadia (librarian) and Sofia Alvarez (grocery assistant) to the eight above; its history file is `agent_history_init_datacenter_n12.csv`. Rebuild it with `python scripts/build_datacenter_n12_base.py` (after `python scripts/datacenter_map.py build-map`); persona text lives in that script and in `build_datacenter_n8_base.py`.
+
+`python reverie.py <fork> <new sim> --script <file>` runs the commands in a file in order, one per line (blank lines and `#` comments are skipped). If a command fails, or a run stops early (spending cap, stop button), the rest of the file is skipped so scheduled events never fire at the wrong step. `scripts/scenario_n12_5day.txt` is a draft 5-day schedule with checkpoints and the eight events.
 
 ### Step 7. Resume or replay a run
 - **Resume:** start `reverie.py` again and enter the saved simulation name (e.g. `dc-run-1`) as the forked simulation, with a new target name (e.g. `dc-run-1b`).

@@ -84,7 +84,7 @@ def _sims():
   sims = []
   for meta_path in glob.glob("storage/*/reverie/meta.json"):
     meta = _read_json(meta_path, {})
-    name = meta_path.split("/")[1]
+    name = meta_path.replace("\\", "/").split("/")[1]
     sims.append({"name": name, "step": meta.get("step", 0),
                  "curr_time": meta.get("curr_time", ""),
                  "fork": meta.get("fork_sim_code"),
@@ -213,7 +213,7 @@ def _backend_status(state):
 
 
 def dashboard(request):
-  histories = sorted(p.split("static_dirs/assets/")[1]
+  histories = sorted(p.replace("\\", "/").split("static_dirs/assets/")[1]
                      for p in glob.glob(HISTORY_GLOB))
   return render(request, "dashboard/dashboard.html",
                 {"histories_json": json.dumps(histories)})
@@ -448,7 +448,8 @@ def dashboard_launch(request):
   if os.path.exists(f"storage/{sim}"):
     return JsonResponse({"error": f"{sim} already exists. Pick a new name."},
                         status=400)
-  allowed = [p.split("static_dirs/assets/")[1] for p in glob.glob(HISTORY_GLOB)]
+  allowed = [p.replace("\\", "/").split("static_dirs/assets/")[1]
+             for p in glob.glob(HISTORY_GLOB)]
   if history and history not in allowed:
     return JsonResponse({"error": "Unknown history file."}, status=400)
   try:
