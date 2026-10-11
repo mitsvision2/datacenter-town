@@ -1,0 +1,22 @@
+datacenter_stance_v1.txt
+
+Variables:
+!<INPUT 0>! -- agent name
+!<INPUT 1>! -- iss
+!<INPUT 2>! -- agent name
+!<INPUT 3>! -- statements (the agent's relevant memories, oldest first)
+!<INPUT 4>! -- agent name
+!<INPUT 5>! -- current date and time
+
+<commentblockmarker>###</commentblockmarker>
+Here is a brief description of !<INPUT 0>!.
+!<INPUT 1>!
+
+Here is what !<INPUT 2>! remembers that bears on the datacenter proposed for the town, oldest first. It is now !<INPUT 5>!.
+!<INPUT 3>!
+
+Rate where !<INPUT 4>! stands on building the datacenter right now, on a scale of 1 to 100, where 1 means completely against it and would act to stop it, 100 means completely in support of it and would act to get it built, and 50 means genuinely torn or holding no view either way.
+
+Rate the position held at the end of those memories, not the average across them. Where the memories disagree, the most recent ones are what this person thinks now.
+
+Any number from 1 to 100 is available to you. Do not round to a multiple of 5 or 10; if the position sits at 58 or 23, say 58 or 23. Someone who has firmly taken a side belongs in the first or last ten of the scale, so do not pull a settled position toward the middle. Someone who wants the datacenter only on conditions is not torn: rate how far the conditions being met would move them, and stay off 50 unless they really have no view. Judge from the memories above, not from what a reasonable person would conclude.

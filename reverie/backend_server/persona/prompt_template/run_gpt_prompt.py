@@ -2919,6 +2919,97 @@ def run_gpt_generate_iterative_chat_utt(maze, init_persona, target_persona, retr
                "frequency_penalty": 0, "presence_penalty": 0, "stop": None}
   return output, [output, prompt, gpt_param, prompt_input, fail_safe]
 
+# The line the datacenter stance probe retrieves against. It is never shown to
+# the agent and never stored, so it reads memory without adding to it.
+STANCE_QUESTION = ("the datacenter proposed for the town, and whether it "
+                   "should be built")
+STANCE_SEPARATOR = "||"
+# The top of the rating scale. 100 rather than 10 because a 10-point scale
+# cannot hold a conditional position: an agent who supports the datacenter only
+# if local hire is guaranteed has to pick "leans against" or "leans in support"
+# and flips between them hour to hour while the underlying belief never moves.
+STANCE_SCALE = 100
+
+
+def parse_stance(gpt_response):
+  """Splits a stance response into (score, rationale).
+
+  The score is None for anything that is not a whole number from 1 to
+  STANCE_SCALE. Unlike poignancy, a failed read is never replaced with a
+  middling default: a made-up midpoint would be indistinguishable from an agent
+  that is genuinely torn, so the graph shows a gap instead.
+  """
+  text = str(gpt_response if gpt_response is not None else "").strip()
+  rating, _, rationale = text.partition(STANCE_SEPARATOR)
+  try:
+    score = int(round(float(rating.strip())))
+  except ValueError:
+    return None, text
+  if not 1 <= score <= STANCE_SCALE:
+    return None, text
+  return score, rationale.strip()
+
+
+def run_gpt_prompt_datacenter_stance(persona, statements, test_input=None,
+                                     verbose=False):
+  """Rates where the persona stands on the datacenter, from 1 (against) to
+  STANCE_SCALE (in support), with one sentence of reasoning. Read-only: the
+  caller retrieves with touch=False and nothing is written back to the
+  persona's memory."""
+  def create_prompt_input(persona, statements, test_input=None):
+    prompt_input = [persona.scratch.name,
+                    persona.scratch.get_str_iss(),
+                    persona.scratch.name,
+                    statements,
+                    persona.scratch.name,
+                    persona.scratch.curr_time.strftime("%B %d, %Y, %H:%M")]
+    return prompt_input
+
+  # The last response seen, so a probe the model never rated is logged as it
+  # came back rather than as an empty row.
+  seen = {"response": None}
+
+  def __chat_func_clean_up(gpt_response, prompt=""):
+    return parse_stance(gpt_response)
+
+  def __chat_func_validate(gpt_response, prompt=""):
+    seen["response"] = gpt_response
+    return parse_stance(gpt_response)[0] is not None
+
+  def get_fail_safe():
+    return None, ""
+
+  gpt_param = {"engine": "text-davinci-002", "max_tokens": 120,
+               "temperature": 0, "top_p": 1, "stream": False,
+               "frequency_penalty": 0, "presence_penalty": 0, "stop": None}
+  prompt_template = "persona/prompt_template/v3_ChatGPT/datacenter_stance_v1.txt"
+  prompt_input = create_prompt_input(persona, statements)
+  prompt = generate_prompt(prompt_input, prompt_template)
+  example_output = ("23 || The jobs would help, but after the water meeting I "
+                    "can\'t see a version of this I could live with.")
+  special_instruction = (f"The output should be the rating from 1 to "
+                         f"{STANCE_SCALE}, then \' {STANCE_SEPARATOR} \', then "
+                         f"one sentence of reasoning in the agent\'s own voice.")
+  fail_safe = get_fail_safe()
+  # The only prompt here that passes its temperature through. The others leave
+  # gpt_param unused and sample at the chat_completion default, which is fine
+  # for behaviour but not for a measurement: re-reading an unchanged memory set
+  # has to give the same number twice, or a flat line means nothing.
+  output = ChatGPT_safe_generate_response(prompt, example_output,
+                                          special_instruction, 3, fail_safe,
+                                          __chat_func_validate,
+                                          __chat_func_clean_up, verbose,
+                                          temperature=gpt_param["temperature"])
+  if output is False:
+    # Three tries with no usable rating. Keep the gap and the raw answer.
+    output = parse_stance(seen["response"])
+
+  if debug or verbose:
+    print_run_prompts(prompt_template, persona, gpt_param,
+                      prompt_input, prompt, output)
+
+  return output, [output, prompt, gpt_param, prompt_input, fail_safe]
+
 
 
 

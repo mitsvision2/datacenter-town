@@ -57,7 +57,7 @@ class Scratch:
     self.recency_w = 1
     self.relevance_w = 1
     self.importance_w = 1
-    self.recency_decay = 0.99
+    self.recency_decay = 0.995
     self.importance_trigger_max = 150
     self.importance_trigger_curr = self.importance_trigger_max
     self.importance_ele_n = 0 
