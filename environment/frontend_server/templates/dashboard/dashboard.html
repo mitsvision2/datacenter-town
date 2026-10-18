@@ -1116,11 +1116,17 @@ function renderAgent() {
     <div class="chips" role="group" aria-label="Memory categories">${chips}</div>
     ${memCategory(a, memCat)}`);
 
-  // Profile
+  // Profile. The last three are only set on casts built for measuring belief
+  // change, so each is left out when empty rather than shown as a blank.
+  const trait = (title, text) => text
+    ? `<div class="section"><h3>${title}</h3><p class="quote">${esc(text)}</p></div>` : "";
   paint($("a-profile"), `
-    <div class="section"><h3>Personality</h3><p class="quote">${esc(a.innate)}</p></div>
-    <div class="section"><h3>Background</h3><p class="quote">${esc(a.learned)}</p></div>
-    <div class="section"><h3>Daily life</h3><p class="quote">${esc(a.lifestyle)}</p></div>`);
+    ${trait("Personality", a.innate)}
+    ${trait("Background", a.learned)}
+    ${trait("Daily life", a.lifestyle)}
+    ${trait("What they care about", a.values)}
+    ${trait("What's at stake for them", a.stake)}
+    ${trait("How they change their mind", a.persuadability)}`);
 }
 
 function scrollPlanToCurrent() {

@@ -210,6 +210,8 @@ def _persona_state(p):
     "name": s.name, "first_name": s.first_name, "age": s.age,
     "innate": s.innate, "learned": s.learned, "lifestyle": s.lifestyle,
     "living_area": s.living_area, "currently": s.currently,
+    "values": s.values, "stake": s.stake,
+    "persuadability": s.persuadability,
     "daily_plan_req": s.daily_plan_req, "daily_req": s.daily_req,
     "act_description": s.act_description,
     "act_pronunciatio": s.act_pronunciatio,

@@ -2929,18 +2929,30 @@ STANCE_SEPARATOR = "||"
 # if local hire is guaranteed has to pick "leans against" or "leans in support"
 # and flips between them hour to hour while the underlying belief never moves.
 STANCE_SCALE = 100
+# What the model answers instead of a number when none of the memories it was
+# shown bear on the datacenter. Retrieval has no relevance floor and always
+# returns its n best candidates, so early in a run the probe is handed whatever
+# is nearest -- sleeping, eating breakfast -- and the only thing in the prompt
+# that speaks to the question is the persona description. Forcing a number
+# there produces a reading of the persona text rather than of the agent's
+# memory, and it looks like a settled baseline on the graph. Abstaining leaves
+# a gap, which is the honest answer.
+STANCE_ABSTAIN = "none"
 
 
 def parse_stance(gpt_response):
   """Splits a stance response into (score, rationale).
 
-  The score is None for anything that is not a whole number from 1 to
-  STANCE_SCALE. Unlike poignancy, a failed read is never replaced with a
-  middling default: a made-up midpoint would be indistinguishable from an agent
-  that is genuinely torn, so the graph shows a gap instead.
+  The score is None for an abstention and for anything that is not a whole
+  number from 1 to STANCE_SCALE. Unlike poignancy, a failed read is never
+  replaced with a middling default: a made-up midpoint would be
+  indistinguishable from an agent that is genuinely torn, so the graph shows a
+  gap instead.
   """
   text = str(gpt_response if gpt_response is not None else "").strip()
   rating, _, rationale = text.partition(STANCE_SEPARATOR)
+  if rating.strip().lower().rstrip(".") == STANCE_ABSTAIN:
+    return None, rationale.strip()
   try:
     score = int(round(float(rating.strip())))
   except ValueError:
@@ -2948,6 +2960,43 @@ def parse_stance(gpt_response):
   if not 1 <= score <= STANCE_SCALE:
     return None, text
   return score, rationale.strip()
+
+
+def is_stance_abstention(gpt_response):
+  """Whether the model declined to rate, rather than answering unusably.
+
+  Both come back from parse_stance as a None score, but only the second is
+  worth retrying, and only the first should keep its rationale.
+  """
+  text = str(gpt_response if gpt_response is not None else "").strip()
+  rating, _, _ = text.partition(STANCE_SEPARATOR)
+  return rating.strip().lower().rstrip(".") == STANCE_ABSTAIN
+
+
+def stance_iss(scratch):
+  """The part of the identity stable set the stance probe is allowed to see.
+
+  get_str_iss() also carries innate and learned traits, lifestyle, values,
+  stake, persuadability, currently and the daily plan requirement. Every one of
+  those lets a position be inferred without ever stating one -- a farmer whose
+  house is paid off two thirds of a mile from the site reads as against it --
+  so with them in the prompt the model can rate from the description instead of
+  from the memories, and that rating looks like a settled baseline rather than
+  the absence of a reading.
+
+  Worse over a run of several days: revise_identity (plan.py:413) rewrites
+  <currently> and <daily_plan_req> from the agent's own reflections at every
+  day boundary. Those two sit in every hourly prompt, so they are a second
+  signal that drifts in whatever direction the agent has been reflecting --
+  the exact shape of the result this graph exists to detect -- and they
+  double-count reflections that are already in the retrieval pool.
+
+  Name and age stay: the retrieved memories name people, and rating someone
+  whose name the model does not know is rating a stranger. What an agent
+  personally has at stake still reaches the probe, the way it should -- as
+  dated memories in the evidence, which is what the whisper seeding puts there.
+  """
+  return f"Name: {scratch.name}\nAge: {scratch.age}\n"
 
 
 def run_gpt_prompt_datacenter_stance(persona, statements, test_input=None,
@@ -2958,7 +3007,7 @@ def run_gpt_prompt_datacenter_stance(persona, statements, test_input=None,
   persona's memory."""
   def create_prompt_input(persona, statements, test_input=None):
     prompt_input = [persona.scratch.name,
-                    persona.scratch.get_str_iss(),
+                    stance_iss(persona.scratch),
                     persona.scratch.name,
                     statements,
                     persona.scratch.name,
@@ -2974,22 +3023,48 @@ def run_gpt_prompt_datacenter_stance(persona, statements, test_input=None,
 
   def __chat_func_validate(gpt_response, prompt=""):
     seen["response"] = gpt_response
-    return parse_stance(gpt_response)[0] is not None
+    # An abstention is an answer, not a bad read, so it is not retried.
+    return (parse_stance(gpt_response)[0] is not None
+            or is_stance_abstention(gpt_response))
 
   def get_fail_safe():
     return None, ""
 
+  # Only "temperature" below is read; ChatGPT_request forwards nothing else, so
+  # max_tokens here is inert and the real ceiling is chat_completion's default
+  # of 1024. Leave it alone -- a one-sentence rationale is nowhere near that,
+  # and raising this number would only look like it had done something.
   gpt_param = {"engine": "text-davinci-002", "max_tokens": 120,
                "temperature": 0, "top_p": 1, "stream": False,
                "frequency_penalty": 0, "presence_penalty": 0, "stop": None}
-  prompt_template = "persona/prompt_template/v3_ChatGPT/datacenter_stance_v1.txt"
+  # v2 over v1, measured on 24 readings of a game day replayed through both
+  # with the same evidence. v1 states the above-50 bar four times -- effort
+  # "must never on their own push a rating above 50", rate above 50 "only
+  # when", and so on -- and that ceiling holds even against evidence that
+  # clears it: Maya Okonkwo, who is quoted pushing the datacenter for the sake
+  # of her funding round, reads 45 under v1 and 85 under v2, and v1 put none of
+  # the 24 readings above 50 against v2's three. v2 also fixes the attribution
+  # the rationales exposed, from "Aisha is focused on the missing water figure"
+  # to "I have serious concerns about the water usage", by telling the model
+  # that a summary records what a conversation covered rather than what this
+  # person made of it.
+  prompt_template = "persona/prompt_template/v3_ChatGPT/datacenter_stance_v2.txt"
   prompt_input = create_prompt_input(persona, statements)
   prompt = generate_prompt(prompt_input, prompt_template)
-  example_output = ("23 || The jobs would help, but after the water meeting I "
-                    "can\'t see a version of this I could live with.")
+  # The number here is copied. Across 184 readings of one game day, 55 of them
+  # -- 30% -- came back as exactly 23, the value this example used to carry,
+  # while all six neighbouring values from 20 to 26 held 7 between them. A real
+  # measurement does not spike on one integer with empty bins either side.
+  # 71 is deliberately on the other side of the scale from where this cast sits,
+  # so if it starts dominating the distribution the anchoring is visible again
+  # instead of hiding among the genuinely-against readings.
+  example_output = ("71 || The jobs are real and I have said so at two "
+                    "meetings, even though the rate question still bothers me.")
   special_instruction = (f"The output should be the rating from 1 to "
-                         f"{STANCE_SCALE}, then \' {STANCE_SEPARATOR} \', then "
-                         f"one sentence of reasoning in the agent\'s own voice.")
+                         f"{STANCE_SCALE}, or \'{STANCE_ABSTAIN}\' if the "
+                         f"memories do not bear on the datacenter at all, then "
+                         f"\' {STANCE_SEPARATOR} \', then one sentence of "
+                         f"reasoning in the agent\'s own voice.")
   fail_safe = get_fail_safe()
   # The only prompt here that passes its temperature through. The others leave
   # gpt_param unused and sample at the chat_completion default, which is fine

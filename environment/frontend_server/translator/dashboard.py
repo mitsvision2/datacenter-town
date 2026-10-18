@@ -205,6 +205,8 @@ def _saved_agent(sim, name):
     "name": s.get("name", name), "first_name": s.get("first_name"), "age": s.get("age"),
     "innate": s.get("innate"), "learned": s.get("learned"), "lifestyle": s.get("lifestyle"),
     "living_area": s.get("living_area"), "currently": s.get("currently"),
+    "values": s.get("values"), "stake": s.get("stake"),
+    "persuadability": s.get("persuadability"),
     "daily_plan_req": s.get("daily_plan_req"), "daily_req": s.get("daily_req"),
     "act_description": s.get("act_description"), "act_pronunciatio": s.get("act_pronunciatio"),
     "act_address": s.get("act_address"), "act_start_time": s.get("act_start_time"),

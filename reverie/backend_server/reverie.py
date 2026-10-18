@@ -251,13 +251,26 @@ class ReverieServer:
       # Billed separately so probes don't show up as the cost of a step.
       usage.context.update(persona=name, source="opinion_probe",
                            step=self.step)
-      score, rationale, evidence = probe_opinion(persona)
+      (score, rationale, evidence, relevance, withheld,
+       quoted) = probe_opinion(persona)
       # The scale goes in every row: it moved from 10 to 100 once already, and
       # a bare score is unreadable without knowing which scale it was on.
+      # <relevance> says how much the memories behind the rating had to do with
+      # the datacenter at all, which a score alone cannot tell you, and
+      # <withheld> separates the gaps the probe chose from the ones where the
+      # model was asked and gave nothing usable. <quoted> counts the agent's
+      # own spoken lines that went in beside the memories and the window they
+      # came from, which is what would show a long run drawing its evidence
+      # from one early week (see opinion_probe.quoted_span).
       readings += [{"name": name, "score": score, "scale": STANCE_SCALE,
                     "rationale": rationale, "evidence": evidence,
+                    "relevance": relevance, "withheld": withheld,
+                    "quoted": quoted,
                     "model": model, "run_env": run_env.RUN_ENV}]
-      log.info("  stance=%s %s: %s", name, score, (rationale or "")[:120])
+      shown = relevance["shown"]
+      log.info("  stance=%s %s rel=%s: %s", name, withheld or score,
+               "n/a" if shown is None else f"{shown:.2f}",
+               (rationale or "")[:120])
     usage.context.update(caller)
     if readings and getattr(self, "experiment_logger", None):
       self.experiment_logger.log_opinions(

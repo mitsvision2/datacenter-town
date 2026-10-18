@@ -41,7 +41,13 @@ def generate_focal_points(persona, n=3):
   return run_gpt_prompt_focal_pt(persona, statements, n)[0]
 
 
-def generate_insights_and_evidence(persona, nodes, n=5): 
+# What generate_insights_and_evidence hands back when it cannot read the
+# model's output. Named here so run_reflect can recognise it instead of
+# storing it as a thought; see the note at that call site.
+BLANK_INSIGHTS = ("this is blank",)
+
+
+def generate_insights_and_evidence(persona, nodes, n=5):
   if debug: print ("GNS FUNCTION: <generate_insights_and_evidence>")
 
   statements = ""
@@ -127,6 +133,15 @@ def run_reflect(persona):
 
     thoughts = generate_insights_and_evidence(persona, nodes, 5)
     for thought, evidence in thoughts.items():
+      # generate_insights_and_evidence returns {"this is blank": "node_1"} when
+      # it cannot parse the model's insights. Stored, that sentinel becomes a
+      # real memory with a real poignancy that competes for retrieval slots: a
+      # single game day of eight agents left 39 of them in memory, 8 of which
+      # the stance probe went on to cite as evidence. Skipping the batch costs
+      # one reflection's insights, which is what the parse failure cost anyway.
+      if thought in BLANK_INSIGHTS:
+        print(f"skipping unparsed insight batch for {persona.scratch.name}")
+        continue
       created = persona.scratch.curr_time
       expiration = persona.scratch.curr_time + datetime.timedelta(days=30)
       s, p, o = generate_action_event_triple(thought, persona)
