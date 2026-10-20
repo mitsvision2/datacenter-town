@@ -127,6 +127,8 @@ def build(row, nodes, embeddings, question, reserved):
 
 
 def ask(template, persona, statements):
+  if template == live_template() and "rubric" in template:
+    return run_gpt_prompt.run_gpt_prompt_datacenter_stance(persona, statements)[0]
   prompt = generate_prompt(
     [persona.scratch.name, stance_iss(persona.scratch), persona.scratch.name,
      statements, persona.scratch.name,

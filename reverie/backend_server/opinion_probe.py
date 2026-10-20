@@ -1,5 +1,5 @@
 """
-Reads where each agent stands on the datacenter, on a 1-100 scale, so the
+Reads where each agent stands on the datacenter, on a 0-100 rubric, so the
 dashboard can graph how those positions move over the run.
 
 The probe is an observer, not a participant. It retrieves with touch=False and
@@ -58,7 +58,8 @@ from persona.cognitive_modules.retrieve import (
   cos_sim, extract_relevance, new_retrieve)
 from persona.prompt_template.gpt_structure import get_embedding
 from persona.prompt_template.run_gpt_prompt import (
-  STANCE_QUESTION, STANCE_SCALE, run_gpt_prompt_datacenter_stance)
+  STANCE_QUESTION, STANCE_SCALE, STANCE_SCORING_VERSION,
+  run_gpt_prompt_datacenter_stance)
 
 # Memories each rating is based on, the same number a normal retrieval uses.
 EVIDENCE_N = 30
@@ -288,11 +289,11 @@ def quoted_span(quoted):
           "last": created[-1].strftime("%Y-%m-%d %H:%M:%S")}
 
 
-def probe(persona):
+def probe(persona, with_metadata=False):
   """Reads one persona's position on the datacenter.
 
   Returns (score, rationale, evidence, relevance, withheld, quoted). <score>
-  is 1 to STANCE_SCALE, or None when the reading was withheld or the model
+  is 0 to STANCE_SCALE, or None when the reading was withheld or the model
   gave no usable rating; <evidence> is the node ids the rating was based on;
   <relevance> is measure_relevance's reading of how much those nodes had to do
   with the question; <withheld> names the reason a null score is null, or is
@@ -308,10 +309,24 @@ def probe(persona):
   said less gives the unused slots back to the memories, and early in a run,
   before anyone has spoken, the prompt is exactly what it was before.
   """
+  def result(score, rationale, evidence, relevance, withheld, quoted,
+             category=None, conditions=None):
+    if with_metadata:
+      return {"score": score, "rationale": rationale, "evidence": evidence,
+              "relevance": relevance, "withheld": withheld, "quoted": quoted,
+              "category": category, "conditions": conditions or [],
+              "scoring_version": STANCE_SCORING_VERSION}
+    return score, rationale, evidence, relevance, withheld, quoted
+
   if is_asleep(persona):
     # Before retrieval, which embeds the question and so costs a call.
-    return (None, f"{persona.scratch.name} is asleep.", [],
+    return result(None, f"{persona.scratch.name} is asleep.", [],
             {"shown": None, "best": None}, "asleep", quoted_span([]))
+
+  if not any("idle" not in node.embedding_key
+             for node in persona.a_mem.seq_event + persona.a_mem.seq_thought):
+    return result(None, "No retrievable memories yet.", [],
+                  {"shown": None, "best": None}, "no_memory", quoted_span([]))
 
   quoted = rank_utterances(own_utterances(persona), RESERVED_N)
 
@@ -342,7 +357,7 @@ def probe(persona):
     # they sit at a median cosine of 0.24, so RELEVANCE_FLOOR cannot be
     # applied to them, and no separate floor for them has been measured yet.
     best = relevance["best"]
-    return (None, f"Nothing in {persona.scratch.name}'s memory is close "
+    return result(None, f"Nothing in {persona.scratch.name}'s memory is close "
             f"enough to the datacenter to rate"
             f"{'' if best is None else f' (relevance {best:.2f})'}.",
             evidence, relevance, "low_relevance", quoted_span(quoted))
@@ -360,5 +375,8 @@ def probe(persona):
   statements = "\n".join(
     f'{created.strftime("%B %d, %H:%M")} -- {text}'
     for created, text in sorted(lines, key=lambda row: row[0]))
-  score, rationale = run_gpt_prompt_datacenter_stance(persona, statements)[0]
-  return score, rationale, evidence, relevance, None, quoted_span(quoted)
+  rating = run_gpt_prompt_datacenter_stance(
+    persona, statements, with_metadata=True)[0]
+  return result(rating["score"], rating["rationale"], evidence, relevance,
+                rating["withheld"], quoted_span(quoted), rating["category"],
+                rating["conditions"])

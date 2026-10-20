@@ -174,13 +174,17 @@ def main(argv):
     statements, n_evidence = statements_for(row, memory[name])
     persona = stub(name, ages[name],
                    datetime.datetime.strptime(row["time"], TIME_FMT))
-    score, rationale = run_gpt_prompt_datacenter_stance(persona, statements)[0]
+    rating = run_gpt_prompt_datacenter_stance(persona, statements, with_metadata=True)[0]
+    score, rationale = rating["score"], rating["rationale"]
     record = {"step": row["step"], "time": row["time"], "name": name,
               "old_score": row.get("score"), "new_score": score,
               "old_evidence": len(row.get("evidence") or []),
               "new_evidence": n_evidence,
               "relevance": (row.get("relevance") or {}).get("shown"),
-              "rationale": rationale}
+              "rationale": rationale, "category": rating["category"],
+              "conditions": rating["conditions"],
+              "old_scoring_version": row.get("scoring_version") or "legacy_direct",
+              "new_scoring_version": rating["scoring_version"]}
     out += [record]
     print(f"  [{i}/{len(kept)}] {name:<18} step {row['step']:>5}  "
           f"{row.get('score')} -> {score}   "

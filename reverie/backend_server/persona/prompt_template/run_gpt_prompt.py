@@ -2924,11 +2924,48 @@ def run_gpt_generate_iterative_chat_utt(maze, init_persona, target_persona, retr
 STANCE_QUESTION = ("the datacenter proposed for the town, and whether it "
                    "should be built")
 STANCE_SEPARATOR = "||"
-# The top of the rating scale. 100 rather than 10 because a 10-point scale
-# cannot hold a conditional position: an agent who supports the datacenter only
-# if local hire is guaranteed has to pick "leans against" or "leans in support"
-# and flips between them hour to hour while the underlying belief never moves.
+# Historical direct scorers and replay tools still use STANCE_SCALE and the
+# legacy text parser below. New measurements use the versioned rubric parser.
 STANCE_SCALE = 100
+STANCE_SCORING_VERSION = "rubric_v1"
+STANCE_BANDS = (
+  ("very_strong_opposition", 0, 19),
+  ("moderate_opposition", 20, 39),
+  ("slight_opposition", 40, 49),
+  ("neutral_mixed", 50, 50),
+  ("slight_support", 51, 60),
+  ("moderate_support", 61, 80),
+  ("very_strong_support", 81, 100),
+)
+
+
+def parse_rubric_stance(response):
+  """Validate a measurement without coercing scores or repairing categories."""
+  if isinstance(response, str):
+    response = extract_json_output(response)
+  if not isinstance(response, dict):
+    raise ValueError("Stance must be an object")
+  if not all(k in response for k in ("category", "score", "rationale")):
+    raise ValueError("Missing stance fields")
+  category, score = response["category"], response["score"]
+  rationale = response["rationale"]
+  conditions = response.get("conditions", [])
+  if not isinstance(rationale, str) or not rationale.strip():
+    raise ValueError("A rationale is required")
+  if (not isinstance(conditions, list)
+      or any(not isinstance(c, str) or not c.strip() for c in conditions)):
+    raise ValueError("Conditions must be a list of nonempty strings")
+  if score is None:
+    if category is not None:
+      raise ValueError("Abstention requires a null category")
+  elif (type(score) is not int
+        or not any(category == name and low <= score <= high
+                   for name, low, high in STANCE_BANDS)):
+    raise ValueError("Score must be an integer in its exact category band")
+  return {"category": category, "score": score, "rationale": rationale.strip(),
+          "conditions": [c.strip() for c in conditions],
+          "scoring_version": STANCE_SCORING_VERSION,
+          "withheld": "abstained" if score is None else None}
 # What the model answers instead of a number when none of the memories it was
 # shown bear on the datacenter. Retrieval has no relevance floor and always
 # returns its n best candidates, so early in a run the probe is handed whatever
@@ -3000,9 +3037,8 @@ def stance_iss(scratch):
 
 
 def run_gpt_prompt_datacenter_stance(persona, statements, test_input=None,
-                                     verbose=False):
-  """Rates where the persona stands on the datacenter, from 1 (against) to
-  STANCE_SCALE (in support), with one sentence of reasoning. Read-only: the
+                                     verbose=False, with_metadata=False):
+  """Rates support for the current proposal using the 0-100 rubric. Read-only: the
   caller retrieves with touch=False and nothing is written back to the
   persona's memory."""
   def create_prompt_input(persona, statements, test_input=None):
@@ -3014,21 +3050,21 @@ def run_gpt_prompt_datacenter_stance(persona, statements, test_input=None,
                     persona.scratch.curr_time.strftime("%B %d, %Y, %H:%M")]
     return prompt_input
 
-  # The last response seen, so a probe the model never rated is logged as it
-  # came back rather than as an empty row.
-  seen = {"response": None}
-
   def __chat_func_clean_up(gpt_response, prompt=""):
-    return parse_stance(gpt_response)
+    return parse_rubric_stance(gpt_response)
 
   def __chat_func_validate(gpt_response, prompt=""):
-    seen["response"] = gpt_response
-    # An abstention is an answer, not a bad read, so it is not retried.
-    return (parse_stance(gpt_response)[0] is not None
-            or is_stance_abstention(gpt_response))
+    try:
+      parse_rubric_stance(gpt_response)
+      return True  # Explicit abstention is valid and is not retried.
+    except (ValueError, TypeError):
+      return False
 
   def get_fail_safe():
-    return None, ""
+    return {"category": None, "score": None,
+            "rationale": "Evaluator returned no valid rubric measurement.",
+            "conditions": [], "scoring_version": STANCE_SCORING_VERSION,
+            "withheld": "evaluator_invalid"}
 
   # Only "temperature" below is read; ChatGPT_request forwards nothing else, so
   # max_tokens here is inert and the real ceiling is chat_completion's default
@@ -3037,34 +3073,17 @@ def run_gpt_prompt_datacenter_stance(persona, statements, test_input=None,
   gpt_param = {"engine": "text-davinci-002", "max_tokens": 120,
                "temperature": 0, "top_p": 1, "stream": False,
                "frequency_penalty": 0, "presence_penalty": 0, "stop": None}
-  # v2 over v1, measured on 24 readings of a game day replayed through both
-  # with the same evidence. v1 states the above-50 bar four times -- effort
-  # "must never on their own push a rating above 50", rate above 50 "only
-  # when", and so on -- and that ceiling holds even against evidence that
-  # clears it: Maya Okonkwo, who is quoted pushing the datacenter for the sake
-  # of her funding round, reads 45 under v1 and 85 under v2, and v1 put none of
-  # the 24 readings above 50 against v2's three. v2 also fixes the attribution
-  # the rationales exposed, from "Aisha is focused on the missing water figure"
-  # to "I have serious concerns about the water usage", by telling the model
-  # that a summary records what a conversation covered rather than what this
-  # person made of it.
-  prompt_template = "persona/prompt_template/v3_ChatGPT/datacenter_stance_v2.txt"
+  prompt_template = "persona/prompt_template/v3_ChatGPT/datacenter_stance_rubric_v1.txt"
   prompt_input = create_prompt_input(persona, statements)
   prompt = generate_prompt(prompt_input, prompt_template)
-  # The number here is copied. Across 184 readings of one game day, 55 of them
-  # -- 30% -- came back as exactly 23, the value this example used to carry,
-  # while all six neighbouring values from 20 to 26 held 7 between them. A real
-  # measurement does not spike on one integer with empty bins either side.
-  # 71 is deliberately on the other side of the scale from where this cast sits,
-  # so if it starts dominating the distribution the anchoring is visible again
-  # instead of hiding among the genuinely-against readings.
-  example_output = ("71 || The jobs are real and I have said so at two "
-                    "meetings, even though the rate question still bothers me.")
-  special_instruction = (f"The output should be the rating from 1 to "
-                         f"{STANCE_SCALE}, or \'{STANCE_ABSTAIN}\' if the "
-                         f"memories do not bear on the datacenter at all, then "
-                         f"\' {STANCE_SEPARATOR} \', then one sentence of "
-                         f"reasoning in the agent\'s own voice.")
+  # Show the object shape without offering a numeric anchor to copy.
+  example_output = {"category": None, "score": None,
+                    "rationale": "The record does not establish a position.",
+                    "conditions": []}
+  special_instruction = ("The output field must be an object with category, "
+                         "score, rationale, and conditions. Select the category "
+                         "first, then an integer in its band; use null for both "
+                         "category and score only when unmeasurable.")
   fail_safe = get_fail_safe()
   # The only prompt here that passes its temperature through. The others leave
   # gpt_param unused and sample at the chat_completion default, which is fine
@@ -3076,14 +3095,14 @@ def run_gpt_prompt_datacenter_stance(persona, statements, test_input=None,
                                           __chat_func_clean_up, verbose,
                                           temperature=gpt_param["temperature"])
   if output is False:
-    # Three tries with no usable rating. Keep the gap and the raw answer.
-    output = parse_stance(seen["response"])
+    output = fail_safe
 
   if debug or verbose:
     print_run_prompts(prompt_template, persona, gpt_param,
                       prompt_input, prompt, output)
 
-  return output, [output, prompt, gpt_param, prompt_input, fail_safe]
+  result = output if with_metadata else (output["score"], output["rationale"])
+  return result, [output, prompt, gpt_param, prompt_input, fail_safe]
 
 
 

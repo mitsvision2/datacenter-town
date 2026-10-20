@@ -139,7 +139,7 @@ try:
 except OSError:
   prompt = ""
   problems.append(f"{template} is missing")
-for phrase in [f"1 to {STANCE_SCALE}", "completely against",
+for phrase in [f"0 to {STANCE_SCALE}", "completely against",
                "completely in support", "Do not round"]:
   if phrase not in prompt:
     problems.append(f"{name} no longer says {phrase!r}, so the model is free "

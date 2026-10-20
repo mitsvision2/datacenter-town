@@ -269,11 +269,11 @@ table.usage th { color: var(--muted); font-weight: 600; }
 .toggle { display: inline-flex; gap: 6px; align-items: center; color: var(--muted); font-size: 13px; margin-bottom: 8px; }
 
 /* ---------- stance graph ---------- */
-.bottom { padding: 0 20px 32px; }
+.bottom { padding: 0 20px 32px; display: grid; gap: 16px; }
 .stance-head { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: baseline; padding: 14px 16px 0; }
 .stance-head h2 { margin: 0; font-size: 15px; font-weight: 600; }
 .stance-head .hint { margin: 0; }
-.stance svg { width: 100%; height: 320px; display: block; }
+.stance svg { width: 100%; height: 300px; display: block; }
 .stance .grid { stroke: var(--line); }
 .stance .fork { stroke: var(--faint); stroke-dasharray: 3 3; }
 .stance .axis { fill: var(--faint); font-size: 11px; }
@@ -291,7 +291,22 @@ table.usage th { color: var(--muted); font-weight: 600; }
 .stance-key span { display: inline-flex; align-items: center; gap: 6px; }
 .stance-key i { width: 10px; height: 10px; border-radius: 50%; }
 .stance-key b { color: var(--ink); }
-@media (max-width: 700px) { .bottom { padding: 0 16px 24px; } .stance svg { height: 260px; } }
+.social { padding: 16px; }
+.social-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 16px; }
+.social h2 { margin: 0; font-size: 15px; font-weight: 600; }
+.social .hint { margin: 0; }
+.social svg { width: 100%; height: auto; display: block; }
+.social-edge { stroke: var(--muted); opacity: .65; }
+.social-node { cursor: pointer; outline: none; }
+.social-node circle { stroke: var(--panel); stroke-width: 3; }
+.social-node.selected circle, .social-node:focus circle { stroke: var(--ink); stroke-width: 3; }
+.social-node .label-background { fill: var(--panel); }
+.social-node text { fill: var(--ink); font-size: 13px; text-anchor: middle;
+  paint-order: stroke; stroke: var(--panel); stroke-width: 5px; stroke-linejoin: round; }
+.social-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12px; }
+.social-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.social-legend i { width: 12px; height: 12px; border-radius: 50%; flex: none; }
+@media (max-width: 700px) { .bottom { padding: 0 16px 24px; } }
 
 /* ---------- dialog ---------- */
 dialog {
@@ -463,6 +478,14 @@ dialog .row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20
     </div>
     <div id="stance"></div>
     <div class="stance-key" id="stance-key"></div>
+  </section>
+  <section class="card social" id="social-card" aria-labelledby="social-heading">
+    <div class="social-head">
+      <h2 id="social-heading">Social Interaction Network</h2>
+      <p class="hint" id="social-note"></p>
+    </div>
+    <div id="social-network"></div>
+    <div class="social-legend" id="social-legend"></div>
   </section>
 </div>
 
@@ -747,13 +770,14 @@ function renderEvents() {
 
 /* ---------------- stance graph ---------------- */
 
-// One line per agent, 1 (against the datacenter) to 100 (in support), from the
+// One line per agent, 0 (against the datacenter) to 100 (in support), from the
 // read the simulation takes every game hour. Readings the model gave no usable
 // rating for come through as null and are drawn as a break in the line, so a
 // failed read never looks like a considered opinion.
 const STANCE_COLORS = ["#2f7d52", "#b4552d", "#3b6ea5", "#8a5bb0",
                        "#b08b1e", "#2a8f8f", "#a8456b", "#6b6f3f"];
-const SVG_W = 900, PLOT_L = 44, PLOT_R = 892, PLOT_T = 12, PLOT_B = 272;
+let SVG_W = 900, PLOT_R = 868;
+const PLOT_L = 84, PLOT_T = 12, PLOT_B = 272;
 // Readings taken before the scale went from 10 to 100 carry no scale field.
 // They are plotted by their position on their own scale so an old line still
 // joins up with a new one instead of collapsing to the floor of the graph.
@@ -770,6 +794,18 @@ const STANCE_EVENT_MARKS = {
 };
 // Every plotted point, for hit-testing the cursor against.
 let stancePts = [];
+
+function stanceMethod(row) {
+  return row.scoring_version || `legacy_direct_${row.scale || STANCE_OLD_SCALE}`;
+}
+
+function stanceY(row) {
+  if (!Number.isInteger(row.score)) return null;
+  const scale = row.scale || STANCE_OLD_SCALE;
+  const low = row.scoring_version === "rubric_v1" ? 0 : 1;
+  if (row.score < low || row.score > scale || scale <= low) return null;
+  return PLOT_B - ((row.score - low) / (scale - low)) * (PLOT_B - PLOT_T);
+}
 
 function stanceTickFormat(spanSecs) {
   // Hours while the run is short, then days, then months, so the axis stays
@@ -839,8 +875,10 @@ function stanceHover(ev) {
         ? `<span class="when">reflection · ${when}</span>
            ${best.text ? `<div>${esc(best.text)}</div>` : ""}
            ${best.insights > 1 ? `<div class="when">and ${best.insights - 1} more insight${best.insights === 2 ? "" : "s"} at this moment</div>` : ""}`
-      : `<span class="when">${best.score} of ${best.scale}${best.scale !== 100 ? " (old scale)" : ""} · ${when}</span>
-         ${best.rationale ? `<div>${esc(best.rationale)}</div>` : ""}`;
+      : `<span class="when">${best.score} of ${best.scale} · ${esc(best.method)} · ${when}</span>
+         ${best.category ? `<div>${esc(best.category.replace(/_/g, " "))}</div>` : ""}
+         ${best.rationale ? `<div>${esc(best.rationale)}</div>` : ""}
+         ${(best.conditions || []).length ? `<div>Conditions: ${esc(best.conditions.join("; "))}</div>` : ""}`;
   tip.innerHTML = `<b style="color:${best.color}">${esc(best.name)}</b>${body}`;
   tip.hidden = false;
 
@@ -853,6 +891,8 @@ function stanceHover(ev) {
 }
 
 function renderStance() {
+  SVG_W = Math.max(300, Math.round($("stance").clientWidth || 900));
+  PLOT_R = SVG_W - 28;
   const rows = data?.opinions || [];
   const sim = data?.sim;
   const every = data?.settings?.opinion_steps || 0;
@@ -860,7 +900,7 @@ function renderStance() {
   if (!rows.length) {
     stanceHide();
     paint($("stance"), `<div class="empty">${every
-      ? `No readings yet. Every ${every} steps (${spanLabel(every, sim?.sec_per_step)} of game time) the run reads where each agent stands on the datacenter, from 1 (against) to 100 (in support), and plots the answers here.`
+      ? `No readings yet. Every ${every} steps (${spanLabel(every, sim?.sec_per_step)} of game time) the run reads where each agent stands on the datacenter, from 0 (against) to 100 (in support), and plots the answers here.`
       : "Stance readings are switched off. Turn them on in settings to graph how each agent's position on the datacenter moves over the run."}</div>`);
     paint($("stance-key"), "");
     $("stance-note").textContent = "";
@@ -882,13 +922,10 @@ function renderStance() {
   const fmt = stanceTickFormat((x1 - x0) * sps);
   const px = (s) => x1 === x0 ? (PLOT_L + PLOT_R) / 2
     : PLOT_L + ((s - x0) / (x1 - x0)) * (PLOT_R - PLOT_L);
-  // Position on whichever scale the reading was taken on, so 3-of-10 and
-  // 23-of-100 land in the same place.
-  const py = (v, scale) => PLOT_B - ((v - 1) / (scale - 1)) * (PLOT_B - PLOT_T);
-
-  let svg = [[1, "1 against"], [25, "25"], [50, "50 torn"], [75, "75"], [100, "100 in support"]].map(([v, label]) =>
-    `<line class="grid" x1="${PLOT_L}" y1="${py(v, 100)}" x2="${PLOT_R}" y2="${py(v, 100)}"/>
-     <text class="axis" x="${PLOT_L - 8}" y="${py(v, 100) + 4}" text-anchor="end">${label}</text>`).join("");
+  const py = (v) => stanceY({score: v, scale: 100, scoring_version: "rubric_v1"});
+  let svg = [[0, "0 opposed"], [25, "25"], [50, "50 mixed"], [75, "75"], [100, "100 support"]].map(([v, label]) =>
+    `<line class="grid" x1="${PLOT_L}" y1="${py(v)}" x2="${PLOT_R}" y2="${py(v)}"/>
+     <text class="axis" x="${PLOT_L - 8}" y="${py(v) + 4}" text-anchor="end">${label}</text>`).join("");
 
   const ticks = x1 === x0 ? 1 : 5;
   for (let i = 0; i < ticks; i += 1) {
@@ -907,15 +944,18 @@ function renderStance() {
 
   svg += series.map((s) => {
     const dim = selected && s.name !== selected ? " dim" : "";
-    let d = "", pen = false;
+    let d = "", pen = false, method = null;
     let dots = "";
     // Each unbroken run of readings, to hang the event markers off.
     const segs = [];
     for (const p of s.points) {
-      if (p.score == null) { pen = false; continue; }
+      const ordinate = stanceY(p);
+      if (ordinate == null) { pen = false; continue; }
+      if (method !== stanceMethod(p)) pen = false;
+      method = stanceMethod(p);
       const scale = p.scale || STANCE_OLD_SCALE;
       const step = p.step || 0;
-      const x = +px(step).toFixed(1), y = +py(p.score, scale).toFixed(1);
+      const x = +px(step).toFixed(1), y = +ordinate.toFixed(1);
       d += `${pen ? "L" : "M"}${x} ${y} `;
       if (!pen) segs.push([]);
       pen = true;
@@ -926,7 +966,8 @@ function renderStance() {
       // whichever point is nearest, selected agent or not.
       stancePts.push({kind: "reading", x, y, name: s.name, color: s.color,
                       score: p.score, scale, time: p.time,
-                      rationale: p.rationale});
+                      rationale: p.rationale, category: p.category,
+                      conditions: p.conditions, method});
     }
 
     // Where this agent's line sits at a given step. null outside the readings
@@ -974,7 +1015,7 @@ function renderStance() {
 
   svg += `<circle id="stance-ring" class="ring" r="0" fill="none"/>`;
   const painted = drawn.stance;
-  paint($("stance"), `<svg viewBox="0 0 ${SVG_W} 300" role="img" aria-label="Each agent's position on the datacenter over time, from 1 against to 100 in support">${svg}</svg>`);
+  paint($("stance"), `<svg viewBox="0 0 ${SVG_W} 300" role="img" aria-label="Each agent's position on the datacenter over time, from 0 opposed to 100 in support">${svg}</svg>`);
   if (drawn.stance !== painted) {
     // Only on an actual repaint: polling re-runs this every couple of seconds,
     // and dropping the tooltip each time would make a point unreadable.
@@ -997,10 +1038,14 @@ function renderStance() {
   const models = [...new Set(rows.map((r) => r.model).filter(Boolean))];
   const scales = [...new Set(rows.filter((r) => r.score != null)
     .map((r) => r.scale || STANCE_OLD_SCALE))];
+  const methods = [...new Set(rows.map(stanceMethod))];
   $("stance-note").textContent = [
     `${rows.length} reading${rows.length === 1 ? "" : "s"}`,
     gaps ? `${gaps} with no usable rating, drawn as gaps` : "",
     scales.length > 1 ? `readings from two scales (${scales.sort((a, b) => a - b).join(" and ")}), plotted by position` : "",
+    methods.length > 1 ? "Mixed scoring methods: not directly comparable without calibration; lines break at method changes"
+      : methods[0] === "rubric_v1" ? "Rubric v1 (0–100)"
+      : "Legacy direct scores (1–scale), shown by their original relative position",
     models.length > 1 ? `mixed models (${models.join(", ")}), so levels aren't comparable` : models[0] || "",
     selected ? `hover a point for ${selected}'s reasoning` : "hover a point for the agent's reasoning",
     marked.has("convo") ? "▲ conversation (click to read it)" : "",
@@ -1008,6 +1053,75 @@ function renderStance() {
     marked.has("reflection") ? "■ reflection" : "",
   ].filter(Boolean).join(" · ");
 }
+
+/* ---------------- social interaction network ---------------- */
+
+function socialPositions(nodes, width) {
+  // Roster order alone determines positions; measurements and edges never do.
+  const names = nodes.map((n) => n.name).sort();
+  const cols = width < 600 ? 2 : 4;
+  return names.map((name, i) => ({name,
+    x: (i % cols + .5) * width / cols, y: 54 + Math.floor(i / cols) * 126}));
+}
+
+function socialEdgeWidth(count) {
+  return Math.min(8, 1 + 1.25 * Math.log1p(Math.max(0, count)));
+}
+
+function renderNetwork() {
+  const network = data?.network;
+  const nodes = network?.nodes || (data?.sim?.roster || []).map((a) => ({
+    name: a.name, color: "#9299A4", label: "Unrated", score: null,
+    conversations: 0, partners: 0,
+  }));
+  if (!nodes.length) {
+    paint($("social-network"), '<div class="empty">No simulation loaded.</div>');
+    paint($("social-legend"), "");
+    $("social-note").textContent = "";
+    return;
+  }
+  const width = Math.max(280, Math.round($("social-network").clientWidth || 800));
+  const positions = socialPositions(nodes, width);
+  const byName = new Map(positions.map((p) => [p.name, p]));
+  const height = Math.max(...positions.map((p) => p.y)) + 78;
+  let svg = (network?.edges || []).map((e) => {
+    const a = byName.get(e.source), b = byName.get(e.target);
+    if (!a || !b) return "";
+    const title = `${e.source} and ${e.target}\n${e.count} completed conversations\nLast: ${e.time || "Unknown time"}`;
+    return `<line class="social-edge" x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke-width="${socialEdgeWidth(e.count)}"><title>${esc(title)}</title></line>`;
+  }).join("");
+  svg += nodes.map((n) => {
+    const at = byName.get(n.name);
+    const legacy = n.scoring_version && n.scoring_version !== "rubric_v1";
+    const rating = n.score == null ? "Unrated; no valid measurement"
+      : `${n.score}/${n.scale || 100}: ${n.label}\nMethod: ${n.scoring_version}${legacy ? "; rubric color is visualization only" : ""}\nLast valid probe: ${n.time || "Unknown time"}`;
+    const title = `${n.name}\n${rating}\n${n.conversations || 0} completed conversations; ${n.partners || 0} distinct partners`;
+    const words = n.name.split(" ");
+    const labelWidth = Math.min(width / (width < 600 ? 2 : 4) - 8,
+      Math.max(...words.map((w) => w.length)) * 8 + 16);
+    return `<g class="social-node${n.name === selected ? " selected" : ""}" data-network-node="${esc(n.name)}" tabindex="0" role="button" aria-label="${esc(title)}">
+      <title>${esc(title)}</title><circle cx="${at.x}" cy="${at.y}" r="24" fill="${n.color}"/>
+      <rect class="label-background" x="${at.x - labelWidth / 2}" y="${at.y + 30}" width="${labelWidth}" height="34"/>
+      <text x="${at.x}" y="${at.y + 43}"><tspan x="${at.x}">${esc(words[0])}</tspan><tspan x="${at.x}" dy="16">${esc(words.slice(1).join(" "))}</tspan></text></g>`;
+  }).join("");
+  paint($("social-network"), `<svg viewBox="0 0 ${width} ${height}" role="group" aria-label="Cumulative completed conversations and latest valid stance">${svg}</svg>`);
+  const legend = (network?.bands || []).map((b) => `<span><i style="background:${b.color}"></i>${esc(b.label)} (${b.min === b.max ? b.min : `${b.min}–${b.max}`})</span>`).join("");
+  paint($("social-legend"), legend + '<span><i style="background:#9299A4"></i>Unrated</span>');
+  $("social-note").textContent = `${network?.conversations || 0} completed conversations, including inherited history. Edges show frequency, not proven causal influence. Colors retain the last valid measurement.`;
+}
+
+$("social-network").addEventListener("click", (e) => {
+  const node = e.target.closest("[data-network-node]");
+  if (node) selectAgent(node.dataset.networkNode);
+});
+$("social-network").addEventListener("keydown", (e) => {
+  if (e.key !== "Enter" && e.key !== " ") return;
+  const node = e.target.closest("[data-network-node]");
+  if (node) { e.preventDefault(); selectAgent(node.dataset.networkNode); }
+});
+const graphResize = new ResizeObserver(() => { renderStance(); renderNetwork(); });
+graphResize.observe($("social-network"));
+graphResize.observe($("stance"));
 
 let logTimer = null;
 async function loadLog() {
@@ -1046,13 +1160,17 @@ function renderRoster() {
 $("roster").addEventListener("click", (e) => {
   const b = e.target.closest(".agent");
   if (!b) return;
-  selected = b.dataset.name;
+  selectAgent(b.dataset.name);
+});
+
+function selectAgent(name) {
+  selected = name;
   try { localStorage.setItem("dash-agent", selected); } catch (err) { /* private mode */ }
   $("map").contentWindow?.postMessage({type: "focus", name: selected}, location.origin);
   drawn.roster = null;
   memOpen.clear();  // episode timestamps belong to the agent they came from
   poll();
-});
+}
 
 function renderAgent() {
   const a = data?.sim?.agent;
@@ -1384,7 +1502,7 @@ async function poll() {
     watchRuns();
     renderHeader(); renderSettings(); renderRoster(); renderAgent(); renderInterview();
     renderTitle();
-    renderConvos(); renderEvents(); renderResults(); renderStance();
+    renderConvos(); renderEvents(); renderResults(); renderStance(); renderNetwork();
   } catch (e) { /* frontend server restarting */ }
   poll.t = setTimeout(poll, 1000);
 }

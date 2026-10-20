@@ -235,7 +235,7 @@ class ReverieServer:
 
   def probe_opinions(self):
     """
-    Reads where every agent stands on the datacenter, 1 (against) to
+    Reads where every agent stands on the datacenter, 0 (against) to
     STANCE_SCALE (in support), and logs it for the dashboard's stance graph.
 
     Measurement only: opinion_probe retrieves read-only and nothing is written
@@ -251,8 +251,7 @@ class ReverieServer:
       # Billed separately so probes don't show up as the cost of a step.
       usage.context.update(persona=name, source="opinion_probe",
                            step=self.step)
-      (score, rationale, evidence, relevance, withheld,
-       quoted) = probe_opinion(persona)
+      reading = probe_opinion(persona, with_metadata=True)
       # The scale goes in every row: it moved from 10 to 100 once already, and
       # a bare score is unreadable without knowing which scale it was on.
       # <relevance> says how much the memories behind the rating had to do with
@@ -262,15 +261,13 @@ class ReverieServer:
       # own spoken lines that went in beside the memories and the window they
       # came from, which is what would show a long run drawing its evidence
       # from one early week (see opinion_probe.quoted_span).
-      readings += [{"name": name, "score": score, "scale": STANCE_SCALE,
-                    "rationale": rationale, "evidence": evidence,
-                    "relevance": relevance, "withheld": withheld,
-                    "quoted": quoted,
+      readings += [{"name": name, "scale": STANCE_SCALE, **reading,
                     "model": model, "run_env": run_env.RUN_ENV}]
-      shown = relevance["shown"]
-      log.info("  stance=%s %s rel=%s: %s", name, withheld or score,
+      shown = reading["relevance"]["shown"]
+      log.info("  stance=%s %s rel=%s: %s", name,
+               reading["withheld"] or reading["score"],
                "n/a" if shown is None else f"{shown:.2f}",
-               (rationale or "")[:120])
+               (reading["rationale"] or "")[:120])
     usage.context.update(caller)
     if readings and getattr(self, "experiment_logger", None):
       self.experiment_logger.log_opinions(

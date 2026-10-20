@@ -22,6 +22,7 @@ from django.shortcuts import render
 from django.views.decorators.http import require_POST
 
 from translator.views import _pid_alive as _alive
+from translator.social_network import network_summary
 
 log = logging.getLogger("frontend.dashboard")
 
@@ -250,6 +251,7 @@ def dashboard_run(request, sim):
     "conversations": _run_log(sim, "conversations.jsonl", 300, start),
     "events": _run_log(sim, "events.jsonl", 300, start),
     "opinions": _opinions(sim, start),
+    "network": network_summary(sim, names, view["step"]),
     "results": [r for r in _tail_jsonl(RESULT_FILE, 400) if r.get("sim") == sim][-60:],
   })
 
@@ -295,6 +297,7 @@ def dashboard_state(request):
     data["conversations"] = _run_log(sim, "conversations.jsonl", 300, start)
     data["events"] = _run_log(sim, "events.jsonl", 300, start)
     data["opinions"] = _opinions(sim, start)
+    data["network"] = network_summary(sim, state.get("persona_order", []), state["step"])
     # Results from before runs were tagged have no "sim"; keep showing those.
     data["results"] = [r for r in data["results"] if r.get("sim") in (None, sim)]
   data["sim"] = state

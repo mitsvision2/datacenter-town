@@ -45,7 +45,9 @@ jobs:
         run: python scripts/ci/check_retrieval.py
 
       - name: Datacenter stance probe rules
-        run: python scripts/ci/check_opinion_probe.py
+        run: |
+          python scripts/ci/check_opinion_probe.py
+          python scripts/ci/test_stance_rubric.py
 
       - name: Dashboard memory category rules
         run: python scripts/ci/check_memory_categories.py
@@ -57,7 +59,9 @@ jobs:
           python manage.py test translator
 
       - name: Dashboard script parses
-        run: python scripts/ci/check_dashboard_js.py
+        run: |
+          python scripts/ci/check_dashboard_js.py
+          node scripts/ci/check_stance_graph.js
 
   secrets:
     runs-on: ubuntu-latest
