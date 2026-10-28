@@ -33,7 +33,10 @@ SETTINGS_FILE = f"{DASH_DIR}/settings.json"
 # autosave_steps: save every N steps during a run (0 = off).
 # budget_usd: stop and save once this run's estimated API cost reaches it
 # (None = no cap). Written by the dashboard, re-read after every step.
-DEFAULT_SETTINGS = {"autosave_steps": 360, "budget_usd": None}
+# opinion_steps: read every agent's position on the datacenter every N steps
+# (0 = off). 360 steps is one game hour.
+DEFAULT_SETTINGS = {"autosave_steps": 360, "budget_usd": None,
+                    "opinion_steps": 360}
 _settings_cache = {"mtime": None, "value": dict(DEFAULT_SETTINGS)}
 
 # Recent LLM calls per persona: the closest thing to watching an agent think.
@@ -148,8 +151,55 @@ def _node(n):
   return out
 
 
+# How many reflection episodes the Mind tab shows. Reflections are cut by
+# episode rather than by row: every insight a reflection writes shares one
+# timestamp, so a row limit would show the tail of an episode as if that were
+# the whole of it.
+REFLECTION_EPISODES = 5
+
+
+def _is_reflection(node, id_to_node):
+  """Whether a thought is an insight from a reflection episode.
+
+  Same rule as translator/dashboard.py:_is_reflection, which reads saved runs
+  out of nodes.json; the frontend cannot import this module (it reaches utils.py
+  and the API keys), the way _run_env and DEFAULT_SETTINGS are also duplicated.
+
+  Nothing marks a reflection at write time, and depth does not separate it: an
+  insight whose evidence is all events has depth 1, exactly like a daily plan
+  (plan.py) or a whisper (converse.py). The evidence is what differs. Insight
+  evidence comes from new_retrieve, which draws only on seq_event and
+  seq_thought and so never cites a chat, while the two thoughts written after a
+  conversation (reflect.py) cite exactly the last chat. So: evidence that
+  resolves, with no chat in it.
+  """
+  if node.type != "thought" or not isinstance(node.filling, list):
+    return False
+  kinds = {id_to_node[i].type for i in node.filling if i in id_to_node}
+  return bool(kinds) and "chat" not in kinds
+
+
+def _episodes(nodes):
+  """The distinct timestamps in a list of insight nodes, newest first."""
+  seen = []
+  for n in nodes:
+    if n.created not in seen:
+      seen.append(n.created)
+  return seen
+
+
 def _persona_state(p):
   s = p.scratch
+  # Reading memory for the dashboard must not change it. Slices and
+  # comprehensions only: seq_thought is the agent's own list, not a copy, so an
+  # in-place sort here would reorder the memory stream, and new_retrieve would
+  # stamp last_accessed on what it read. check_memory_categories.py enforces
+  # both.
+  insights = [n for n in p.a_mem.seq_thought
+              if _is_reflection(n, p.a_mem.id_to_node)]
+  thoughts = [n for n in p.a_mem.seq_thought
+              if not _is_reflection(n, p.a_mem.id_to_node)]
+  shown = _episodes(insights)[:REFLECTION_EPISODES]
   schedule_idx = None
   if s.curr_time and s.f_daily_schedule:
     try:
@@ -160,6 +210,8 @@ def _persona_state(p):
     "name": s.name, "first_name": s.first_name, "age": s.age,
     "innate": s.innate, "learned": s.learned, "lifestyle": s.lifestyle,
     "living_area": s.living_area, "currently": s.currently,
+    "values": s.values, "stake": s.stake,
+    "persuadability": s.persuadability,
     "daily_plan_req": s.daily_plan_req, "daily_req": s.daily_req,
     "act_description": s.act_description,
     "act_pronunciatio": s.act_pronunciatio,
@@ -172,12 +224,16 @@ def _persona_state(p):
     "schedule": s.f_daily_schedule, "schedule_idx": schedule_idx,
     "hourly_org": s.f_daily_schedule_hourly_org,
     "reflect_trigger": [s.importance_trigger_curr, s.importance_trigger_max],
+    # thought excludes reflection insights and reflection counts episodes, not
+    # insights, so the four add up to what the agent actually stored.
     "memory_counts": {"event": len(p.a_mem.seq_event),
-                      "thought": len(p.a_mem.seq_thought),
-                      "chat": len(p.a_mem.seq_chat)},
+                      "thought": len(thoughts),
+                      "chat": len(p.a_mem.seq_chat),
+                      "reflection": len(_episodes(insights))},
     "events": [_node(n) for n in p.a_mem.seq_event[:15]],
-    "thoughts": [_node(n) for n in p.a_mem.seq_thought[:15]],
+    "thoughts": [_node(n) for n in thoughts[:15]],
     "chats": [_node(n) for n in p.a_mem.seq_chat[:6]],
+    "reflections": [_node(n) for n in insights if n.created in shown],
     "llm": list(_llm_trace[s.name])[::-1],
   }
 

@@ -22,6 +22,7 @@ from django.shortcuts import render
 from django.views.decorators.http import require_POST
 
 from translator.views import _pid_alive as _alive
+from translator.social_network import network_summary
 
 log = logging.getLogger("frontend.dashboard")
 
@@ -111,6 +112,15 @@ def _run_log(sim, name, n, start):
   return rows
 
 
+def _opinions(sim, start):
+  """Stance readings for the graph. The memory ids behind each rating stay in
+  the file for analysis; the graph only needs the numbers."""
+  rows = _run_log(sim, "opinions.jsonl", 4000, start)
+  for r in rows:
+    r.pop("evidence", None)
+  return rows
+
+
 def _view_history(sim, persona):
   """Each distinct "currently" an agent has had, from the periodic snapshots,
   to show how their view changed over the run."""
@@ -137,23 +147,67 @@ def _schedule_index(schedule, curr_time):
   return len(schedule) - 1
 
 
+# Same rule as reverie/backend_server/dashboard_bridge.py:_is_reflection, which
+# does this for the live run off ConceptNode objects. This module cannot import
+# that one (it reaches utils.py and the API keys), the way _run_env and
+# DEFAULT_SETTINGS are also duplicated. check_memory_categories.py runs one
+# fixture table through both and fails if they disagree.
+#
+# Nothing marks a reflection at write time, and depth does not separate it: an
+# insight whose evidence is all events has depth 1, exactly like a daily plan
+# or a whisper. The evidence is what differs. Insight evidence comes from
+# new_retrieve, which draws only on events and thoughts and so never cites a
+# chat, while the two thoughts written after a conversation cite exactly the
+# last chat. So: evidence that resolves, with no chat in it.
+def _is_reflection(node, by_id):
+  filling = node.get("filling")
+  if node.get("type") != "thought" or not isinstance(filling, list):
+    return False
+  kinds = {by_id[i].get("type") for i in filling if i in by_id}
+  return bool(kinds) and "chat" not in kinds
+
+
+# Reflections are cut by episode rather than by row: every insight a reflection
+# writes shares one timestamp, so a row limit would show the tail of an episode
+# as if that were the whole of it.
+REFLECTION_EPISODES = 5
+
+
+def _episodes(nodes):
+  """The distinct timestamps in a list of insight nodes, newest first."""
+  seen = []
+  for n in nodes:
+    if n.get("created") not in seen:
+      seen.append(n.get("created"))
+  return seen
+
+
 def _saved_agent(sim, name):
   """A saved agent in the same shape the live state uses."""
   mem = f"storage/{sim}/personas/{name}/bootstrap_memory"
   s = _read_json(f"{mem}/scratch.json", {})
-  nodes = sorted((_read_json(f"{mem}/associative_memory/nodes.json", {}) or {}).values(),
-                 key=lambda n: -n.get("node_count", 0))
+  by_id = _read_json(f"{mem}/associative_memory/nodes.json", {}) or {}
+  nodes = sorted(by_id.values(), key=lambda n: -n.get("node_count", 0))
+  def row(x, kind=None):
+    return {"type": x["type"], "created": x.get("created"),
+            "description": x.get("description"), "poignancy": x.get("poignancy"),
+            **({"lines": x["filling"]} if kind == "chat" and isinstance(x.get("filling"), list) else {})}
   def pick(kind, n):
-    return [{"type": x["type"], "created": x.get("created"),
-             "description": x.get("description"), "poignancy": x.get("poignancy"),
-             **({"lines": x["filling"]} if kind == "chat" and isinstance(x.get("filling"), list) else {})}
-            for x in nodes if x.get("type") == kind][:n]
-  counts = {k: sum(1 for x in nodes if x.get("type") == k) for k in ("event", "thought", "chat")}
+    return [row(x, kind) for x in nodes if x.get("type") == kind][:n]
+  insights = [x for x in nodes if _is_reflection(x, by_id)]
+  thoughts = [x for x in nodes
+              if x.get("type") == "thought" and not _is_reflection(x, by_id)]
+  shown = _episodes(insights)[:REFLECTION_EPISODES]
+  counts = {k: sum(1 for x in nodes if x.get("type") == k) for k in ("event", "chat")}
+  counts["thought"] = len(thoughts)
+  counts["reflection"] = len(_episodes(insights))
   schedule = s.get("f_daily_schedule") or []
   return {
     "name": s.get("name", name), "first_name": s.get("first_name"), "age": s.get("age"),
     "innate": s.get("innate"), "learned": s.get("learned"), "lifestyle": s.get("lifestyle"),
     "living_area": s.get("living_area"), "currently": s.get("currently"),
+    "values": s.get("values"), "stake": s.get("stake"),
+    "persuadability": s.get("persuadability"),
     "daily_plan_req": s.get("daily_plan_req"), "daily_req": s.get("daily_req"),
     "act_description": s.get("act_description"), "act_pronunciatio": s.get("act_pronunciatio"),
     "act_address": s.get("act_address"), "act_start_time": s.get("act_start_time"),
@@ -163,7 +217,9 @@ def _saved_agent(sim, name):
     "schedule": schedule, "schedule_idx": _schedule_index(schedule, s.get("curr_time")),
     "reflect_trigger": [s.get("importance_trigger_curr"), s.get("importance_trigger_max")],
     "memory_counts": counts, "events": pick("event", 15),
-    "thoughts": pick("thought", 15), "chats": pick("chat", 6), "llm": [],
+    "thoughts": [row(x) for x in thoughts][:15], "chats": pick("chat", 6),
+    "reflections": [row(x) for x in insights if x.get("created") in shown],
+    "llm": [],
   }
 
 
@@ -194,6 +250,8 @@ def dashboard_run(request, sim):
     "sim": view,
     "conversations": _run_log(sim, "conversations.jsonl", 300, start),
     "events": _run_log(sim, "events.jsonl", 300, start),
+    "opinions": _opinions(sim, start),
+    "network": network_summary(sim, names, view["step"]),
     "results": [r for r in _tail_jsonl(RESULT_FILE, 400) if r.get("sim") == sim][-60:],
   })
 
@@ -238,6 +296,8 @@ def dashboard_state(request):
       state["agent"]["history"] = _view_history(sim, agent)
     data["conversations"] = _run_log(sim, "conversations.jsonl", 300, start)
     data["events"] = _run_log(sim, "events.jsonl", 300, start)
+    data["opinions"] = _opinions(sim, start)
+    data["network"] = network_summary(sim, state.get("persona_order", []), state["step"])
     # Results from before runs were tagged have no "sim"; keep showing those.
     data["results"] = [r for r in data["results"] if r.get("sim") in (None, sim)]
   data["sim"] = state
@@ -362,7 +422,8 @@ def dashboard_command(request):
   return JsonResponse({"id": cmd_id})
 
 
-DEFAULT_SETTINGS = {"autosave_steps": 360, "budget_usd": None}
+DEFAULT_SETTINGS = {"autosave_steps": 360, "budget_usd": None,
+                    "opinion_steps": 360}
 
 
 # Same as reverie/backend_server/run_env.py. Git tracks prod-* runs only.
@@ -409,6 +470,14 @@ def dashboard_settings(request):
     if not 0 <= steps <= 100000:
       return JsonResponse({"error": "Auto-save must be between 0 (off) and 100000 steps."}, status=400)
     new["autosave_steps"] = steps
+  if "opinion_steps" in body:
+    try:
+      steps = int(body["opinion_steps"] or 0)
+    except (TypeError, ValueError):
+      return JsonResponse({"error": "Stance readings need a whole number of steps."}, status=400)
+    if not 0 <= steps <= 100000:
+      return JsonResponse({"error": "Stance readings must be between 0 (off) and 100000 steps."}, status=400)
+    new["opinion_steps"] = steps
   if "budget_usd" in body:
     raw = body["budget_usd"]
     if raw in (None, ""):

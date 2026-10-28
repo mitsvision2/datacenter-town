@@ -7,6 +7,7 @@ Writes under storage/<sim>/experiment/:
   - events.jsonl
   - agent_snapshots.jsonl
   - outcomes.jsonl
+  - opinions.jsonl
 """
 import json
 import os
@@ -107,6 +108,18 @@ class ExperimentLogger:
         "act_address": scratch.act_address,
         "chatting_with": scratch.chatting_with,
         "curr_tile": list(scratch.curr_tile) if scratch.curr_tile else None,
+      })
+
+  def log_opinions(self, step, curr_time, readings):
+    """One row per agent per stance probe, for the dashboard's graph of where
+    each agent stands on the datacenter over time. A null score is a probe the
+    model gave no usable rating for, and is kept as a gap rather than filled
+    in with a number nobody said."""
+    for reading in readings:
+      self._append_jsonl("opinions.jsonl", {
+        "step": step,
+        "time": curr_time.strftime("%B %d, %Y, %H:%M:%S") if curr_time else None,
+        **reading,
       })
 
   def log_outcomes(self, step, curr_time, personas, note=None):

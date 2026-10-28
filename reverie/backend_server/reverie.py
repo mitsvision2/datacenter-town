@@ -36,6 +36,7 @@ from utils import *
 from maze import *
 from persona.persona import *
 from experiment_logger import ExperimentLogger, set_experiment_logger, get_experiment_logger
+from opinion_probe import probe as probe_opinion, STANCE_SCALE
 from sim_logging import get_logger, setup_logging
 from dashboard_bridge import CommandFeed, record_result, write_state, load_settings
 from llm import usage
@@ -230,6 +231,48 @@ class ReverieServer:
       self.experiment_logger.log_outcomes(
         self.step, self.curr_time, self.personas, note="save")
     log.info("Save complete for %s", self.sim_code)
+
+
+  def probe_opinions(self):
+    """
+    Reads where every agent stands on the datacenter, 0 (against) to
+    STANCE_SCALE (in support), and logs it for the dashboard's stance graph.
+
+    Measurement only: opinion_probe retrieves read-only and nothing is written
+    to any agent's memory, so probing does not change the run it is watching.
+    Agents with no clock yet have not stepped and have nothing to read.
+    """
+    model = run_env.chat_model(globals().get("chat_model"))
+    caller = {k: usage.context[k] for k in ("persona", "source")}
+    readings = []
+    for name, persona in self.personas.items():
+      if persona.scratch.curr_time is None:
+        continue
+      # Billed separately so probes don't show up as the cost of a step.
+      usage.context.update(persona=name, source="opinion_probe",
+                           step=self.step)
+      reading = probe_opinion(persona, with_metadata=True)
+      # The scale goes in every row: it moved from 10 to 100 once already, and
+      # a bare score is unreadable without knowing which scale it was on.
+      # <relevance> says how much the memories behind the rating had to do with
+      # the datacenter at all, which a score alone cannot tell you, and
+      # <withheld> separates the gaps the probe chose from the ones where the
+      # model was asked and gave nothing usable. <quoted> counts the agent's
+      # own spoken lines that went in beside the memories and the window they
+      # came from, which is what would show a long run drawing its evidence
+      # from one early week (see opinion_probe.quoted_span).
+      readings += [{"name": name, "scale": STANCE_SCALE, **reading,
+                    "model": model, "run_env": run_env.RUN_ENV}]
+      shown = reading["relevance"]["shown"]
+      log.info("  stance=%s %s rel=%s: %s", name,
+               reading["withheld"] or reading["score"],
+               "n/a" if shown is None else f"{shown:.2f}",
+               (reading["rationale"] or "")[:120])
+    usage.context.update(caller)
+    if readings and getattr(self, "experiment_logger", None):
+      self.experiment_logger.log_opinions(
+        self.step, self.curr_time, readings)
+    return readings
 
 
   def _load_whispers(self, clean_whispers):
@@ -517,6 +560,9 @@ class ReverieServer:
 
           # Settings come from the dashboard and apply mid-run.
           settings = load_settings()
+          opinion_every = settings.get("opinion_steps") or 0
+          if opinion_every and self.step % opinion_every == 0:
+            self.probe_opinions()
           every = settings.get("autosave_steps") or 0
           if every and self.step % every == 0: 
             log.info("Auto-saving at step %s (every %s steps)", self.step, every)
@@ -736,7 +782,9 @@ class ReverieServer:
 
         elif ("call -- interview" in sim_command.lower()):
           # Stateless interview, like "analysis": nothing is added to the
-          # agent's memory. Earlier questions stay as context until end_convo.
+          # agent's memory, and the retrieval behind the answer is read-only
+          # (touch=False), so interviewing an agent does not change what it
+          # retrieves next. Earlier questions stay as context until end_convo.
           # Ex: call -- interview Elena Chen ;; What do you think of the datacenter?
           # Ex: call -- interview Elena Chen ;; end_convo
           name, line = [x.strip() for x in
@@ -752,7 +800,7 @@ class ReverieServer:
                         "be inappropriate to attribute human agency to the "
                         "agent in your communication.")
           else:
-            retrieved = new_retrieve(persona, [line], 50)[line]
+            retrieved = new_retrieve(persona, [line], 50, touch=False)[line]
             summarized_idea = generate_summarize_ideas(persona, retrieved, line)
             convo += [["Interviewer", line]]
             answer = generate_next_line(persona, "Interviewer", convo,
@@ -783,6 +831,19 @@ class ReverieServer:
                 self.step, self.curr_time, "history_whisper",
                 agent=agent_name, text=whisper,
                 extra={"source_file": curr_file})
+
+        elif ("call -- probe now" in sim_command.lower()):
+          # Reads every agent's position on the datacenter right now instead
+          # of waiting for the next scheduled read. Useful straight after a
+          # whisper, to catch the before and after.
+          # Ex: call -- probe now
+          readings = self.probe_opinions()
+          for reading in readings:
+            ret_str += (f"{reading['name']}: "
+                        f"{reading['score'] if reading['score'] is not None else '-'}"
+                        f" {reading['rationale']}\n")
+          if not readings:
+            ret_str += "No agents have stepped yet, so there is nothing to read.\n"
 
         elif ("call -- whisper" in sim_command.lower()):
           # Mid-run event injection.

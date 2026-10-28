@@ -37,9 +37,12 @@ def GPT4_request(prompt):
     return "ChatGPT ERROR"
 
 
-def ChatGPT_request(prompt):
+def ChatGPT_request(prompt, temperature=None):
+  # temperature=None leaves the chat_completion default in place, which is what
+  # every caller that passes a gpt_param dict has always relied on.
   try:
-    return chat_completion(_user_messages(prompt), model=chat_model)
+    kwargs = {} if temperature is None else {"temperature": temperature}
+    return chat_completion(_user_messages(prompt), model=chat_model, **kwargs)
   except Exception as e:
     print(f"ChatGPT ERROR: {e}")
     return "ChatGPT ERROR"
@@ -84,11 +87,13 @@ def ChatGPT_safe_generate_response(prompt,
                                    fail_safe_response="error",
                                    func_validate=None,
                                    func_clean_up=None,
-                                   verbose=False):
+                                   verbose=False,
+                                   temperature=None):
   prompt = '"""\n' + prompt + '\n"""\n'
   prompt += f"Output the response to the prompt above in json. {special_instruction}\n"
   prompt += "Example output json:\n"
-  prompt += '{"output": "' + str(example_output) + '"}'
+  prompt += (json.dumps({"output": example_output}) if isinstance(example_output, dict)
+             else '{"output": "' + str(example_output) + '"}')
 
   if verbose:
     print("CHAT GPT PROMPT")
@@ -96,7 +101,8 @@ def ChatGPT_safe_generate_response(prompt,
 
   for i in range(repeat):
     try:
-      curr_gpt_response = extract_json_output(ChatGPT_request(prompt).strip())
+      curr_gpt_response = extract_json_output(
+                            ChatGPT_request(prompt, temperature).strip())
       if func_validate(curr_gpt_response, prompt=prompt):
         return func_clean_up(curr_gpt_response, prompt=prompt)
       if verbose:

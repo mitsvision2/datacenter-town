@@ -172,13 +172,25 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .meter { height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; margin-top: 4px; }
 .meter > div { height: 100%; background: var(--moss); }
 
+/* Memory categories. Not .tabs/.tab: those are bound once at load and switch
+   panes by id, while these live inside a pane that is repainted on every poll. */
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 14px; }
+.chip {
+  border: 1px solid var(--line); background: var(--panel); border-radius: 999px;
+  padding: 5px 12px; cursor: pointer; color: var(--muted); font-size: 13px; font-weight: 500;
+}
+.chip:hover { background: var(--paper); }
+.chip[aria-pressed="true"] { background: var(--moss-soft); border-color: color-mix(in srgb, var(--moss) 35%, transparent); color: var(--ink); }
+.chip .count { color: var(--faint); font-weight: 400; margin-left: 5px; }
+.chip[aria-pressed="true"] .count { color: var(--muted); }
+details.ep .mem { margin-top: 8px; }
+details.ep .mark { color: var(--muted); margin-right: 6px; }
+
 details.llm { border-bottom: 1px solid var(--line); padding: 8px 0; }
 details.llm summary { cursor: pointer; list-style: none; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; }
 details.llm summary::-webkit-details-marker { display: none; }
-details.llm .q { font-size: 13px; color: var(--muted); }
 details.llm .a { font-size: 14px; }
 pre, .mono { font-family: var(--mono); font-size: 12px; line-height: 1.55; white-space: pre-wrap; word-break: break-word; margin: 0; }
-details.llm pre { background: var(--paper); padding: 10px; border-radius: 8px; margin-top: 8px; color: var(--muted); max-height: 260px; overflow: auto; }
 
 .form { display: flex; gap: 8px; margin-top: 8px; }
 .form input, .form select { flex: 1; min-width: 0; border: 1px solid var(--line); background: var(--panel); border-radius: var(--radius-sm); padding: 8px 10px; }
@@ -196,6 +208,9 @@ details.llm pre { background: var(--paper); padding: 10px; border-radius: 8px; m
 .convo p { margin: 4px 0 0; max-width: 75ch; }
 .convo details { margin-top: 6px; font-size: 14px; }
 .convo summary { cursor: pointer; color: var(--muted); font-size: 13px; }
+/* Marks the conversation a stance-graph marker was clicked, which is otherwise
+   hard to spot after the pane scrolls to it. */
+.convo.flash { animation: pulse 1.2s ease-in-out 2; }
 
 .results { display: grid; gap: 10px; }
 .result { border-left: 3px solid var(--line); padding: 2px 0 2px 10px; }
@@ -252,6 +267,46 @@ table.usage th { color: var(--muted); font-weight: 600; }
 .err-row { border-left: 3px solid var(--brick); padding: 2px 0 2px 10px; margin-bottom: 8px; font-size: 13px; }
 @media (max-width: 700px) { .usage-top { grid-template-columns: repeat(2, minmax(0, 1fr)); } .bar { grid-template-columns: 110px minmax(0, 1fr) 70px; } }
 .toggle { display: inline-flex; gap: 6px; align-items: center; color: var(--muted); font-size: 13px; margin-bottom: 8px; }
+
+/* ---------- stance graph ---------- */
+.bottom { padding: 0 20px 32px; display: grid; gap: 16px; }
+.stance-head { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: baseline; padding: 14px 16px 0; }
+.stance-head h2 { margin: 0; font-size: 15px; font-weight: 600; }
+.stance-head .hint { margin: 0; }
+.stance svg { width: 100%; height: 300px; display: block; }
+.stance .grid { stroke: var(--line); }
+.stance .fork { stroke: var(--faint); stroke-dasharray: 3 3; }
+.stance .axis { fill: var(--faint); font-size: 11px; }
+.stance { position: relative; }
+.stance .line { fill: none; stroke-width: 2; stroke-linejoin: round; }
+.stance .dot { stroke: var(--panel); stroke-width: 1.5; }
+.stance .mark { stroke: var(--panel); stroke-width: 1.5; }
+.stance .ring { stroke-width: 2; }
+.stance .dim { opacity: .22; }
+.stance-tip { position: absolute; z-index: 5; pointer-events: none; max-width: 300px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font-size: 12px; line-height: 1.5; box-shadow: 0 6px 20px rgba(0, 0, 0, .18); }
+.stance-tip b { display: block; }
+.stance-tip .when { color: var(--muted); }
+.stance-tip div { margin-top: 4px; }
+.stance-key { display: flex; flex-wrap: wrap; gap: 4px 16px; padding: 4px 16px 14px; font-size: 13px; color: var(--muted); }
+.stance-key span { display: inline-flex; align-items: center; gap: 6px; }
+.stance-key i { width: 10px; height: 10px; border-radius: 50%; }
+.stance-key b { color: var(--ink); }
+.social { padding: 16px; }
+.social-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 16px; }
+.social h2 { margin: 0; font-size: 15px; font-weight: 600; }
+.social .hint { margin: 0; }
+.social svg { width: 100%; height: auto; display: block; }
+.social-edge { stroke: var(--muted); opacity: .65; }
+.social-node { cursor: pointer; outline: none; }
+.social-node circle { stroke: var(--panel); stroke-width: 3; }
+.social-node.selected circle, .social-node:focus circle { stroke: var(--ink); stroke-width: 3; }
+.social-node .label-background { fill: var(--panel); }
+.social-node text { fill: var(--ink); font-size: 13px; text-anchor: middle;
+  paint-order: stroke; stroke: var(--panel); stroke-width: 5px; stroke-linejoin: round; }
+.social-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12px; }
+.social-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.social-legend i { width: 12px; height: 12px; border-radius: 50%; flex: none; }
+@media (max-width: 700px) { .bottom { padding: 0 16px 24px; } }
 
 /* ---------- dialog ---------- */
 dialog {
@@ -371,6 +426,7 @@ dialog .row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20
           <button class="btn small" data-fill="print all persona schedule" type="button">All schedules</button>
           <button class="btn small" data-fill="print current time" type="button">Current time</button>
           <button class="btn small" data-fill="call -- whisper all ;; " type="button">Whisper everyone</button>
+          <button class="btn small" data-fill="call -- probe now" type="button">Read stances now</button>
         </div>
         <form class="console-bar" id="console-form">
           <label for="console-input" class="sr-only">Command</label>
@@ -392,14 +448,12 @@ dialog .row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20
         <button class="tab" role="tab" aria-selected="true" data-pane="a-now">Now</button>
         <button class="tab" role="tab" aria-selected="false" data-pane="a-plan">Plan</button>
         <button class="tab" role="tab" aria-selected="false" data-pane="a-mind">Mind</button>
-        <button class="tab" role="tab" aria-selected="false" data-pane="a-memory">Memory</button>
         <button class="tab" role="tab" aria-selected="false" data-pane="a-ask">Interview</button>
         <button class="tab" role="tab" aria-selected="false" data-pane="a-profile">Profile</button>
       </div>
       <div class="pane" id="a-now"></div>
       <div class="pane" id="a-plan" hidden></div>
       <div class="pane" id="a-mind" hidden></div>
-      <div class="pane" id="a-memory" hidden></div>
       <div class="pane" id="a-ask" hidden>
         <div id="ask-log"></div>
         <form class="form" id="ask-form">
@@ -414,6 +468,26 @@ dialog .row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20
     </section>
   </div>
 </main>
+
+<div class="bottom">
+  <section class="card stance" id="stance-card" aria-label="Where each agent stands on the datacenter">
+    <div class="stance-tip" id="stance-tip" hidden></div>
+    <div class="stance-head">
+      <h2>Where each agent stands on the datacenter</h2>
+      <p class="hint" id="stance-note"></p>
+    </div>
+    <div id="stance"></div>
+    <div class="stance-key" id="stance-key"></div>
+  </section>
+  <section class="card social" id="social-card" aria-labelledby="social-heading">
+    <div class="social-head">
+      <h2 id="social-heading">Social Interaction Network</h2>
+      <p class="hint" id="social-note"></p>
+    </div>
+    <div id="social-network"></div>
+    <div class="social-legend" id="social-legend"></div>
+  </section>
+</div>
 
 <dialog id="run-dialog">
   <form method="dialog" id="run-form">
@@ -462,6 +536,9 @@ dialog .row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20
     <label for="s-autosave">Auto-save every</label>
     <div class="form" style="margin-top:0"><input id="s-autosave" type="number" min="0" max="100000" step="1" inputmode="numeric"><span class="hint" id="s-autosave-span" style="align-self:center;margin:0"></span></div>
     <div class="hint">Steps between saves. 360 steps is one game hour. 0 turns auto-save off.</div>
+    <label for="s-opinion">Read every agent's stance every</label>
+    <div class="form" style="margin-top:0"><input id="s-opinion" type="number" min="0" max="100000" step="1" inputmode="numeric"><span class="hint" id="s-opinion-span" style="align-self:center;margin:0"></span></div>
+    <div class="hint">Steps between readings for the stance graph at the bottom of the page. Reading is done from outside the simulation: the agents are never asked, and nothing is added to their memories. 0 turns it off.</div>
     <label for="s-budget">Spending cap for a run (USD)</label>
     <input id="s-budget" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="No cap">
     <div class="hint" id="s-budget-hint">When a run's estimated API cost reaches this, it stops after the current step and saves. Leave empty for no cap.</div>
@@ -633,23 +710,56 @@ document.addEventListener("change", (e) => {
   if (e.target.matches("[data-inherited]")) { showInherited = e.target.checked; renderConvos(); renderEvents(); }
 });
 
+// Identifies one conversation across repaints, for the stance-graph markers to
+// point at. Two agents can only be in one conversation at a given step.
+function convoKey(c) {
+  return `${c.step || 0}|${(c.speakers || []).join("|")}`;
+}
+
+// The conversation whose transcript is open, set by clicking a stance marker.
+// Held here rather than on the <details> element because paint() replaces the
+// pane's html, which would close an imperatively opened transcript.
+let openConvo = null;
+
 function renderConvos() {
   const all = (data?.conversations || []).slice().reverse();
   const own = all.filter((c) => !c.inherited);
   const list = showInherited ? all : own;
   $("n-convos").textContent = own.length ? own.length : "";
   paint($("p-convos"), inheritedToggle(all, own) + (list.length ? list.map((c) => `
-    <article class="convo ${c.inherited ? "inherited" : ""}">
+    <article class="convo ${c.inherited ? "inherited" : ""}" data-convo="${esc(convoKey(c))}">
       <div class="head"><span class="pair">${esc((c.speakers || []).join(" and "))}${c.inherited ? `<span class="inherited-note">earlier run</span>` : ""}</span><span>${esc(c.time || "")}</span></div>
       <p>${esc(c.summary || "")}</p>
-      <details><summary>${(c.utterances || []).length} lines at ${esc(place(c.location))}</summary>
+      <details ${convoKey(c) === openConvo ? "open" : ""}><summary>${(c.utterances || []).length} lines at ${esc(place(c.location))}</summary>
         <div class="lines">${(c.utterances || []).map((u) => `<div class="line"><b>${esc(u[0])}:</b> ${esc(u[1])}</div>`).join("")}</div>
       </details>
     </article>`).join("") : `<div class="empty">No conversations in this run yet. Agents start talking once they're awake and cross paths.</div>`));
 }
 
+function showConvo(c) {
+  // Inherited conversations are hidden behind the "from earlier runs" toggle,
+  // so a marker on the inherited part of a line has to switch it on first.
+  if (c.inherited) showInherited = true;
+  openConvo = convoKey(c);
+  renderConvos();
+  document.querySelector('[data-pane="p-convos"]').click();
+  const pane = $("p-convos");
+  const card = pane.querySelector(`[data-convo="${CSS.escape(openConvo)}"]`);
+  if (!card) return;
+  // Scroll only the pane, as scrollPlanToCurrent does.
+  const offset = card.getBoundingClientRect().top - pane.getBoundingClientRect().top;
+  pane.scrollTop += offset - pane.clientHeight / 2 + card.offsetHeight / 2;
+  card.classList.add("flash");
+  card.addEventListener("animationend", () => card.classList.remove("flash"),
+                        {once: true});
+}
+
 function renderEvents() {
-  const all = (data?.events || []).slice().reverse();
+  // Reflections share events.jsonl with whispers, but they are the agent's own
+  // thinking rather than something whispered into the run: they belong on the
+  // stance graph, not in this pane or its count.
+  const all = (data?.events || []).filter((e) => e.event_type !== "reflection")
+    .slice().reverse();
   const own = all.filter((e) => !e.inherited);
   const list = showInherited ? all : own;
   $("n-events").textContent = own.length ? own.length : "";
@@ -657,6 +767,361 @@ function renderEvents() {
     <li class="${e.inherited ? "inherited" : ""}"><div><b>${esc(e.agent)}</b> ${esc(e.text)}<div class="when">${esc(e.time || "")}, ${e.event_type === "history_whisper" ? "seed history" : "whisper"}${e.inherited ? ", earlier run" : ""}</div></div></li>`).join("")}</ul>`
     : `<div class="empty">No whispers in this run. Whispers you send, and seeded history, are listed here.</div>`));
 }
+
+/* ---------------- stance graph ---------------- */
+
+// One line per agent, 0 (against the datacenter) to 100 (in support), from the
+// read the simulation takes every game hour. Readings the model gave no usable
+// rating for come through as null and are drawn as a break in the line, so a
+// failed read never looks like a considered opinion.
+const STANCE_COLORS = ["#2f7d52", "#b4552d", "#3b6ea5", "#8a5bb0",
+                       "#b08b1e", "#2a8f8f", "#a8456b", "#6b6f3f"];
+let SVG_W = 900, PLOT_R = 868;
+const PLOT_L = 84, PLOT_T = 12, PLOT_B = 272;
+// Readings taken before the scale went from 10 to 100 carry no scale field.
+// They are plotted by their position on their own scale so an old line still
+// joins up with a new one instead of collapsing to the floor of the graph.
+const STANCE_OLD_SCALE = 10;
+// How close the cursor has to get to a point, in viewBox units, to read it.
+const STANCE_HIT_R = 30;
+// What each kind of logged event is drawn as. Colour already encodes the agent,
+// so the shape has to carry what happened. Seed history, all logged at step 0,
+// is deliberately absent: it is the starting position, not something that
+// happened during the run.
+const STANCE_EVENT_MARKS = {
+  midrun_whisper: {kind: "whisper", d: (x, y) => `M${x} ${y - 5}L${x + 5} ${y}L${x} ${y + 5}L${x - 5} ${y}Z`},
+  reflection: {kind: "reflection", d: (x, y) => `M${x - 4} ${y - 4}h8v8h-8Z`},
+};
+// Every plotted point, for hit-testing the cursor against.
+let stancePts = [];
+
+function stanceMethod(row) {
+  return row.scoring_version || `legacy_direct_${row.scale || STANCE_OLD_SCALE}`;
+}
+
+function stanceY(row) {
+  if (!Number.isInteger(row.score)) return null;
+  const scale = row.scale || STANCE_OLD_SCALE;
+  const low = row.scoring_version === "rubric_v1" ? 0 : 1;
+  if (row.score < low || row.score > scale || scale <= low) return null;
+  return PLOT_B - ((row.score - low) / (scale - low)) * (PLOT_B - PLOT_T);
+}
+
+function stanceTickFormat(spanSecs) {
+  // Hours while the run is short, then days, then months, so the axis stays
+  // readable however far the simulated clock runs.
+  if (spanSecs <= 36 * 3600) return (d) => `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+  if (spanSecs <= 90 * 86400) return (d) => d.toLocaleDateString(undefined, {month: "short", day: "numeric"});
+  return (d) => d.toLocaleDateString(undefined, {month: "short", year: "numeric"});
+}
+
+function stanceHide() {
+  $("stance-tip").hidden = true;
+  const ring = document.getElementById("stance-ring");
+  if (ring) ring.setAttribute("r", "0");
+}
+
+function stanceNearest(ev) {
+  const svg = $("stance").querySelector("svg");
+  if (!svg) return null;
+  // While an agent is selected, only that agent's points can be read. Eight
+  // lines cross constantly, so the point nearest the cursor is often someone
+  // else's, and the reasoning of the wrong agent is worse than none.
+  const mine = stancePts.filter((p) => !selected || p.name === selected);
+  const ctm = svg.getScreenCTM();
+  if (!ctm || !mine.length) return null;
+  const at = svg.createSVGPoint();
+  at.x = ev.clientX;
+  at.y = ev.clientY;
+  const loc = at.matrixTransform(ctm.inverse());
+
+  let best = null, bestDist = Infinity;
+  for (const p of mine) {
+    const dist = (p.x - loc.x) ** 2 + (p.y - loc.y) ** 2;
+    if (dist < bestDist) { bestDist = dist; best = p; }
+  }
+  return bestDist > STANCE_HIT_R ** 2 ? null : best;
+}
+
+function stanceClick(ev) {
+  const hit = stanceNearest(ev);
+  if (hit && hit.kind === "convo") showConvo(hit.convo);
+}
+
+function stanceHover(ev) {
+  const svg = $("stance").querySelector("svg");
+  const tip = $("stance-tip");
+  if (!svg || !tip) return;
+  const best = stanceNearest(ev);
+  svg.style.cursor = best && best.kind === "convo" ? "pointer" : "";
+  if (!best) return stanceHide();
+
+  const ring = document.getElementById("stance-ring");
+  if (ring) {
+    ring.setAttribute("cx", best.x);
+    ring.setAttribute("cy", best.y);
+    ring.setAttribute("r", "6.5");
+    ring.setAttribute("stroke", best.color);
+  }
+  const when = esc(best.time || "");
+  const body = best.kind === "convo"
+    ? `<span class="when">conversation with ${esc(best.with)} · ${when}</span>
+       ${best.summary ? `<div>${esc(best.summary)}</div>` : ""}
+       <div class="when">click to read the transcript</div>`
+    : best.kind === "whisper"
+      ? `<span class="when">whisper · ${when}</span>
+         ${best.text ? `<div>${esc(best.text)}</div>` : ""}`
+      : best.kind === "reflection"
+        ? `<span class="when">reflection · ${when}</span>
+           ${best.text ? `<div>${esc(best.text)}</div>` : ""}
+           ${best.insights > 1 ? `<div class="when">and ${best.insights - 1} more insight${best.insights === 2 ? "" : "s"} at this moment</div>` : ""}`
+      : `<span class="when">${best.score} of ${best.scale} · ${esc(best.method)} · ${when}</span>
+         ${best.category ? `<div>${esc(best.category.replace(/_/g, " "))}</div>` : ""}
+         ${best.rationale ? `<div>${esc(best.rationale)}</div>` : ""}
+         ${(best.conditions || []).length ? `<div>Conditions: ${esc(best.conditions.join("; "))}</div>` : ""}`;
+  tip.innerHTML = `<b style="color:${best.color}">${esc(best.name)}</b>${body}`;
+  tip.hidden = false;
+
+  // Sits beside the cursor, flipping to the other side near the right edge.
+  const box = $("stance-card").getBoundingClientRect();
+  const x = ev.clientX - box.left, y = ev.clientY - box.top;
+  const right = x + 16 + tip.offsetWidth > box.width;
+  tip.style.left = `${Math.max(4, right ? x - tip.offsetWidth - 16 : x + 16)}px`;
+  tip.style.top = `${Math.max(4, y - tip.offsetHeight - 14)}px`;
+}
+
+function renderStance() {
+  SVG_W = Math.max(300, Math.round($("stance").clientWidth || 900));
+  PLOT_R = SVG_W - 28;
+  const rows = data?.opinions || [];
+  const sim = data?.sim;
+  const every = data?.settings?.opinion_steps || 0;
+  stancePts = [];
+  if (!rows.length) {
+    stanceHide();
+    paint($("stance"), `<div class="empty">${every
+      ? `No readings yet. Every ${every} steps (${spanLabel(every, sim?.sec_per_step)} of game time) the run reads where each agent stands on the datacenter, from 0 (against) to 100 (in support), and plots the answers here.`
+      : "Stance readings are switched off. Turn them on in settings to graph how each agent's position on the datacenter moves over the run."}</div>`);
+    paint($("stance-key"), "");
+    $("stance-note").textContent = "";
+    return;
+  }
+
+  const names = sim?.persona_order?.length ? sim.persona_order
+    : [...new Set(rows.map((r) => r.name))];
+  const series = names.map((name, i) => ({
+    name, color: STANCE_COLORS[i % STANCE_COLORS.length],
+    points: rows.filter((r) => r.name === name),
+  })).filter((s) => s.points.length);
+
+  const steps = rows.map((r) => r.step || 0);
+  const x0 = Math.min(...steps), x1 = Math.max(...steps);
+  const sps = sim?.sec_per_step || 10;
+  const t0 = parseGameTime(rows.find((r) => (r.step || 0) === x0)?.time);
+  const dateAt = (step) => t0 && new Date(t0.getTime() + (step - x0) * sps * 1000);
+  const fmt = stanceTickFormat((x1 - x0) * sps);
+  const px = (s) => x1 === x0 ? (PLOT_L + PLOT_R) / 2
+    : PLOT_L + ((s - x0) / (x1 - x0)) * (PLOT_R - PLOT_L);
+  const py = (v) => stanceY({score: v, scale: 100, scoring_version: "rubric_v1"});
+  let svg = [[0, "0 opposed"], [25, "25"], [50, "50 mixed"], [75, "75"], [100, "100 support"]].map(([v, label]) =>
+    `<line class="grid" x1="${PLOT_L}" y1="${py(v)}" x2="${PLOT_R}" y2="${py(v)}"/>
+     <text class="axis" x="${PLOT_L - 8}" y="${py(v) + 4}" text-anchor="end">${label}</text>`).join("");
+
+  const ticks = x1 === x0 ? 1 : 5;
+  for (let i = 0; i < ticks; i += 1) {
+    const s = ticks === 1 ? x0 : x0 + ((x1 - x0) * i) / (ticks - 1);
+    const d = dateAt(s);
+    svg += `<text class="axis" x="${px(s).toFixed(1)}" y="${PLOT_B + 20}" text-anchor="middle">${d ? esc(fmt(d)) : `step ${Math.round(s)}`}</text>`;
+  }
+
+  // A forked run inherits the readings of the run it continues; show where
+  // this one picked up rather than hiding the earlier half of the line.
+  const start = sim?.start_step || 0;
+  if (start > x0 && start < x1) {
+    svg += `<line class="fork" x1="${px(start).toFixed(1)}" y1="${PLOT_T}" x2="${px(start).toFixed(1)}" y2="${PLOT_B}"/>
+      <text class="axis" x="${(px(start) + 5).toFixed(1)}" y="${PLOT_T + 10}">this run starts</text>`;
+  }
+
+  svg += series.map((s) => {
+    const dim = selected && s.name !== selected ? " dim" : "";
+    let d = "", pen = false, method = null;
+    let dots = "";
+    // Each unbroken run of readings, to hang the event markers off.
+    const segs = [];
+    for (const p of s.points) {
+      const ordinate = stanceY(p);
+      if (ordinate == null) { pen = false; continue; }
+      if (method !== stanceMethod(p)) pen = false;
+      method = stanceMethod(p);
+      const scale = p.scale || STANCE_OLD_SCALE;
+      const step = p.step || 0;
+      const x = +px(step).toFixed(1), y = +ordinate.toFixed(1);
+      d += `${pen ? "L" : "M"}${x} ${y} `;
+      if (!pen) segs.push([]);
+      pen = true;
+      segs[segs.length - 1].push({step, x, y});
+      dots += `<circle class="dot${dim}" cx="${x}" cy="${y}" r="3.5" fill="${s.color}"/>`;
+      // Hit-tested on mousemove rather than given an SVG <title>: a <title>
+      // tooltip waits on the browser's own hover delay and always reports
+      // whichever point is nearest, selected agent or not.
+      stancePts.push({kind: "reading", x, y, name: s.name, color: s.color,
+                      score: p.score, scale, time: p.time,
+                      rationale: p.rationale, category: p.category,
+                      conditions: p.conditions, method});
+    }
+
+    // Where this agent's line sits at a given step. null outside the readings
+    // or inside a gap, where there is no line for a marker to sit on.
+    const yAt = (step) => {
+      for (const seg of segs) {
+        if (seg.length === 1 && seg[0].step === step) return seg[0].y;
+        for (let i = 1; i < seg.length; i += 1) {
+          const a = seg[i - 1], b = seg[i];
+          if (step < a.step || step > b.step) continue;
+          const t = b.step === a.step ? 0 : (step - a.step) / (b.step - a.step);
+          return +(a.y + (b.y - a.y) * t).toFixed(1);
+        }
+      }
+      return null;
+    };
+
+    // What reached this agent from outside, marked on the line at the step it
+    // happened, so the readings either side of it are the ones it explains. A
+    // conversation lands on both speakers' lines.
+    let marks = "";
+    for (const c of data?.conversations || []) {
+      if (!(c.speakers || []).includes(s.name)) continue;
+      const step = c.step || 0, y = yAt(step);
+      if (y == null) continue;
+      const x = +px(step).toFixed(1);
+      marks += `<path class="mark${dim}" fill="${s.color}" d="M${x} ${y - 5.5}L${x + 5} ${y + 3.5}L${x - 5} ${y + 3.5}Z"/>`;
+      stancePts.push({kind: "convo", x, y, name: s.name, color: s.color,
+                      time: c.time, summary: c.summary, convo: c,
+                      with: (c.speakers || []).filter((n) => n !== s.name).join(", ")});
+    }
+    for (const e of data?.events || []) {
+      const shape = STANCE_EVENT_MARKS[e.event_type];
+      if (!shape || e.agent !== s.name) continue;
+      const step = e.step || 0, y = yAt(step);
+      if (y == null) continue;
+      const x = +px(step).toFixed(1);
+      marks += `<path class="mark${dim}" fill="${s.color}" d="${shape.d(x, y)}"/>`;
+      stancePts.push({kind: shape.kind, x, y, name: s.name, color: s.color,
+                      time: e.time, text: e.text,
+                      insights: e.extra && e.extra.insights});
+    }
+    return `<path class="line${dim}" stroke="${s.color}" d="${d.trim()}"/>${marks}${dots}`;
+  }).join("");
+
+  svg += `<circle id="stance-ring" class="ring" r="0" fill="none"/>`;
+  const painted = drawn.stance;
+  paint($("stance"), `<svg viewBox="0 0 ${SVG_W} 300" role="img" aria-label="Each agent's position on the datacenter over time, from 0 opposed to 100 in support">${svg}</svg>`);
+  if (drawn.stance !== painted) {
+    // Only on an actual repaint: polling re-runs this every couple of seconds,
+    // and dropping the tooltip each time would make a point unreadable.
+    stanceHide();
+    const plot = $("stance").querySelector("svg");
+    plot.onmousemove = stanceHover;
+    plot.onmouseleave = stanceHide;
+    plot.onclick = stanceClick;
+  }
+  paint($("stance-key"), series.map((s) => {
+    const last = s.points.filter((p) => p.score != null).pop();
+    const shown = last && (last.scale || STANCE_OLD_SCALE) !== 100
+      ? `${last.score}/${last.scale || STANCE_OLD_SCALE}` : last?.score;
+    return `<span><i style="background:${s.color}"></i>${esc(s.name)}${last ? ` <b>${shown}</b>` : ""}</span>`;
+  }).join(""));
+
+  const marked = new Set(stancePts.filter((p) => p.kind !== "reading")
+    .map((p) => p.kind));
+  const gaps = rows.filter((r) => r.score == null).length;
+  const models = [...new Set(rows.map((r) => r.model).filter(Boolean))];
+  const scales = [...new Set(rows.filter((r) => r.score != null)
+    .map((r) => r.scale || STANCE_OLD_SCALE))];
+  const methods = [...new Set(rows.map(stanceMethod))];
+  $("stance-note").textContent = [
+    `${rows.length} reading${rows.length === 1 ? "" : "s"}`,
+    gaps ? `${gaps} with no usable rating, drawn as gaps` : "",
+    scales.length > 1 ? `readings from two scales (${scales.sort((a, b) => a - b).join(" and ")}), plotted by position` : "",
+    methods.length > 1 ? "Mixed scoring methods: not directly comparable without calibration; lines break at method changes"
+      : methods[0] === "rubric_v1" ? "Rubric v1 (0–100)"
+      : "Legacy direct scores (1–scale), shown by their original relative position",
+    models.length > 1 ? `mixed models (${models.join(", ")}), so levels aren't comparable` : models[0] || "",
+    selected ? `hover a point for ${selected}'s reasoning` : "hover a point for the agent's reasoning",
+    marked.has("convo") ? "▲ conversation (click to read it)" : "",
+    marked.has("whisper") ? "◆ whisper" : "",
+    marked.has("reflection") ? "■ reflection" : "",
+  ].filter(Boolean).join(" · ");
+}
+
+/* ---------------- social interaction network ---------------- */
+
+function socialPositions(nodes, width) {
+  // Roster order alone determines positions; measurements and edges never do.
+  const names = nodes.map((n) => n.name).sort();
+  const cols = width < 600 ? 2 : 4;
+  return names.map((name, i) => ({name,
+    x: (i % cols + .5) * width / cols, y: 54 + Math.floor(i / cols) * 126}));
+}
+
+function socialEdgeWidth(count) {
+  return Math.min(8, 1 + 1.25 * Math.log1p(Math.max(0, count)));
+}
+
+function renderNetwork() {
+  const network = data?.network;
+  const nodes = network?.nodes || (data?.sim?.roster || []).map((a) => ({
+    name: a.name, color: "#9299A4", label: "Unrated", score: null,
+    conversations: 0, partners: 0,
+  }));
+  if (!nodes.length) {
+    paint($("social-network"), '<div class="empty">No simulation loaded.</div>');
+    paint($("social-legend"), "");
+    $("social-note").textContent = "";
+    return;
+  }
+  const width = Math.max(280, Math.round($("social-network").clientWidth || 800));
+  const positions = socialPositions(nodes, width);
+  const byName = new Map(positions.map((p) => [p.name, p]));
+  const height = Math.max(...positions.map((p) => p.y)) + 78;
+  let svg = (network?.edges || []).map((e) => {
+    const a = byName.get(e.source), b = byName.get(e.target);
+    if (!a || !b) return "";
+    const title = `${e.source} and ${e.target}\n${e.count} completed conversations\nLast: ${e.time || "Unknown time"}`;
+    return `<line class="social-edge" x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke-width="${socialEdgeWidth(e.count)}"><title>${esc(title)}</title></line>`;
+  }).join("");
+  svg += nodes.map((n) => {
+    const at = byName.get(n.name);
+    const legacy = n.scoring_version && n.scoring_version !== "rubric_v1";
+    const rating = n.score == null ? "Unrated; no valid measurement"
+      : `${n.score}/${n.scale || 100}: ${n.label}\nMethod: ${n.scoring_version}${legacy ? "; rubric color is visualization only" : ""}\nLast valid probe: ${n.time || "Unknown time"}`;
+    const title = `${n.name}\n${rating}\n${n.conversations || 0} completed conversations; ${n.partners || 0} distinct partners`;
+    const words = n.name.split(" ");
+    const labelWidth = Math.min(width / (width < 600 ? 2 : 4) - 8,
+      Math.max(...words.map((w) => w.length)) * 8 + 16);
+    return `<g class="social-node${n.name === selected ? " selected" : ""}" data-network-node="${esc(n.name)}" tabindex="0" role="button" aria-label="${esc(title)}">
+      <title>${esc(title)}</title><circle cx="${at.x}" cy="${at.y}" r="24" fill="${n.color}"/>
+      <rect class="label-background" x="${at.x - labelWidth / 2}" y="${at.y + 30}" width="${labelWidth}" height="34"/>
+      <text x="${at.x}" y="${at.y + 43}"><tspan x="${at.x}">${esc(words[0])}</tspan><tspan x="${at.x}" dy="16">${esc(words.slice(1).join(" "))}</tspan></text></g>`;
+  }).join("");
+  paint($("social-network"), `<svg viewBox="0 0 ${width} ${height}" role="group" aria-label="Cumulative completed conversations and latest valid stance">${svg}</svg>`);
+  const legend = (network?.bands || []).map((b) => `<span><i style="background:${b.color}"></i>${esc(b.label)} (${b.min === b.max ? b.min : `${b.min}–${b.max}`})</span>`).join("");
+  paint($("social-legend"), legend + '<span><i style="background:#9299A4"></i>Unrated</span>');
+  $("social-note").textContent = `${network?.conversations || 0} completed conversations, including inherited history. Edges show frequency, not proven causal influence. Colors retain the last valid measurement.`;
+}
+
+$("social-network").addEventListener("click", (e) => {
+  const node = e.target.closest("[data-network-node]");
+  if (node) selectAgent(node.dataset.networkNode);
+});
+$("social-network").addEventListener("keydown", (e) => {
+  if (e.key !== "Enter" && e.key !== " ") return;
+  const node = e.target.closest("[data-network-node]");
+  if (node) { e.preventDefault(); selectAgent(node.dataset.networkNode); }
+});
+const graphResize = new ResizeObserver(() => { renderStance(); renderNetwork(); });
+graphResize.observe($("social-network"));
+graphResize.observe($("stance"));
 
 let logTimer = null;
 async function loadLog() {
@@ -695,18 +1160,23 @@ function renderRoster() {
 $("roster").addEventListener("click", (e) => {
   const b = e.target.closest(".agent");
   if (!b) return;
-  selected = b.dataset.name;
+  selectAgent(b.dataset.name);
+});
+
+function selectAgent(name) {
+  selected = name;
   try { localStorage.setItem("dash-agent", selected); } catch (err) { /* private mode */ }
   $("map").contentWindow?.postMessage({type: "focus", name: selected}, location.origin);
   drawn.roster = null;
+  memOpen.clear();  // episode timestamps belong to the agent they came from
   poll();
-});
+}
 
 function renderAgent() {
   const a = data?.sim?.agent;
   if (!a) {
     paint($("who"), "");
-    ["a-now", "a-plan", "a-mind", "a-memory", "a-profile"].forEach((id) => paint($(id), `<div class="empty">Pick an agent to see what they're doing and thinking.</div>`));
+    ["a-now", "a-plan", "a-mind", "a-profile"].forEach((id) => paint($(id), `<div class="empty">Pick an agent to see what they're doing and thinking.</div>`));
     return;
   }
   const sub = [a.age ? `${a.age} years old` : "", a.living_area ? place(a.living_area) : ""].filter(Boolean).join(", ");
@@ -751,33 +1221,30 @@ function renderAgent() {
   const planKey = `${a.name}:${idx}`;
   if (planKey !== scrollPlanToCurrent.key && !$("a-plan").hidden) scrollPlanToCurrent();
 
-  // Mind
+  // Mind: the reflection meter, then one memory category at a time.
   const [trig, trigMax] = a.reflect_trigger || [0, 0];
   const fill = trigMax ? Math.max(0, Math.min(100, 100 - (trig / trigMax) * 100)) : 0;
-  const llm = (a.llm || []).map((c) => `
-    <details class="llm"><summary><div><div class="q">${esc(c.template.replace(/_v\d.*$/, "").replace(/_/g, " "))}</div><div class="a">${esc(c.output)}</div></div><span class="when">${esc(c.at)}</span></summary>
-      <pre>${esc(c.prompt)}</pre></details>`).join("");
+  const c = a.memory_counts || {};
+  const chips = MEM_CATS.map((k) => `
+    <button class="chip" type="button" data-mem="${k.key}" aria-pressed="${k.key === memCat}">${k.label}<span class="count">${c[k.key] || 0}</span></button>`).join("");
   paint($("a-mind"), `
     <div class="section"><h3>Next reflection</h3>
       <div class="meter"><div style="width:${fill}%"></div></div>
       <div class="hint">They stop to reflect when enough important things have happened. ${Math.round(fill)}% of the way there.</div></div>
-    <div class="section"><h3>Latest decisions</h3>${llm || `<div class="empty">Each question the agent answers while planning, reacting or talking appears here. ${view ? "They're only recorded while a run is loaded." : "It needs debug = True in utils.py."}</div>`}</div>
-    <div class="section"><h3>Thoughts</h3>${memList(a.thoughts, "No thoughts yet.")}</div>`);
+    <div class="chips" role="group" aria-label="Memory categories">${chips}</div>
+    ${memCategory(a, memCat)}`);
 
-  // Memory
-  const c = a.memory_counts || {};
-  paint($("a-memory"), `
-    <div class="hint" style="margin:0 0 12px">${c.event || 0} things seen, ${c.thought || 0} thoughts, ${c.chat || 0} conversations remembered.</div>
-    <div class="section"><h3>Recent conversations</h3>${(a.chats || []).length ? a.chats.map((n) => `
-      <details class="llm"><summary><div><div class="a">${esc(n.description)}</div><div class="when">${shortTime(n.created)}</div></div>${poignancy(n.poignancy)}</summary>
-      <div class="lines" style="margin-top:8px">${(n.lines || []).map((l) => `<div class="line"><b>${esc(l[0])}:</b> ${esc(l[1])}</div>`).join("")}</div></details>`).join("") : `<div class="empty">No conversations yet.</div>`}</div>
-    <div class="section"><h3>Things they noticed</h3>${memList(a.events, "Nothing noticed yet.")}</div>`);
-
-  // Profile
+  // Profile. The last three are only set on casts built for measuring belief
+  // change, so each is left out when empty rather than shown as a blank.
+  const trait = (title, text) => text
+    ? `<div class="section"><h3>${title}</h3><p class="quote">${esc(text)}</p></div>` : "";
   paint($("a-profile"), `
-    <div class="section"><h3>Personality</h3><p class="quote">${esc(a.innate)}</p></div>
-    <div class="section"><h3>Background</h3><p class="quote">${esc(a.learned)}</p></div>
-    <div class="section"><h3>Daily life</h3><p class="quote">${esc(a.lifestyle)}</p></div>`);
+    ${trait("Personality", a.innate)}
+    ${trait("Background", a.learned)}
+    ${trait("Daily life", a.lifestyle)}
+    ${trait("What they care about", a.values)}
+    ${trait("What's at stake for them", a.stake)}
+    ${trait("How they change their mind", a.persuadability)}`);
 }
 
 function scrollPlanToCurrent() {
@@ -796,6 +1263,82 @@ function memList(nodes, empty) {
     <li><div>${esc(n.description)}<div class="when">${shortTime(n.created)}</div></div>${poignancy(n.poignancy)}</li>`).join("")}</ul>`
     : `<div class="empty">${empty}</div>`;
 }
+
+/* ---------------- memory categories ---------------- */
+
+// The four kinds of thing an agent stores, in the order they pile up: it sees,
+// it talks, it thinks about both, and sometimes it steps back and reflects.
+// `key` matches memory_counts and the payload lists.
+const MEM_CATS = [
+  {key: "event", label: "Seen"},
+  {key: "chat", label: "Conversations"},
+  {key: "thought", label: "Thoughts"},
+  {key: "reflection", label: "Reflections"},
+];
+let memCat = "event";
+// Which reflection episodes are expanded, by timestamp. The meter above the list
+// moves on every poll, so the pane is repainted often; without this the episode
+// you just opened would shut again a second later.
+const memOpen = new Set();
+
+function memShowing(shown, total) {
+  return total > shown ? `<div class="hint">Showing the ${shown} most recent of ${total}.</div>` : "";
+}
+
+function memCategory(a, key) {
+  const total = (a.memory_counts || {})[key] || 0;
+  if (key === "chat") {
+    const chats = a.chats || [];
+    return `<div class="section"><h3>Conversations</h3>${chats.length ? chats.map((n) => `
+      <details class="llm"><summary><div><div class="a">${esc(n.description)}</div><div class="when">${shortTime(n.created)}</div></div>${poignancy(n.poignancy)}</summary>
+      <div class="lines" style="margin-top:8px">${(n.lines || []).map((l) => `<div class="line"><b>${esc(l[0])}:</b> ${esc(l[1])}</div>`).join("")}</div></details>`).join("")
+      : `<div class="empty">No conversations yet.</div>`}
+      ${memShowing(chats.length, total)}</div>`;
+  }
+  if (key === "reflection") {
+    const eps = memEpisodes(a.reflections);
+    return `<div class="section"><h3>Reflections</h3>${eps.length ? eps.map((ep) => `
+      <details class="ep llm" data-ep="${esc(ep.created)}" ${memOpen.has(ep.created) ? "open" : ""}><summary><div><div class="a"><span class="mark" aria-hidden="true">&#9632;</span>${esc(ep.headline.description)}</div>
+      <div class="when">${shortTime(ep.created)} &middot; ${ep.nodes.length} insight${ep.nodes.length === 1 ? "" : "s"}</div></div>${poignancy(ep.headline.poignancy)}</summary>
+      ${memList(ep.nodes, "")}</details>`).join("")
+      : `<div class="empty">No reflections yet. They happen once enough important things have piled up &mdash; the meter above is the countdown.</div>`}
+      ${memShowing(eps.length, total)}</div>`;
+  }
+  const nodes = key === "event" ? a.events : a.thoughts;
+  const empty = key === "event" ? "Nothing noticed yet." : "No thoughts yet.";
+  return `<div class="section"><h3>${key === "event" ? "Things they noticed" : "Thoughts"}</h3>
+    ${memList(nodes, empty)}${memShowing((nodes || []).length, total)}</div>`;
+}
+
+// One reflection writes several insights at a single timestamp, which is the
+// same thing the ■ marker on the stance graph stands for. Group by that
+// timestamp so an episode reads as one event, headlined by its most poignant
+// insight — the line the graph's tooltip shows.
+function memEpisodes(nodes) {
+  const by = new Map();
+  (nodes || []).forEach((n) => {
+    if (!by.has(n.created)) by.set(n.created, []);
+    by.get(n.created).push(n);
+  });
+  return [...by].map(([created, group]) => ({
+    created, nodes: group,
+    headline: group.reduce((best, n) => ((n.poignancy || 0) > (best.poignancy || 0) ? n : best), group[0]),
+  }));
+}
+
+$("inspector").addEventListener("click", (e) => {
+  const chip = e.target.closest(".chip[data-mem]");
+  if (chip) {
+    memCat = chip.dataset.mem;
+    renderAgent();
+    return;
+  }
+  // Let <details> open itself; just remember that it is open.
+  const ep = e.target.closest("details.ep[data-ep]")?.dataset.ep;
+  if (ep && e.target.closest("summary")) {
+    if (memOpen.has(ep)) memOpen.delete(ep); else memOpen.add(ep);
+  }
+});
 
 $("inspector").addEventListener("submit", (e) => {
   const form = e.target.closest("[data-whisper]");
@@ -959,7 +1502,7 @@ async function poll() {
     watchRuns();
     renderHeader(); renderSettings(); renderRoster(); renderAgent(); renderInterview();
     renderTitle();
-    renderConvos(); renderEvents(); renderResults();
+    renderConvos(); renderEvents(); renderResults(); renderStance(); renderNetwork();
   } catch (e) { /* frontend server restarting */ }
   poll.t = setTimeout(poll, 1000);
 }
@@ -1207,6 +1750,7 @@ function renderSettings() {
 function openSettings() {
   const st = data?.settings || {};
   $("s-autosave").value = st.autosave_steps ?? 360;
+  $("s-opinion").value = st.opinion_steps ?? 360;
   $("s-budget").value = st.budget_usd ?? "";
   const spent = view ? null : data?.sim?.run_cost;
   $("s-budget-hint").textContent = `When a run's estimated API cost reaches this, it stops after the current step and saves. Leave empty for no cap.${spent != null ? ` This run has spent about ${usd(spent)} so far.` : ""}`;
@@ -1214,16 +1758,22 @@ function openSettings() {
   $("s-error").textContent = "";
   $("settings").showModal();
 }
+function stepsSpan(input, out) {
+  const n = parseInt($(input).value, 10) || 0;
+  $(out).textContent = n ? `steps (${spanLabel(n, data?.sim?.sec_per_step)} of game time)` : "steps (off)";
+}
 function updateAutosaveSpan() {
-  const n = parseInt($("s-autosave").value, 10) || 0;
-  $("s-autosave-span").textContent = n ? `steps (${spanLabel(n, data?.sim?.sec_per_step)} of game time)` : "steps (off)";
+  stepsSpan("s-autosave", "s-autosave-span");
+  stepsSpan("s-opinion", "s-opinion-span");
 }
 $("s-autosave").oninput = updateAutosaveSpan;
+$("s-opinion").oninput = updateAutosaveSpan;
 $("settings-pill").onclick = openSettings;
 $("btn-budget-edit").onclick = openSettings;
 $("s-go").onclick = async () => {
   const res = await fetch("/dashboard/settings/", {method: "POST", body: JSON.stringify({
-    autosave_steps: $("s-autosave").value, budget_usd: $("s-budget").value.trim()})});
+    autosave_steps: $("s-autosave").value, opinion_steps: $("s-opinion").value,
+    budget_usd: $("s-budget").value.trim()})});
   const body = await res.json();
   if (!res.ok) { $("s-error").textContent = body.error; return; }
   $("settings").close();

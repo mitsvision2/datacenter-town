@@ -12,6 +12,39 @@ This repository accompanies our research paper titled "[Generative Agents: Inter
 
 This fork adds multi-provider LLM support (OpenAI, Anthropic, OpenAI-compatible endpoints), an 8-resident datacenter-proposal scenario on the existing Ville map, experiment logging, and runtime logging. All commands below are run from the repository root unless noted.
 
+### The dashboard (start here)
+
+The dashboard starts a run, watches it, and graphs where each resident stands on the datacenter over time. It replaces the two-terminal workflow in Steps 3–7 below — it launches the simulation process itself, so you do not need a second terminal.
+
+Do Step 1 and Step 2 once (virtualenv, `utils.py` with your API key), then start the environment server and open the dashboard:
+
+```bash
+source .venv/bin/activate
+cd environment/frontend_server
+python manage.py runserver
+```
+
+Open **[http://localhost:8000/dashboard](http://localhost:8000/dashboard)**.
+
+To launch a run, click **Start simulation** and fill in:
+
+| Field | What to put |
+|-------|-------------|
+| **Continue from** | the saved run to branch off. `base_the_ville_datacenter_n8_private` for the datacenter scenario, or any earlier run to continue it |
+| **Name for the new run** | a new name — letters, numbers, `-` and `_` only. Must not already exist |
+| **Seed memories** | the whisper CSV that gives each resident their starting facts: `the_ville/agent_history_init_datacenter_n8_private.csv`. Leave empty when continuing a run that was already seeded |
+| **Steps to run** | 1 step = 10 game seconds, so **8640 steps is one game day**. 0 starts the run without advancing it |
+| **Auto-save every** | how often the run is checkpointed, in steps |
+| **Spending cap for a run (USD)** | the run stops itself when API spend reaches this |
+
+The page then shows the run's progress, token spend, each resident's stance line, and a live map. **Keep the tab open** — the map panel is what advances the simulation, so closing it or letting the machine sleep pauses the run. For multi-day runs on macOS, hold the machine awake:
+
+```bash
+caffeinate -dis
+```
+
+The stance chart marks conversations (▲), whispers (◆) and reflections (■); click a conversation marker to read the transcript. The gear/settings pane sets the defaults for autosave, spending cap, and how often every resident's stance is read (**Read every agent's stance every** — 360 steps is one game hour).
+
 ### Prerequisites
 - macOS or Linux with **Python 3.11** (`python3.11 --version`). Do not use Python 3.14; the Django 2.2 stack does not install cleanly there.
 - An API key for at least one LLM provider. Embeddings currently use OpenAI (or an OpenAI-compatible endpoint), so an OpenAI key is needed even when chatting through Anthropic.
