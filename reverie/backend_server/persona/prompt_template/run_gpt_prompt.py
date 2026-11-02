@@ -853,6 +853,7 @@ def run_gpt_prompt_pronunciatio(action_description, persona, verbose=False):
                                           __chat_func_validate, __chat_func_clean_up, True)
   if output != False: 
     return output, [output, prompt, gpt_param, prompt_input, fail_safe]
+  return fail_safe, [fail_safe, prompt, gpt_param, prompt_input, fail_safe]
   # ChatGPT Plugin ===========================================================
 
 
@@ -899,7 +900,8 @@ def run_gpt_prompt_event_triple(action_description, persona, verbose=False):
   
   def __func_clean_up(gpt_response, prompt=""):
     cr = gpt_response.strip()
-    cr = [i.strip() for i in cr.split(")")[0].split(",")]
+    # Split once: the object part can itself contain commas.
+    cr = [i.strip() for i in cr.split(")")[0].split(",", 1)]
     return cr
 
   def __func_validate(gpt_response, prompt=""): 
@@ -911,7 +913,8 @@ def run_gpt_prompt_event_triple(action_description, persona, verbose=False):
     return True 
 
   def get_fail_safe(persona): 
-    fs = (persona.name, "is", "idle")
+    # The caller prepends persona.name, so this is only (predicate, object).
+    fs = ("is", "idle")
     return fs
 
 
@@ -1029,6 +1032,7 @@ def run_gpt_prompt_act_obj_desc(act_game_object, act_desp, persona, verbose=Fals
                                           __chat_func_validate, __chat_func_clean_up, True)
   if output != False: 
     return output, [output, prompt, gpt_param, prompt_input, fail_safe]
+  return fail_safe, [fail_safe, prompt, gpt_param, prompt_input, fail_safe]
   # ChatGPT Plugin ===========================================================
 
 
@@ -1066,7 +1070,8 @@ def run_gpt_prompt_act_obj_event_triple(act_game_object, act_obj_desc, persona, 
   
   def __func_clean_up(gpt_response, prompt=""):
     cr = gpt_response.strip()
-    cr = [i.strip() for i in cr.split(")")[0].split(",")]
+    # Split once: the object part can itself contain commas.
+    cr = [i.strip() for i in cr.split(")")[0].split(",", 1)]
     return cr
 
   def __func_validate(gpt_response, prompt=""): 
@@ -1078,7 +1083,8 @@ def run_gpt_prompt_act_obj_event_triple(act_game_object, act_obj_desc, persona, 
     return True 
 
   def get_fail_safe(act_game_object): 
-    fs = (act_game_object, "is", "idle")
+    # The caller prepends act_game_object, so this is only (predicate, object).
+    fs = ("is", "idle")
     return fs
 
   gpt_param = {"engine": "text-davinci-003", "max_tokens": 30, 
@@ -1318,16 +1324,16 @@ def run_gpt_prompt_decide_to_talk(persona, target_persona, retrieved,test_input=
     prompt_input += [target_persona.name]
     return prompt_input
   
+  def __func_clean_up(gpt_response, prompt=""):
+    # The model reasons first and answers last; take its final yes/no.
+    return re.findall(r"\b(yes|no)\b", gpt_response.lower())[-1]
+
   def __func_validate(gpt_response, prompt=""): 
     try: 
-      if gpt_response.split("Answer in yes or no:")[-1].strip().lower() in ["yes", "no"]: 
-        return True
-      return False     
+      __func_clean_up(gpt_response, prompt)
+      return True
     except:
       return False 
-
-  def __func_clean_up(gpt_response, prompt=""):
-    return gpt_response.split("Answer in yes or no:")[-1].strip().lower()
 
   def get_fail_safe(): 
     fs = "yes"
@@ -1335,7 +1341,7 @@ def run_gpt_prompt_decide_to_talk(persona, target_persona, retrieved,test_input=
 
 
 
-  gpt_param = {"engine": "text-davinci-003", "max_tokens": 20, 
+  gpt_param = {"engine": "text-davinci-003", "max_tokens": 300,
                "temperature": 0, "top_p": 1, "stream": False,
                "frequency_penalty": 0, "presence_penalty": 0, "stop": None}
   prompt_template = "persona/prompt_template/v2/decide_to_talk_v2.txt"
@@ -1417,23 +1423,23 @@ def run_gpt_prompt_decide_to_react(persona, target_persona, retrieved,test_input
     prompt_input += [init_act_desc]
     return prompt_input
   
+  def __func_clean_up(gpt_response, prompt=""):
+    # The model reasons first and answers last; take the final option it names.
+    return re.findall(r"option\s*([123])", gpt_response.lower())[-1]
+
   def __func_validate(gpt_response, prompt=""): 
     try: 
-      if gpt_response.split("Answer: Option")[-1].strip().lower() in ["3", "2", "1"]: 
-        return True
-      return False     
+      __func_clean_up(gpt_response, prompt)
+      return True
     except:
       return False 
-
-  def __func_clean_up(gpt_response, prompt=""):
-    return gpt_response.split("Answer: Option")[-1].strip().lower() 
 
   def get_fail_safe(): 
     fs = "3"
     return fs
 
 
-  gpt_param = {"engine": "text-davinci-003", "max_tokens": 20, 
+  gpt_param = {"engine": "text-davinci-003", "max_tokens": 300,
                "temperature": 0, "top_p": 1, "stream": False,
                "frequency_penalty": 0, "presence_penalty": 0, "stop": None}
   prompt_template = "persona/prompt_template/v2/decide_to_react_v1.txt"
@@ -1654,6 +1660,7 @@ def run_gpt_prompt_summarize_conversation(persona, conversation, test_input=None
                                           __chat_func_validate, __chat_func_clean_up, True)
   if output != False: 
     return output, [output, prompt, gpt_param, prompt_input, fail_safe]
+  return fail_safe, [fail_safe, prompt, gpt_param, prompt_input, fail_safe]
   # ChatGPT Plugin ===========================================================
 
 
@@ -1907,6 +1914,7 @@ def run_gpt_prompt_event_poignancy(persona, event_description, test_input=None, 
                                           __chat_func_validate, __chat_func_clean_up, True)
   if output != False: 
     return output, [output, prompt, gpt_param, prompt_input, fail_safe]
+  return fail_safe, [fail_safe, prompt, gpt_param, prompt_input, fail_safe]
   # ChatGPT Plugin ===========================================================
 
 
@@ -2050,6 +2058,7 @@ def run_gpt_prompt_chat_poignancy(persona, event_description, test_input=None, v
                                           __chat_func_validate, __chat_func_clean_up, True)
   if output != False: 
     return output, [output, prompt, gpt_param, prompt_input, fail_safe]
+  return fail_safe, [fail_safe, prompt, gpt_param, prompt_input, fail_safe]
   # ChatGPT Plugin ===========================================================
 
 
@@ -2101,13 +2110,15 @@ def run_gpt_prompt_focal_pt(persona, statements, n, test_input=None, verbose=Fal
 
   # ChatGPT Plugin ===========================================================
   def __chat_func_clean_up(gpt_response, prompt=""): ############
-    ret = ast.literal_eval(gpt_response)
-    return ret
+    # Newer models return a JSON list; older ones returned it as a string.
+    ret = gpt_response
+    if isinstance(ret, str):
+      ret = ast.literal_eval(ret)
+    return [str(i) for i in ret]
 
   def __chat_func_validate(gpt_response, prompt=""): ############
     try: 
-      __func_clean_up(gpt_response, prompt)
-      return True
+      return len(__chat_func_clean_up(gpt_response, prompt)) > 0
     except:
       return False 
 
@@ -2160,15 +2171,17 @@ def run_gpt_prompt_insight_and_guidance(persona, statements, n, test_input=None,
     return prompt_input
   
   def __func_clean_up(gpt_response, prompt=""):
-    gpt_response = "1. " + gpt_response.strip()
     ret = dict()
-    for i in gpt_response.split("\n"): 
-      row = i.split(". ")[-1]
+    for line in gpt_response.strip().split("\n"):
+      # Skips blank lines and a last line cut off before its evidence.
+      if "(because of " not in line or ")" not in line.split("(because of ")[1]:
+        continue
+      row = re.sub(r"^\s*\d+\.\s*", "", line)
       thought = row.split("(because of ")[0].strip()
-      evi_raw = row.split("(because of ")[1].split(")")[0].strip()
-      evi_raw = re.findall(r'\d+', evi_raw)
-      evi_raw = [int(i.strip()) for i in evi_raw]
-      ret[thought] = evi_raw
+      evi_raw = row.split("(because of ")[1].split(")")[0]
+      ret[thought] = [int(i) for i in re.findall(r'\d+', evi_raw)]
+    if not ret:
+      raise ValueError("no insights parsed")
     return ret
 
   def __func_validate(gpt_response, prompt=""): 
@@ -2184,7 +2197,7 @@ def run_gpt_prompt_insight_and_guidance(persona, statements, n, test_input=None,
 
 
 
-  gpt_param = {"engine": "text-davinci-003", "max_tokens": 150, 
+  gpt_param = {"engine": "text-davinci-003", "max_tokens": 500,
                "temperature": 0.5, "top_p": 1, "stream": False,
                "frequency_penalty": 0, "presence_penalty": 0, "stop": None}
   prompt_template = "persona/prompt_template/v2/insight_and_evidence_v1.txt"
@@ -2321,6 +2334,7 @@ def run_gpt_prompt_agent_chat_summarize_relationship(persona, target_persona, st
                                           __chat_func_validate, __chat_func_clean_up, True)
   if output != False: 
     return output, [output, prompt, gpt_param, prompt_input, fail_safe]
+  return fail_safe, [fail_safe, prompt, gpt_param, prompt_input, fail_safe]
   # ChatGPT Plugin ===========================================================
 
 
@@ -2530,6 +2544,7 @@ def run_gpt_prompt_summarize_ideas(persona, statements, question, test_input=Non
                                           __chat_func_validate, __chat_func_clean_up, True)
   if output != False: 
     return output, [output, prompt, gpt_param, prompt_input, fail_safe]
+  return fail_safe, [fail_safe, prompt, gpt_param, prompt_input, fail_safe]
   # ChatGPT Plugin ===========================================================
 
 

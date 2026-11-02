@@ -10,6 +10,6 @@ Variables:
 [Conversation]
 !<INPUT 0>!
 
-Write down if there is anything from the conversation that !<INPUT 1>! need to remember for her planning, from !<INPUT 2>!'s perspective, in a full sentence.
+Write down if there is anything from the conversation that !<INPUT 1>! needs to remember for their planning, from !<INPUT 2>!'s perspective, in a full sentence.
 
 "!<INPUT 3>!

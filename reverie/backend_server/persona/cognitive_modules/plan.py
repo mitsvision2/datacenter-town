@@ -7,6 +7,7 @@ Description: This defines the "Plan" module for generative agents.
 import datetime
 import math
 import random 
+import re
 import sys
 import time
 sys.path.append('../../')
@@ -449,6 +450,8 @@ def revise_identity(persona):
   new_currently = ChatGPT_single_request(currently_prompt)
   # print (new_currently)
   # print (new_currently[10:])
+  # The prompt asks for "Status: <new status>"; store only the status.
+  new_currently = re.sub(r"^\s*Status:\s*", "", new_currently)
 
   persona.scratch.currently = new_currently
 

@@ -150,8 +150,14 @@ def GPT_request(prompt, gpt_parameter):
     temperature = gpt_parameter.get("temperature", 0.7)
     max_tokens = gpt_parameter.get("max_tokens", 150)
     stop = gpt_parameter.get("stop")
+    # Chat models restate the prompt's trailing stub ("<Name> is ...") that
+    # completion models simply continued; the parsers expect the continuation.
+    messages = [{"role": "system", "content": (
+      "You are a text completion engine. Continue the user's text exactly "
+      "from where it ends. Output only the continuation, without repeating "
+      "any of the given text.")}] + _user_messages(prompt)
     return chat_completion(
-      _user_messages(prompt),
+      messages,
       model=chat_model,
       temperature=temperature,
       max_tokens=max_tokens,
