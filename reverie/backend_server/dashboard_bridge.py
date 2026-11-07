@@ -8,7 +8,7 @@ Files under temp_storage/dashboard/:
   state.json      reverie -> dashboard  live snapshot of the sim and every persona
 
 Terminal input keeps working: stdin lines and dashboard commands feed the
-same queue. "stop" is handled out of band so it can end a run mid-way.
+same queue. "stop" and whispers are handled out of band, so they work mid-run.
 """
 import collections
 import json
@@ -95,10 +95,11 @@ def record_result(cmd_id, cmd, ok, output):
 class CommandFeed:
   """Merges terminal input and dashboard commands into one blocking queue."""
 
-  def __init__(self, on_stop, initial=()):
+  def __init__(self, on_stop, initial=(), on_whisper=None):
     os.makedirs(DASH_DIR, exist_ok=True)
     self.q = queue.Queue()
     self.on_stop = on_stop
+    self.on_whisper = on_whisper
     # Start at the current end of the file so commands left over from an
     # earlier session (e.g. "fin") never replay.
     self.offset = os.path.getsize(CMD_FILE) if os.path.exists(CMD_FILE) else 0
@@ -107,13 +108,22 @@ class CommandFeed:
     threading.Thread(target=self._read_stdin, daemon=True).start()
     threading.Thread(target=self._tail_file, daemon=True).start()
 
-  def get(self):
-    return self.q.get()
+  def get(self, timeout=None):
+    """The next (id, command), or None if <timeout> seconds pass without one."""
+    try:
+      return self.q.get(timeout=timeout)
+    except queue.Empty:
+      return None
 
   def _put(self, cmd_id, cmd):
     if cmd.strip().lower() == "stop":
       self.on_stop()
       record_result(cmd_id, cmd, True, "Stopping after the current step.")
+      return
+    # Out of band too: a whisper goes into the plan now, whatever the run is doing,
+    # instead of waiting behind the run in this queue.
+    if self.on_whisper and cmd.strip().lower().startswith("call -- whisper"):
+      record_result(cmd_id, cmd, *self.on_whisper(cmd.strip()))
       return
     self.q.put((cmd_id, cmd))
 

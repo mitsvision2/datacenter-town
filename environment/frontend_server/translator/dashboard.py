@@ -5,6 +5,7 @@ Talks to reverie.py through files in temp_storage/dashboard/ (see
 reverie/backend_server/dashboard_bridge.py). Paths are relative to
 environment/frontend_server, like the rest of translator/views.py.
 """
+import datetime
 import glob
 import importlib.util
 import json
@@ -45,6 +46,12 @@ _spec = importlib.util.spec_from_file_location(
 _llm_usage = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_llm_usage)
 PRICES = _llm_usage.PRICES
+# Same for the whisper plan, which this module and the simulation both write.
+_spec = importlib.util.spec_from_file_location(
+  "whisper_plan", f"{BACKEND_DIR}/whisper_plan.py")
+whisper_plan = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(whisper_plan)
+WHISPER_MAX_CHARS = whisper_plan.MAX_CHARS
 HISTORY_GLOB = "static_dirs/assets/the_ville/agent_history_init_*.csv"
 SIM_NAME = re.compile(r"^[\w-]+$")
 # Fields the roster needs every second; the rest is sent for the open agent.
@@ -119,6 +126,16 @@ def _opinions(sim, start):
   for r in rows:
     r.pop("evidence", None)
   return rows
+
+
+def _whispers(sim):
+  path = whisper_plan.path_for(f"storage/{sim}")
+  return whisper_plan.summarize(whisper_plan.read(path))
+
+
+def _mentions(sim, start):
+  """Where whispers came up in conversation, for the whisper chart."""
+  return _run_log(sim, "whisper_mentions.jsonl", 2000, start)
 
 
 def _view_history(sim, persona):
@@ -251,6 +268,8 @@ def dashboard_run(request, sim):
     "conversations": _run_log(sim, "conversations.jsonl", 300, start),
     "events": _run_log(sim, "events.jsonl", 300, start),
     "opinions": _opinions(sim, start),
+    "whispers": _whispers(sim),
+    "mentions": _mentions(sim, start),
     "network": network_summary(sim, names, view["step"]),
     "results": [r for r in _tail_jsonl(RESULT_FILE, 400) if r.get("sim") == sim][-60:],
   })
@@ -297,6 +316,8 @@ def dashboard_state(request):
     data["conversations"] = _run_log(sim, "conversations.jsonl", 300, start)
     data["events"] = _run_log(sim, "events.jsonl", 300, start)
     data["opinions"] = _opinions(sim, start)
+    data["whispers"] = _whispers(sim)
+    data["mentions"] = _mentions(sim, start)
     data["network"] = network_summary(sim, state.get("persona_order", []), state["step"])
     # Results from before runs were tagged have no "sim"; keep showing those.
     data["results"] = [r for r in data["results"] if r.get("sim") in (None, sim)]
@@ -420,6 +441,116 @@ def dashboard_command(request):
     f.write(json.dumps({"id": cmd_id, "cmd": cmd}) + "\n")
   log.info("dashboard command %s: %s", cmd_id, cmd)
   return JsonResponse({"id": cmd_id})
+
+
+def _whisper_rows(item, state, known):
+  """The rows that plan one whisper from the composer, or a ValueError saying
+  what to fix. Times are game time; a run's clock only moves while it runs."""
+  if not isinstance(item, dict):
+    raise ValueError("it couldn't be read. Close this and try again.")
+  names = state.get("persona_order", [])
+  wanted = item.get("targets")
+  wanted = wanted if isinstance(wanted, list) else []
+  unknown = [str(n) for n in wanted if n not in names]
+  if unknown:
+    raise ValueError(f"{', '.join(unknown)} isn't in this run.")
+  targets = [n for n in names if n in wanted]
+  if not targets:
+    raise ValueError("pick at least one person.")
+  # One line: a whisper is stored as a single statement in an agent's memory.
+  text = " ".join(str(item.get("text") or "").split())
+  if not text:
+    raise ValueError("write what they should hear.")
+  if len(text) > WHISPER_MAX_CHARS:
+    raise ValueError(f"keep it under {WHISPER_MAX_CHARS} characters.")
+
+  at = item.get("at")
+  if at is not None:
+    try:
+      due = datetime.datetime.fromisoformat(str(at))
+    except ValueError:
+      raise ValueError("pick a date and time.")
+    # Game time has no time zone, and an aware time can't be compared with it.
+    if due.tzinfo is not None:
+      raise ValueError("pick a date and time.")
+    now = datetime.datetime.strptime(state["curr_time"], whisper_plan.TIME_FORMAT)
+    # The picker only goes down to the minute, so the current minute still counts.
+    if due < now.replace(second=0):
+      raise ValueError(f"that time has passed. The game clock is at "
+                       f"{now.strftime('%B %d, %H:%M')}.")
+    at = due.strftime(whisper_plan.TIME_FORMAT)
+
+  rows = []
+  replaces = item.get("replaces")
+  if replaces:
+    if known.get(str(replaces), {}).get("status") not in ("scheduled", "failed"):
+      raise ValueError("the whisper you were editing has already started going "
+                       "out. Close this and check the list.")
+    del known[str(replaces)]  # A second draft can't replace it again.
+    rows.append({"op": "cancel", "id": str(replaces)})
+  rows.append({"op": "add", "id": uuid.uuid4().hex[:10], "text": text,
+               "targets": targets, "at": at, "replaces": str(replaces) if replaces else None})
+  return rows
+
+
+def _live_state():
+  """The state of the loaded run, or None when no run is loaded."""
+  state = _read_json(STATE_FILE)
+  return state if _backend_status(state) in ("idle", "running") else None
+
+
+@require_POST
+def dashboard_whispers(request):
+  """Plans whispers for the live run, all of them or none. The simulation picks
+  them up from the file, including in the middle of a run."""
+  try:
+    body = json.loads(request.body or "{}")
+  except ValueError:
+    body = None
+  if not isinstance(body, dict):
+    return JsonResponse({"error": "That request couldn't be read."}, status=400)
+  state = _live_state()
+  if not state:
+    return JsonResponse({"error": "No run is loaded. Start one first; 0 steps "
+                                  "is enough."}, status=409)
+  sim = state["sim_code"]
+  if body.get("sim") != sim:
+    return JsonResponse({"error": f"The loaded run is now {sim}. Close this and "
+                                  f"try again."}, status=409)
+  items = body.get("whispers")
+  if not items or not isinstance(items, list):
+    return JsonResponse({"error": "Add a whisper first."}, status=400)
+  known = {w["id"]: w for w in _whispers(sim)}
+  rows = []
+  for i, item in enumerate(items):
+    try:
+      rows += _whisper_rows(item, state, known)
+    except ValueError as e:
+      message = str(e)
+      error = (f"Whisper {i + 1}: {message}" if len(items) > 1
+               else message[0].upper() + message[1:])
+      return JsonResponse({"error": error}, status=400)
+  whisper_plan.append(whisper_plan.path_for(f"storage/{sim}"), rows)
+  log.info("dashboard whispers for %s: %s", sim, rows)
+  return JsonResponse({"whispers": _whispers(sim)})
+
+
+@require_POST
+def dashboard_whisper_cancel(request, whisper_id):
+  """Stops a whisper that hasn't finished going out, or dismisses a failed one."""
+  state = _live_state()
+  if not state:
+    return JsonResponse({"error": "No run is loaded."}, status=409)
+  sim = state["sim_code"]
+  whisper = next((w for w in _whispers(sim) if w["id"] == whisper_id), None)
+  if not whisper:
+    return JsonResponse({"error": "That whisper isn't in this run."}, status=404)
+  if whisper["status"] == "sent":
+    return JsonResponse({"error": "That whisper has already gone out."}, status=409)
+  whisper_plan.append(whisper_plan.path_for(f"storage/{sim}"),
+                      [{"op": "cancel", "id": whisper_id}])
+  log.info("dashboard whisper %s cancelled for %s", whisper_id, sim)
+  return JsonResponse({"whispers": _whispers(sim)})
 
 
 DEFAULT_SETTINGS = {"autosave_steps": 360, "budget_usd": None,

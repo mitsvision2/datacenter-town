@@ -8,6 +8,7 @@ Writes under storage/<sim>/experiment/:
   - agent_snapshots.jsonl
   - outcomes.jsonl
   - opinions.jsonl
+  - whispers.jsonl and whisper_mentions.jsonl (whisper_plan.py, whisper_trace.py)
 """
 import json
 import os
@@ -27,6 +28,8 @@ class ExperimentLogger:
     self.dir = os.path.join(sim_folder, "experiment")
     os.makedirs(self.dir, exist_ok=True)
     self._logged_convo_keys = set()
+    # Conversations since whisper_trace last looked.
+    self.new_conversations = []
     self.current_step = 0
 
   def set_step(self, step):
@@ -74,14 +77,16 @@ class ExperimentLogger:
       return
     self._logged_convo_keys.add(key)
 
-    self._append_jsonl("conversations.jsonl", {
+    row = {
       "step": step,
       "time": curr_time.strftime("%B %d, %Y, %H:%M:%S") if curr_time else None,
       "speakers": speakers,
       "utterances": utterances,
       "location": location,
       "summary": summary,
-    })
+    }
+    self._append_jsonl("conversations.jsonl", row)
+    self.new_conversations.append(row)
 
   def log_event(self, step, curr_time, event_type, agent=None, text=None,
                 extra=None):
