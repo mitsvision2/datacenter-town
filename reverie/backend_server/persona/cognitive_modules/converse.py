@@ -242,6 +242,8 @@ def load_history_via_whisper(personas, whispers):
     whisper = row[1]
 
     thought = generate_inner_thought(persona, whisper)
+    if thought == WHISPER_THOUGHT_FAILED:
+      raise RuntimeError(f"The model gave no usable thought for {row[0]}.")
 
     created = persona.scratch.curr_time
     expiration = persona.scratch.curr_time + datetime.timedelta(days=30)

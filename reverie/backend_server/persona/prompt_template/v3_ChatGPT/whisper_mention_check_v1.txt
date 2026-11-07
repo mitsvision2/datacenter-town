@@ -1,0 +1,19 @@
+whisper_mention_check_v1.txt
+
+Variables: 
+!<INPUT 0>! -- the piece of information
+!<INPUT 1>! -- the lines of conversation said to carry it
+
+<commentblockmarker>###</commentblockmarker>
+Someone was told this:
+"!<INPUT 0>!"
+
+These lines of a conversation are said to carry it:
+!<INPUT 1>!
+
+Check that. Do these lines actually say, or ask about, what the information says? Sharing a person, a place or a subject with it is not enough. If the information is that someone found a particular figure, a line praising that person's expertise does not carry it. Paraphrase is fine, as long as the main claim is there.
+
+Return an object with these keys, in this order:
+"claim": the main claim of the information, in a few words
+"said": the words from these lines that state that claim, or null if none do
+"carries": true if the lines state that claim, otherwise false

@@ -32,6 +32,8 @@ urlpatterns = [
     url(r'^dashboard/usage/$', dashboard.dashboard_usage, name='dashboard_usage'),
     url(r'^dashboard/run/(?P<sim>[\w-]+)/$', dashboard.dashboard_run, name='dashboard_run'),
     url(r'^dashboard/command/$', dashboard.dashboard_command, name='dashboard_command'),
+    url(r'^dashboard/whispers/$', dashboard.dashboard_whispers, name='dashboard_whispers'),
+    url(r'^dashboard/whispers/(?P<whisper_id>[\w-]+)/cancel/$', dashboard.dashboard_whisper_cancel, name='dashboard_whisper_cancel'),
     url(r'^dashboard/launch/$', dashboard.dashboard_launch, name='dashboard_launch'),
     url(r'^dashboard/settings/$', dashboard.dashboard_settings, name='dashboard_settings'),
     # Common misspellings of the simulator page (incl. trailing slash).

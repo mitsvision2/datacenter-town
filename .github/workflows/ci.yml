@@ -52,6 +52,9 @@ jobs:
       - name: Dashboard memory category rules
         run: python scripts/ci/check_memory_categories.py
 
+      - name: Planned whisper rules
+        run: python scripts/ci/check_whisper_plan.py
+
       - name: Django checks and tests
         working-directory: environment/frontend_server
         run: |
@@ -62,6 +65,7 @@ jobs:
         run: |
           python scripts/ci/check_dashboard_js.py
           node scripts/ci/check_stance_graph.js
+          node scripts/ci/check_whisper_composer.js
 
   secrets:
     runs-on: ubuntu-latest
