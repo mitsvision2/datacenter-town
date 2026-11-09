@@ -5,7 +5,9 @@ Talks to reverie.py through files in temp_storage/dashboard/ (see
 reverie/backend_server/dashboard_bridge.py). Paths are relative to
 environment/frontend_server, like the rest of translator/views.py.
 """
+import collections
 import datetime
+import functools
 import glob
 import importlib.util
 import json
@@ -24,6 +26,7 @@ from django.views.decorators.http import require_POST
 
 from translator.views import _pid_alive as _alive
 from translator.social_network import network_summary
+from translator.activity_timeline import activity_timeline
 
 log = logging.getLogger("frontend.dashboard")
 
@@ -127,8 +130,10 @@ def _opinions(rows):
 
 
 EVIDENCE_SHOWN = 5
-# nodes.json can be large; cached per path until its mtime changes.
-_nodes_cache = {}
+# nodes.json can be large; cached per path until its mtime changes. A small
+# LRU, so the live run and a saved run open side by side don't evict each other.
+_nodes_cache = collections.OrderedDict()
+NODES_CACHED = 32
 
 
 def _saved_nodes(sim, name):
@@ -137,14 +142,15 @@ def _saved_nodes(sim, name):
     mtime = os.path.getmtime(path)
   except OSError:
     return {}
-  for old in [k for k in _nodes_cache if not k.startswith(f"storage/{sim}/")]:
-    del _nodes_cache[old]
   hit = _nodes_cache.get(path)
   if not hit or hit[0] != mtime:
     nodes = _read_json(path)
     if not isinstance(nodes, dict):
       return {}  # caught mid-save; don't cache, read again next poll
     hit = _nodes_cache[path] = (mtime, nodes)
+  _nodes_cache.move_to_end(path)
+  while len(_nodes_cache) > NODES_CACHED:
+    _nodes_cache.popitem(last=False)
   return hit[1]
 
 
@@ -242,7 +248,7 @@ def _saved_agent(sim, name):
   """A saved agent in the same shape the live state uses."""
   mem = f"storage/{sim}/personas/{name}/bootstrap_memory"
   s = _read_json(f"{mem}/scratch.json", {})
-  by_id = _read_json(f"{mem}/associative_memory/nodes.json", {}) or {}
+  by_id = _saved_nodes(sim, name)
   nodes = sorted(by_id.values(), key=lambda n: -n.get("node_count", 0))
   def row(x, kind=None):
     return {"type": x["type"], "created": x.get("created"),
@@ -337,6 +343,62 @@ def dashboard_activity(request, sim):
   return JsonResponse({}, status=404)
 
 
+def agent_memory(sim, name):
+  """Every memory one agent has, as of its last save, plus the memories each
+  of its stance readings was based on. Reflections are told apart from other
+  thoughts by what they cite (see _is_reflection)."""
+  by_id = _saved_nodes(sim, name)
+  nodes = []
+  for node_id, n in by_id.items():
+    kind = "reflection" if _is_reflection(n, by_id) else n.get("type")
+    # A chat's filling is its lines; anything else's is the ids it was drawn from.
+    filling = n.get("filling") or []
+    nodes.append({"id": node_id, "kind": kind, "created": n.get("created"),
+                  "description": n.get("description"), "poignancy": n.get("poignancy"),
+                  "count": n.get("node_count", 0),
+                  "filling": [f for f in filling if isinstance(f, str) and f in by_id],
+                  **({"lines": filling} if n.get("type") == "chat" else {})})
+  nodes.sort(key=lambda n: -n["count"])  # newest first: node_count grows as memories are added
+  # The whole file, not a tail: any reading on the stance chart can be clicked.
+  readings = []
+  try:
+    with open(f"storage/{sim}/experiment/opinions.jsonl", encoding="utf-8") as f:
+      for line in f:
+        if name not in line:
+          continue
+        try:
+          r = json.loads(line)
+        except ValueError:
+          continue  # a line still being written
+        if r.get("name") == name and r.get("evidence"):
+          readings.append({"step": r.get("step"), "time": r.get("time"), "score": r.get("score"),
+                           "scale": r.get("scale"), "evidence": r["evidence"]})
+  except OSError:
+    pass
+  meta = _read_json(f"storage/{sim}/reverie/meta.json", {})
+  return {"name": name, "saved_time": meta.get("curr_time"), "nodes": nodes, "readings": readings}
+
+
+def dashboard_memory(request, sim):
+  """One agent's whole memory, for the Memory tab."""
+  name = request.GET.get("agent", "")
+  # Only an agent of this run: the name becomes part of a file path.
+  try:
+    agents = os.listdir(f"storage/{sim}/personas") if SIM_NAME.match(sim) else []
+  except OSError:
+    agents = []
+  if name not in agents:
+    return JsonResponse({"error": "No such run or agent."}, status=404)
+  return JsonResponse(agent_memory(sim, name))
+
+
+def dashboard_timeline(request, sim):
+  """Where each agent was over the run, for the Activity chart."""
+  if not SIM_NAME.match(sim):
+    return JsonResponse({"error": "Bad run name."}, status=400)
+  return JsonResponse(activity_timeline(sim))
+
+
 def _backend_status(state):
   """running / idle / finished come from reverie itself; starting and
   stopped are inferred from process liveness."""
@@ -397,22 +459,112 @@ def _cost(row):
                          row.get("cached", 0), row.get("out", 0))
 
 
-# Rows parsed so far, read incrementally so each poll only parses new lines.
-_usage = {"offset": 0, "rows": [], "ino": None, "head": b""}
+# The usage log covers every run ever made and grows with each API call, so
+# it is read incrementally into running totals rather than kept as rows. Only
+# the last day's rows are kept, for the "today" and "last 5 minutes" figures.
+RECENT_SECS = 26 * 3600
 
 
-def _usage_rows():
+def _blank():
+  return {"calls": 0, "chat": 0, "embedding": 0, "errors": 0,
+          "in": 0, "cached": 0, "out": 0, "cost": 0.0}
+
+
+def _add(t, r):
+  t["calls"] += 1
+  t[r.get("kind", "chat")] = t.get(r.get("kind", "chat"), 0) + 1
+  t["errors"] += not r.get("ok", True)
+  for k in ("in", "cached", "out"):
+    t[k] += r.get(k, 0)
+  t["cost"] += r["cost"] or 0
+
+
+def _bucket(sums, at, r):
+  s = sums.setdefault(at, [0, 0, 0])
+  s[0] += r["cost"] or 0
+  s[1] += r.get("in", 0) + r.get("out", 0)
+  s[2] += 1
+
+
+class _UsageTotals:
+  """Running totals for one scope (all runs, or one run)."""
+
+  def __init__(self):
+    self.totals = _blank()
+    self.groups = {"persona": {}, "source": {}, "model": {}}
+    self.errors = collections.deque(maxlen=8)
+    self.hours, self.days, self.steps = {}, {}, {}
+    self.step_totals, self.step_span = _blank(), None
+    self.first = self.last = None
+
+  def add(self, r):
+    _add(self.totals, r)
+    if r.get("persona"):
+      _add(self.groups["persona"].setdefault(r["persona"], _blank()), r)
+    for key in ("source", "model"):
+      _add(self.groups[key].setdefault(r.get(key) or "other", _blank()), r)
+    if not r.get("ok", True):
+      self.errors.append({"ts": r["ts"], "model": r.get("model"), "status": r.get("status"),
+                          "error": r.get("error"), "persona": r.get("persona")})
+    hour = int(r["ts"] // 3600) * 3600
+    _bucket(self.hours, hour, r)
+    _bucket(self.days, _hour_day(hour), r)
+    if r.get("step") is not None:
+      _bucket(self.steps, r["step"], r)
+    if r.get("source") == "step":
+      _add(self.step_totals, r)
+      if r.get("step") is not None:
+        lo, hi = self.step_span or (r["step"], r["step"])
+        self.step_span = (min(lo, r["step"]), max(hi, r["step"]))
+    self.first = r["ts"] if self.first is None else self.first
+    self.last = r["ts"]
+
+  def scope(self, series):
+    groups = lambda g: sorted(({"name": k, **v} for k, v in g.items()), key=lambda x: -x["cost"])
+    return {"totals": dict(self.totals), "agents": groups(self.groups["persona"]),
+            "sources": groups(self.groups["source"]), "models": groups(self.groups["model"]),
+            "errors": list(self.errors)[::-1], "series": series}
+
+  def wall_series(self):
+    """Hourly buckets, or daily once the span exceeds 72 hours."""
+    if self.first is None:
+      return {"kind": "wall", "size": 3600, "points": []}
+    daily = self.last - self.first > 72 * 3600
+    return {"kind": "wall", "size": 86400 if daily else 3600,
+            "points": _fill(self.days if daily else self.hours, 86400 if daily else 3600, daily)}
+
+  def game_series(self, sec_per_step):
+    sums = {}
+    for step, (cost, tokens, calls) in self.steps.items():
+      s = sums.setdefault(int(step * sec_per_step // 3600) * 3600, [0, 0, 0])
+      s[0] += cost; s[1] += tokens; s[2] += calls
+    return {"kind": "game", "size": 3600, "sec_per_step": sec_per_step,
+            "points": _fill(sums, 3600, False)}
+
+
+def _usage_reset():
+  _usage.update(offset=0, all=_UsageTotals(), runs={}, recent=collections.deque(),
+                latency=collections.deque(maxlen=200), unpriced=set(), since=None)
+
+
+_usage = {"ino": None, "head": b""}
+_usage_reset()
+_usage_lock = threading.Lock()
+
+
+def _usage_read():
+  """Folds lines appended to the usage log since the last call into the totals."""
   try:
     st = os.stat(USAGE_FILE)
     with open(USAGE_FILE, "rb") as f:
       head = f.read(256)
   except OSError:
-    return []
+    return
   size = st.st_size
   # Reset if the file was replaced or rewritten rather than appended to.
   if (size < _usage["offset"] or st.st_ino != _usage["ino"]
       or head[:len(_usage["head"])] != _usage["head"]):
-    _usage.update(offset=0, rows=[])
+    _usage_reset()
   _usage.update(ino=st.st_ino, head=head)
   if size > _usage["offset"]:
     with open(USAGE_FILE, "rb") as f:
@@ -426,28 +578,31 @@ def _usage_rows():
       except ValueError:
         continue
       row["cost"] = _cost(row)
-      _usage["rows"].append(row)
-  return _usage["rows"]
+      _usage["since"] = row["ts"] if _usage["since"] is None else _usage["since"]
+      _usage["all"].add(row)
+      _usage["runs"].setdefault(row.get("sim"), _UsageTotals()).add(row)
+      _usage["recent"].append(row)
+      if row.get("ok") and row.get("kind") == "chat":
+        _usage["latency"].append(row["secs"])
+      if row["cost"] is None:
+        _usage["unpriced"].add(row.get("model"))
+  recent = _usage["recent"]
+  while recent and recent[0]["ts"] < time.time() - RECENT_SECS:
+    recent.popleft()
 
 
 def _totals(rows):
-  t = {"calls": len(rows), "chat": 0, "embedding": 0, "errors": 0,
-       "in": 0, "cached": 0, "out": 0, "cost": 0.0}
+  t = _blank()
   for r in rows:
-    t[r.get("kind", "chat")] = t.get(r.get("kind", "chat"), 0) + 1
-    t["errors"] += not r.get("ok", True)
-    for k in ("in", "cached", "out"):
-      t[k] += r.get(k, 0)
-    t["cost"] += r["cost"] or 0
+    _add(t, r)
   return t
 
 
 def _group(rows, key):
   groups = {}
   for r in rows:
-    groups.setdefault(r.get(key) or "other", []).append(r)
-  return sorted(({"name": k, **_totals(v)} for k, v in groups.items()),
-                key=lambda g: -g["cost"])
+    _add(groups.setdefault(r.get(key) or "other", _blank()), r)
+  return sorted(({"name": k, **v} for k, v in groups.items()), key=lambda g: -g["cost"])
 
 
 def _local_day(ts):
@@ -455,18 +610,14 @@ def _local_day(ts):
   return int(time.mktime(time.localtime(ts)[:3] + (0, 0, 0, 0, 0, -1)))
 
 
-def _series(rows, key, size, local_days=False):
-  """[[bucket start, cost, tokens, calls], ...] per <size>-second bucket of
-  <key>(row), zero-filled; <local_days> uses local calendar days instead."""
-  start = _local_day if local_days else (lambda at: int(at // size) * size)
-  sums = {}
-  for r in rows:
-    at = key(r)
-    if at is not None:
-      s = sums.setdefault(start(at), [0, 0, 0])
-      s[0] += r["cost"] or 0
-      s[1] += r.get("in", 0) + r.get("out", 0)
-      s[2] += 1
+@functools.lru_cache(maxsize=4096)
+def _hour_day(hour):
+  return _local_day(hour)
+
+
+def _fill(sums, size, local_days=False):
+  """[[bucket start, cost, tokens, calls], ...] from {bucket start: sums},
+  zero-filled between the first and last bucket."""
   if not sums:
     return []
   out, b = [], min(sums)
@@ -496,51 +647,46 @@ def _wall_series(rows):
   if not rows:
     return {"kind": "wall", "size": 3600, "points": []}
   size = 3600 if rows[-1]["ts"] - rows[0]["ts"] <= 72 * 3600 else 86400
-  return {"kind": "wall", "size": size,
-          "points": _series(rows, lambda r: r["ts"], size, local_days=size == 86400)}
+  sums = {}
+  for r in rows:
+    _bucket(sums, _local_day(r["ts"]) if size == 86400 else int(r["ts"] // size) * size, r)
+  return {"kind": "wall", "size": size, "points": _fill(sums, size, size == 86400)}
 
 
 def dashboard_usage(request):
-  rows = _usage_rows()
   sim = request.GET.get("sim") or (_read_json(STATE_FILE) or {}).get("sim_code")
   sec_per_step = (_read_json(f"storage/{sim}/reverie/meta.json", {}) or {}).get("sec_per_step") or 10
   now = time.time()
   midnight = _local_day(now)
-  run_rows = [r for r in rows if r.get("sim") == sim]
-  recent = [r for r in rows if r["ts"] > now - 300]
-
-  step_rows = [r for r in run_rows if r.get("source") == "step"]
-  steps = [r["step"] for r in step_rows if r.get("step") is not None]
-  game_hours = ((max(steps) - min(steps) + 1) * sec_per_step / 3600
-                if steps else 0)
-
-  today_rows = [r for r in rows if r["ts"] >= midnight]
-  game_series = {"kind": "game", "size": 3600, "sec_per_step": sec_per_step,
-                 "points": _series(run_rows, lambda r: None if r.get("step") is None
-                                   else r["step"] * sec_per_step, 3600)}
-
-  ok_chat = [r["secs"] for r in rows if r.get("ok") and r.get("kind") == "chat"][-200:]
-  ok_chat_sorted = sorted(ok_chat)
-  return JsonResponse({
-    "since": rows[0]["ts"] if rows else None,
-    "sim": sim,
-    "run": _totals(run_rows),
-    "today": _totals(today_rows),
-    "all": _totals(rows),
-    "last5": {**_totals(recent), "minutes": 5},
-    "game_hours": game_hours,
-    # Per-game-hour figures use step calls only.
-    "steps": _totals(step_rows),
-    "latency": {
-      "avg": sum(ok_chat) / len(ok_chat) if ok_chat else None,
-      "p95": ok_chat_sorted[int(len(ok_chat_sorted) * 0.95)] if ok_chat else None,
-      "n": len(ok_chat)},
-    "scopes": {"run": _scope(run_rows, game_series),
-               "today": _scope(today_rows, _wall_series(today_rows)),
-               "all": _scope(rows, _wall_series(rows))},
-    "unpriced": sorted({r.get("model") for r in rows if r["cost"] is None}),
-    "prices": {k: list(v) for k, v in PRICES.items()},
-  })
+  with _usage_lock:
+    _usage_read()
+    every, run = _usage["all"], _usage["runs"].get(sim) or _UsageTotals()
+    today_rows = [r for r in _usage["recent"] if r["ts"] >= midnight]
+    recent = [r for r in _usage["recent"] if r["ts"] > now - 300]
+    span = run.step_span
+    game_hours = (span[1] - span[0] + 1) * sec_per_step / 3600 if span else 0
+    ok_chat = list(_usage["latency"])
+    ok_chat_sorted = sorted(ok_chat)
+    return JsonResponse({
+      "since": _usage["since"],
+      "sim": sim,
+      "run": dict(run.totals),
+      "today": _totals(today_rows),
+      "all": dict(every.totals),
+      "last5": {**_totals(recent), "minutes": 5},
+      "game_hours": game_hours,
+      # Per-game-hour figures use step calls only.
+      "steps": dict(run.step_totals),
+      "latency": {
+        "avg": sum(ok_chat) / len(ok_chat) if ok_chat else None,
+        "p95": ok_chat_sorted[int(len(ok_chat_sorted) * 0.95)] if ok_chat else None,
+        "n": len(ok_chat)},
+      "scopes": {"run": run.scope(run.game_series(sec_per_step)),
+                 "today": _scope(today_rows, _wall_series(today_rows)),
+                 "all": every.scope(every.wall_series())},
+      "unpriced": sorted(_usage["unpriced"], key=str),
+      "prices": {k: list(v) for k, v in PRICES.items()},
+    })
 
 
 def dashboard_log(request):
