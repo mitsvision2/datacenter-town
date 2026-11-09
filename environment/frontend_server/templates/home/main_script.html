@@ -142,6 +142,29 @@
 	    .setDepth(2.5 + b.y * 1e-6);   // lower on the map draws in front
 	}
 
+	// Each agent's recent tiles, oldest first; the highlighted agent's are drawn as a trail.
+	const TRAIL_MAX = 120;
+	let tileTrail = {}, trailName = null, trailColor = 0x000000, trailGfx = null;
+	function noteTile(name, x, y) {
+	  const t = tileTrail[name] = tileTrail[name] || [], last = t[t.length - 1];
+	  if (last && last[0] === x && last[1] === y) return;
+	  t.push([x, y]);
+	  if (t.length > TRAIL_MAX) t.shift();
+	}
+	// Older segments fade out; the newest ends at the tile they're walking to.
+	function drawTrail() {
+	  if (!trailGfx) return;
+	  trailGfx.clear();
+	  const t = trailName && tileTrail[trailName];
+	  if (!t || t.length < 2) return;
+	  const c = (p) => [p[0] * tile_width + tile_width / 2, p[1] * tile_width + tile_width / 2];
+	  for (let i = 1; i < t.length; i++) {
+	    const [ax, ay] = c(t[i - 1]), [bx, by] = c(t[i]);
+	    trailGfx.lineStyle(8, trailColor, 0.15 + 0.65 * (i / (t.length - 1)));
+	    trailGfx.lineBetween(ax, ay, bx, by);
+	  }
+	}
+
 	let curr_maze = "the_ville";
 
 	// <tile_width> is the width of one individual tile (tiles are square)
@@ -350,7 +373,10 @@
 	    syncPeg(persona_name);
 	    pronunciatios[persona_name] = speechBubble(this, "🦁");
 	    placeBubble(persona_name);
+	    noteTile(persona_name, spawn_tile_loc[persona_name][0], spawn_tile_loc[persona_name][1]);
 	  }
+	  // Under the pegs and bubbles, over the foreground layer (2).
+	  trailGfx = this.add.graphics().setDepth(2.2);
 
 	  // Peg walk cycles, one per color and facing.
 	  for (let c = 0; c < 8; c++) for (const d of ["d", "l", "r", "u"]) {
@@ -476,6 +502,8 @@
 	        let curr_y = execute_movement["persona"][curr_persona_name]["movement"][1];
 	        movement_target[curr_persona_name] = [curr_x * tile_width, 
 	                                              curr_y * tile_width]; 
+	        noteTile(curr_persona_name, curr_x, curr_y);
+	        if (curr_persona_name === trailName) drawTrail();
 	        let pronunciatio_content = execute_movement["persona"][curr_persona_name]["pronunciatio"];
 	        // This is what gives the pronunciatio balloon the name initials. We 
 	        // use regex to extract the initials of the personas. 
@@ -586,6 +614,8 @@
 	    // Fill the frame with the town. Sits a bit above center so the top row
 	    // of houses shows; only forest is trimmed at the bottom.
 	    camera.stopFollow();
+	    trailName = null;
+	    drawTrail();
 	    camera.setZoom(Math.max(config.width / mapW, config.height / mapH));
 	    camera.centerOn(mapW / 2, mapH / 2 - 150);
 	  } else if (e.data.type === "focus") {
@@ -594,6 +624,9 @@
 	    player.setPosition(target.body.x, target.body.y);
 	    camera.setZoom(1);
 	    camera.startFollow(player);
+	    trailName = e.data.name;
+	    trailColor = parseInt(String(e.data.color || "#000000").replace("#", ""), 16) || 0;
+	    drawTrail();
 	  }
 	});
 </script>

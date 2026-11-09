@@ -23,7 +23,7 @@ const context = vm.createContext({
   parseGameTime: () => new Date("2023-02-13T00:00:00"),
   spanLabel: () => "1h", showConvo() {}, selectAgent() {},
   // Defined outside the slice under test.
-  focus: {whisper: null, step: null}, onFocus() {}, setFocus() {}, chartTipMove() {},
+  focus: {whisper: null, step: null}, onFocus() {}, setFocus() {}, chartTipMove() {}, trailSent: () => [],
   sprite: (name) => `/static/${name}.png`, emptyMsg: (t) => t,
 });
 vm.runInContext(script, context);
@@ -44,9 +44,8 @@ assert.equal(run('stanceY({score:null,scale:100})'), null);
 const nodes = ["Maya", "Rachel", "Elena"].map((name) => ({name, color: "#9299A4", score: null}));
 context.data = {sim: {persona_order: nodes.map((n) => n.name)}, network: {nodes, edges: []}};
 run("renderNetwork()");
-assert.equal((element("social-network").innerHTML.match(/<circle /g) || []).length, 3);
-// Count fills only; the tooltip repeats the color.
-assert.equal((element("social-network").innerHTML.match(/fill="#9299A4"/g) || []).length, 3);
+// Stance is the number beside each name ("–" when unrated), not a colored dot.
+assert.equal((element("social-network").innerHTML.match(/<tspan class="social-score">–<\/tspan>/g) || []).length, 3);
 const originalPositions = run("JSON.stringify(socialPositions(data.network.nodes,800))");
 context.data.network.nodes.reverse();
 context.data.network.edges = [{source: "Maya", target: "Rachel", count: 301, time: "now"}];

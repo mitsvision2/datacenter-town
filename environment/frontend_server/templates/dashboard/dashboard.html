@@ -165,7 +165,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 /* Keeps scrolling lists clear of the card's rounded bottom corner. */
 #inspector, #activity { padding-bottom: var(--list-bottom); }
 /* Bottom fade only while more is below; .at-end is set from script. */
-#inspector > .pane:is(#a-mind, #a-plan, #a-profile) {
+#inspector > .pane:is(#a-mind, #a-memory, #a-plan, #a-profile) {
   -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - var(--space-6)), transparent);
   mask-image: linear-gradient(to bottom, #000 calc(100% - var(--space-6)), transparent);
 }
@@ -214,28 +214,13 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .pane { padding: calc(var(--space-4) + var(--card-y-extra)) var(--card-x); overflow: auto; min-height: 0; flex: 1; }
 .empty { color: var(--muted); padding: var(--space-4) var(--space-half); max-width: 46ch; }
 
-/* ---------- roster ---------- */
-.roster { list-style: none; margin: 0; padding: var(--space-2); overflow: auto; }
+/* An agent option in the console's slash menu. */
 .agent {
   display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: var(--space-3); align-items: center;
   padding: var(--space-2) var(--space-3); border-radius: var(--radius-card); cursor: pointer; border: 1px solid transparent;
   width: 100%; text-align: left; background: none;
 }
-.agent:disabled { cursor: default; color: inherit; }
-.agent:disabled:hover { background: none; }
-.agent:disabled:hover .sprite { background: var(--hover); }
 .agent:hover { background: var(--hover); }
-.agent:hover .sprite { background: var(--panel); }
-.sprite {
-  width: 44px; height: 44px; image-rendering: pixelated; border-radius: var(--radius-card);
-  background: var(--paper); object-fit: contain;
-}
-.agent .name { font-weight: var(--w-medium); font-size: var(--fs-title); color: var(--ink-head); }
-/* Fade rather than ellipsis; the line spans the column so short text never reaches it. */
-.agent .doing { color: var(--muted); font-size: var(--fs-sub); white-space: nowrap; overflow: hidden;
-  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent); }
-.agent .doing b { font-weight: var(--w-bold); }
-.agent .doing.saved { color: var(--faint); }
 /* An agent's latest stance move: ▲ toward support, ▼ toward opposed, ● no change. */
 .stance-arrow { width: 18px; height: 18px; flex: none; overflow: visible; }
 
@@ -261,50 +246,40 @@ button, input, select, textarea { font: inherit; color: inherit; }
 #activity, #charts { min-height: 0; contain: size; }
 .charts-body { flex: 1; min-height: 0; overflow: auto; display: flex; flex-direction: column; }
 .charts-body > section:not([hidden]) { flex: 1 0 auto; display: flex; flex-direction: column; min-height: 0; }
-#stance, #social-network, #trail-chart { position: relative; min-height: 0; }
+#stance, #social-network, #trail-chart, #act-chart { position: relative; min-height: 0; }
 .empty-viz { position: absolute; inset: 0; }
 .empty-viz .ghost { stroke: var(--line); fill: none; }
 .empty-viz .ghost-fill { fill: var(--line); opacity: .45; }
 .empty-viz text { fill: var(--faint); font-size: var(--fs-axis); }
 .empty-msg { position: absolute; inset: 0; display: grid; place-items: center; padding: var(--space-4); pointer-events: none; }
 .empty-msg span { max-width: 46ch; text-align: center; color: var(--muted); font-size: var(--fs-sub); line-height: 1.45; background: var(--panel); padding: var(--space-1) var(--space-2); border-radius: var(--radius-sm); }
-#stance svg, #social-network svg, #trail-chart svg { position: absolute; inset: 0; width: 100%; height: 100%; }
-#inspector > .roster {
-  flex: 1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
-  grid-auto-rows: minmax(max-content, 1fr); align-content: stretch;
-  gap: var(--space-2); padding: calc(var(--space-1) + var(--card-y-extra)) var(--card-x) 0;
-}
-#inspector > .roster > li:not(.empty) { display: grid; }
-#inspector > .roster .agent { padding: var(--space-1) var(--inner-x); background: var(--hover); border: 0; border-radius: var(--radius-card); }
-#inspector > .roster .agent:hover { background: var(--paper); }
-#inspector > .roster .agent .sprite, #inspector > .roster .agent:hover .sprite { background: var(--panel); }
-@media (max-height: 720px) {
-  :root { --list-bottom: var(--space-2); }
-  #inspector > .roster { gap: 6px; }
-  #inspector > .roster .agent { grid-template-columns: 36px minmax(0, 1fr) auto; padding-block: 2px; }
-  #inspector > .roster .agent .sprite { width: 36px; height: 36px; }
-}
-@media (max-width: 560px) { #inspector > .roster { grid-template-columns: minmax(0, 1fr); } }
-#inspector.listing > :not(.roster, .roster-title), #inspector:not(.listing) > :is(.roster, .roster-title) { display: none; }
-#inspector:not(.listing) { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-rows: auto minmax(0, 1fr); }
-#inspector:not(.listing) > .who { grid-column: 1; grid-row: 1; width: auto; max-width: 214px; padding: 0 var(--space-2) 0 var(--card-x); }
-#inspector:not(.listing) > .tabs { grid-column: 2; grid-row: 1; justify-content: flex-end; padding: 0; }
-.agent-back { grid-column: 3; grid-row: 1; align-self: center; display: inline-flex; align-items: center; gap: var(--space-1); margin: 0 var(--card-x) 0 var(--space-1); padding: 2px var(--space-2); }
-#inspector:not(.listing) > :not(.who, .tabs, .agent-back, .roster, .roster-title) { grid-column: 1 / -1; grid-row: 2; min-height: 0; }
-.roster-title { margin: 0; padding: calc(var(--space-3) + var(--card-y-extra)) var(--card-x) var(--space-1); font-size: var(--fs-head); font-weight: var(--w-medium); color: var(--ink-head); }
-.roster-title .count { color: var(--faint); font-weight: var(--w-regular); margin-left: var(--space-1); }
-/* Key for the agents' stance arrows, as on the Whisper trail. */
-.roster-title { display: flex; align-items: center; }
-.stance-key { margin-left: auto; display: inline-flex; align-items: center; gap: var(--space-1); font-size: var(--fs-meta); font-weight: var(--w-medium); color: var(--faint); cursor: default; }
-.stance-key .stance-arrow { width: 16px; height: 16px; }
-.stance-key .stance-arrow + .stance-arrow, .stance-key .stance-arrow:not(:first-child) { margin-left: var(--space-2); }
-.who {
-  display: flex; gap: var(--space-2); align-items: center; padding: 0 var(--space-3) 0 var(--card-x); width: 100%;
-  height: calc(2 * var(--space-3) + 22.5px); flex: none;
-}
-.who .sprite { width: 32px; height: 32px; flex: none; }
-.who-face { position: relative; flex: none; display: inline-flex; border: 0; background: none; padding: 0; cursor: pointer; }
-.who-face:hover .sprite { background: var(--panel); }
+#stance svg, #social-network svg, #trail-chart svg, #act-chart svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+#act-chart { flex: 1; }
+.act-bar { cursor: pointer; stroke: var(--hover); stroke-width: 1; }
+.act-bar.home { opacity: .3; }
+.act-lane.dim { opacity: .3; }
+.act-place { fill: #fff; font-size: var(--fs-axis); pointer-events: none; }
+.act-place.home { fill: var(--ink); }
+.act-name { font-size: var(--fs-meta); font-weight: var(--w-medium); }
+.act-talk { fill: var(--ink); opacity: .75; }
+/* The agent panel: a row of every agent on top, one always open. Clicking the
+   open one again highlights them on the map and charts (filled chip). */
+#inspector { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto auto minmax(0, 1fr); }
+#inspector > .agent-strip { grid-column: 1 / -1; grid-row: 2; }
+.open-name { grid-column: 1; grid-row: 1; align-self: center; margin: 0; padding-left: var(--card-x); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fs-head); font-weight: var(--w-medium); color: var(--ink-head); }
+#inspector > .tabs { grid-column: 2; grid-row: 1; justify-content: flex-end; padding: 0 var(--card-x) 0 0; }
+#inspector > .pane { grid-column: 1 / -1; grid-row: 3; min-height: 0; }
+.agent-strip { display: flex; gap: 6px; padding: var(--space-1) var(--card-x) var(--space-3); }
+.chip-agent { flex: 1 1 0; min-width: 0; justify-content: center; display: inline-flex; align-items: center; gap: 4px; height: 34px; padding: 0 2px; border: 2px solid transparent; border-radius: 10px; background: var(--hover); cursor: pointer; font-size: var(--fs-sub); font-weight: var(--w-medium); color: var(--who); transition: background-color 120ms ease-out, border-color 120ms ease-out; }
+.chip-agent:hover { background: var(--paper); }
+.chip-agent:disabled { cursor: default; opacity: .6; }
+.chip-agent img { width: 26px; height: 26px; border-radius: 6px; background: var(--panel); image-rendering: pixelated; object-fit: contain; }
+.chip-agent .stance-arrow { width: 12px; height: 12px; margin-left: -2px; }
+.chip-agent.lit .tr-shift { fill: #fff; stroke: none; }
+.chip-agent .v { color: var(--faint); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; }
+.chip-agent[aria-pressed="true"] { border-color: var(--who); background: var(--panel); }
+.chip-agent.lit, .chip-agent.lit:hover { background: var(--who); color: #fff; }
+.chip-agent.lit .v { color: rgba(255, 255, 255, .8); }
 #inspector .pane { padding: calc(var(--space-3) + var(--card-y-extra)) var(--card-x) 0; overscroll-behavior: none; }
 #inspector .pane > .convo-fade { margin-top: 0; }
 #inspector #a-mind { padding-top: 0; }
@@ -332,7 +307,6 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .facts { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: var(--space-1) var(--space-3); margin: 0; font-size: var(--fs-body); align-items: baseline; }
 .facts dt { color: var(--faint); font-size: var(--fs-meta); font-weight: var(--w-medium); }
 .facts dd { margin: 0; color: var(--ink); }
-.who .who-name { display: block; min-width: 0; overflow: hidden; text-overflow: ellipsis; font-size: var(--fs-head); font-weight: var(--w-medium); letter-spacing: -0.01em; white-space: nowrap; }
 .chev-icon { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
 
 
@@ -343,6 +317,24 @@ button, input, select, textarea { font: inherit; color: inherit; }
 #a-mind button.convo-row:hover { background: var(--paper); }
 #a-mind .convo-row.static:hover { background: var(--hover); }
 .m-card { padding: var(--space-2) var(--inner-x); margin-bottom: var(--space-2); }
+/* Memory tab: a strip of every memory by time and kind, then the list. */
+.mem-tools { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; margin: var(--space-2) 0; }
+.mem-tools input { flex: 1 1 120px; min-width: 0; height: 26px; padding: 0 var(--space-2); border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--panel); font-size: var(--fs-meta); }
+.mem-strip { display: block; width: 100%; height: 84px; margin-bottom: var(--space-2); }
+.mem-strip .row-label { fill: var(--faint); font-size: var(--fs-axis); }
+.mem-strip .row-line { stroke: var(--line); }
+.mem-strip .m-dot { cursor: pointer; opacity: .55; }
+.mem-strip.focus .m-dot { opacity: .15; }
+.mem-strip .m-dot.on { opacity: 1; stroke: var(--ink); stroke-width: 1.5; }
+.mem-note { display: flex; justify-content: space-between; gap: var(--space-2); align-items: baseline; font-size: var(--fs-meta); color: var(--muted); margin-bottom: var(--space-2); }
+.mem-row { padding: var(--space-2) var(--inner-x); margin-bottom: var(--space-1); background: var(--hover); border-radius: var(--radius-card); }
+.mem-row.on { box-shadow: inset 3px 0 0 var(--who); }
+.mem-meta { display: flex; gap: var(--space-2); font-size: var(--fs-meta); color: var(--faint); font-weight: var(--w-medium); }
+.mem-meta .imp { margin-left: auto; font-variant-numeric: tabular-nums; }
+.mem-links { display: flex; gap: var(--space-3); }
+.mem-links:empty { display: none; }
+.mem-text { margin: 2px 0 0; font-size: var(--fs-body); line-height: 1.4; color: var(--ink); }
+.mem-sub { margin: var(--space-1) 0 0; padding-left: var(--space-3); border-left: 2px solid var(--line); font-size: var(--fs-meta); color: var(--muted); line-height: 1.45; }
 .plan-row:last-child, .prof-sec:last-of-type { margin-bottom: 0; }
 .card-head { font-size: var(--fs-meta); font-weight: var(--w-medium); color: var(--faint); margin-bottom: var(--space-1); }
 .goals { list-style: none; margin: 0; padding: 0; counter-reset: goal; display: grid; gap: var(--space-1); }
@@ -478,7 +470,7 @@ pre, .mono { font-family: var(--mono); font-size: var(--fs-meta); line-height: 1
 }
 .msg-text.whispered { box-shadow: inset 0 0 0 1.5px var(--amber); }
 .msg-flag { margin-top: calc(-1 * var(--space-half)); padding: 0 var(--space-1); font-size: var(--fs-meta); font-weight: var(--w-medium); color: var(--amber); }
-.sprite, .faces img, .msg > img, .w-pick img { border: 2px solid var(--who, transparent); }
+.faces img, .msg > img, .w-pick img { border: 2px solid var(--who, transparent); }
 
 .result .cmd { font-family: var(--mono); font-size: var(--fs-meta); font-weight: var(--w-medium); }
 #p-console { padding-top: 0; padding-bottom: 0; overscroll-behavior: none; position: relative; }
@@ -622,6 +614,8 @@ details.log-err pre { margin: 2px 0 var(--space-2); font-size: var(--fs-meta); c
 .run-opt:focus-visible { background: var(--hover); outline: none; }
 .run-opt-name { min-width: 0; flex: 1; overflow: hidden; white-space: nowrap; mask-image: linear-gradient(to right, #000 calc(100% - 20px), transparent); font-size: var(--fs-title); font-weight: var(--w-medium); color: var(--ink); }
 .run-opt-note { flex: none; color: var(--faint); font-size: var(--fs-meta); }
+#run-menu { width: min(220px, calc(100vw - 2 * var(--space-4))); }
+#run-menu .run-opt-name { mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent); }
 :is(.run-menu, .convo-menu, .log-menu, .slash-menu) {
   padding: var(--space-1); background: var(--panel); border: 1px solid var(--line);
   border-radius: var(--radius-card); box-shadow: 0 8px 24px rgba(0, 0, 0, .12);
@@ -769,7 +763,7 @@ details.log-err pre { margin: 2px 0 var(--space-2); font-size: var(--fs-meta); c
 /* ---------- stance graph ---------- */
 .stance-head { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-4); align-items: center; padding: var(--space-4) var(--card-x) 0; }
 .stance-head h2 { margin: 0; font-size: var(--fs-head); font-weight: var(--w-medium); color: var(--ink-head); }
-#stance-card:not([hidden]) { grid-template-columns: minmax(0, 1fr); }
+#stance-card:not([hidden]), #act-card:not([hidden]) { grid-template-columns: minmax(0, 1fr); }
 .stance { position: relative; }
 .stance .band { opacity: .08; }
 .stance .night { fill: var(--ink); opacity: .035; }
@@ -795,6 +789,7 @@ details.log-err pre { margin: 2px 0 var(--space-2); font-size: var(--fs-meta); c
 .stance .cursor { stroke: var(--ink); stroke-width: 1; opacity: .35; pointer-events: none; vector-effect: non-scaling-stroke; }
 .stance .after-whisper { fill: var(--amber); opacity: .08; }
 .stance .whisper-label { fill: var(--amber); }
+.stance .whisper-rule { stroke: var(--amber); stroke-width: 1; stroke-dasharray: 3 3; opacity: .7; }
 .stance .series { transition: opacity 120ms ease-out; }
 .stance .dim { opacity: .2; }
 .stance svg.hovering .series:not(.hot) { opacity: .15; }
@@ -815,7 +810,6 @@ details.log-err pre { margin: 2px 0 var(--space-2); font-size: var(--fs-meta); c
 .social-tile { fill: var(--paper); stroke-width: 2; }
 .social-node.selected .social-tile, .social-node:focus-visible .social-tile { stroke-width: 3.5; }
 .social-node image { image-rendering: pixelated; pointer-events: none; }
-.social-stance { stroke: var(--panel); stroke-width: 1.5; }
 .social-label { fill: var(--muted); font-size: var(--fs-meta); font-weight: var(--w-medium); }
 .social-node.selected .social-label { fill: var(--ink); font-weight: var(--w-bold); }
 .social-net.whisper .social-node:not(.reached) { opacity: .4; }
@@ -827,6 +821,11 @@ details.log-err pre { margin: 2px 0 var(--space-2); font-size: var(--fs-meta); c
 .social-legend span { display: inline-flex; align-items: center; gap: var(--space-2); }
 .social-legend i { width: 9px; height: 9px; border-radius: 50%; flex: none; }
 .social-legend i.line { width: 16px; height: 3px; border-radius: 2px; background: var(--muted); }
+.social-legend i.line.whisper { background: var(--amber); }
+.social-score { fill: var(--faint); font-weight: var(--w-regular); font-variant-numeric: tabular-nums; }
+/* A highlighted agent keeps their own conversations; the rest of the town steps back. */
+.social-net.ego .social-edge:not(.sel) { opacity: .08 !important; }
+.social-net.ego .social-node:not(.near) { opacity: .45; }
 .social-legend .sep { flex-basis: 100%; height: 0; }
 @media (min-width: 1101px) {
   #social-card:not([hidden]) { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); gap: var(--space-2); padding: 0; background: none; }
@@ -855,11 +854,21 @@ details.log-err pre { margin: 2px 0 var(--space-2); font-size: var(--fs-meta); c
 .tr-you rect { fill: var(--ink); }
 .tr-you text { fill: var(--panel); font-size: var(--fs-meta); font-weight: var(--w-medium); }
 .tr-node { cursor: pointer; }
-.tr-node image { image-rendering: pixelated; pointer-events: none; }
-.tr-node:hover .social-label { fill: var(--ink); }
-.tr-node.failed image, .tr-node.failed .social-stance { opacity: .45; }
-.tr-node.failed .social-tile { stroke-dasharray: 2 3; opacity: .7; }
-.tr-node.failed .social-label { fill: color-mix(in srgb, var(--brick) 65%, var(--muted)); }
+.tr-line { fill: none; stroke-width: 2.5; stroke-linecap: round; }
+.tr-name { font-size: var(--fs-meta); font-weight: var(--w-medium); }
+.tr-node:hover .tr-line { stroke-width: 3.5; }
+.tr-node.failed .tr-line { stroke-dasharray: 2 4; opacity: .5; }
+.tr-node.failed .tr-dot { opacity: .5; }
+.tr-node.failed .tr-name { fill: color-mix(in srgb, var(--brick) 65%, var(--muted)); }
+.tr-db-track { fill: none; stroke: var(--line); stroke-width: 3; stroke-linecap: round; }
+.tr-db-seg { fill: none; stroke-width: 2; opacity: .6; }
+.tr-db-before { fill: var(--panel); stroke-width: 1.5; }
+.tr-key-mark { fill: var(--muted); }
+.tr-edge.again { stroke-dasharray: 4 4; }
+.tr-reach { stroke: none; }
+.tr-reach.all { fill: var(--ink); opacity: .1; }
+.tr-reach.direct { fill: var(--ink); opacity: .22; }
+.tr-key-ring { stroke: var(--muted); }
 .trail-axis .night { fill: var(--ink); opacity: .035; }
 .trail-axis .day-line { stroke: var(--line); }
 .trail-axis .axis { fill: var(--faint); font-size: var(--fs-axis); font-variant-numeric: tabular-nums; }
@@ -1043,7 +1052,7 @@ dialog .w-at input { flex: 1 1 0; min-width: 0; width: auto; padding: var(--spac
   .trail-pick { flex: none; }
   .trail-side .trail-pick .dd-trigger .chev-icon { color: var(--faint); }
   .trail-side .trail-pick .dd-trigger .dd-name { flex: none; overflow: visible; mask-image: none; }
-  #stance-card:not([hidden]) { grid-template-rows: minmax(0, 1fr); }
+  #stance-card:not([hidden]), #act-card:not([hidden]) { grid-template-rows: minmax(0, 1fr); }
 }
 
 /* ---------- small screens ---------- */
@@ -1085,11 +1094,11 @@ body { background: var(--panel); }
 .map-empty .replay-box input { width: 88px; height: 32px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); padding: 0 var(--space-2); font-variant-numeric: tabular-nums; }
 .map-empty :is(#btn-replay, #btn-new-2) { height: 32px; padding: 0 var(--space-3); border-radius: 8px; }
 /* Rows: no box; a tint on hover. */
-:is(#inspector > .roster .agent, .plan-row, #a-mind .convo-row, .m-card, #p-convos .convo-row,
+:is(.plan-row, #a-mind .convo-row, .m-card, #p-convos .convo-row,
     #p-events .w-item, .c-row, details.log-step, .s-card) {
   background: none; border-radius: var(--radius-inner);
 }
-:is(#inspector > .roster .agent, #p-convos .convo-row, #p-events .w-item, #a-mind button.convo-row):hover { background: var(--hover); }
+:is(#p-convos .convo-row, #p-events .w-item, #a-mind button.convo-row):hover { background: var(--hover); }
 .charts-body > section:not([hidden]), .social-panel, .trail-side, .trail-panel, .reader, .reader-head { background: none; }
 /* Buttons: flat, a hairline border; the primary one is solid ink. */
 .btn:hover:not(:disabled) { border-color: var(--faint); }
@@ -1243,17 +1252,16 @@ body { background: var(--panel); }
       </div>
     </section>
 
-    <section class="card listing" aria-label="Agents" id="inspector">
-      <h2 class="roster-title" id="roster-title">Agents</h2>
-      <ul class="roster" id="roster" aria-labelledby="roster-title"></ul>
-      <div class="who" id="who"></div>
+    <section class="card" aria-label="Agents" id="inspector">
+      <div class="agent-strip" id="agent-strip" role="toolbar" aria-label="Agents"></div>
+      <h2 class="open-name" id="open-name"></h2>
       <div class="tabs" role="tablist">
-        <button class="tab" role="tab" aria-selected="true" data-pane="a-mind">Mind</button>
+        <button class="tab" role="tab" aria-selected="true" data-pane="a-mind">Now</button>
+        <button class="tab" role="tab" aria-selected="false" data-pane="a-memory">Memory</button>
         <button class="tab" role="tab" aria-selected="false" data-pane="a-plan">Plan</button>
         <button class="tab" role="tab" aria-selected="false" data-pane="a-ask">Interview</button>
         <button class="tab" role="tab" aria-selected="false" data-pane="a-profile">Profile</button>
       </div>
-      <button class="btn agent-back" id="agent-back" type="button" aria-label="Back to all agents">Back</button>
       <div class="pane" id="a-mind"></div>
       <div class="pane" id="a-plan" hidden></div>
       <div class="pane" id="a-ask" hidden>
@@ -1271,6 +1279,7 @@ body { background: var(--panel); }
           </div>
         </form>
       </div>
+      <div class="pane" id="a-memory" hidden></div>
       <div class="pane" id="a-profile" hidden></div>
     </section>
   </div>
@@ -1280,6 +1289,7 @@ body { background: var(--panel); }
         <span class="tabs-title" id="charts-title" aria-hidden="true">Where each agent stands on the datacenter</span>
         
         <button class="tab" role="tab" aria-selected="true" data-pane="stance-card">Stance</button>
+        <button class="tab" role="tab" aria-selected="false" data-pane="act-card">Activity</button>
         <button class="tab" role="tab" aria-selected="false" data-pane="trail-card">Whisper trail</button>
         <button class="tab" role="tab" aria-selected="false" data-pane="social-card">Social network</button>
       </div>
@@ -1290,6 +1300,10 @@ body { background: var(--panel); }
           <span class="sr-only" id="stance-note"></span>
         </div>
         <div id="stance"></div>
+      </section>
+      <section class="stance" id="act-card" hidden aria-label="Where each agent spent their time">
+        <div class="stance-head"><h2>Where each agent spent their time</h2></div>
+        <div id="act-chart"></div>
       </section>
       <section class="trail" id="trail-card" hidden aria-labelledby="trail-heading">
         <div class="trail-side" id="trail-side">
@@ -1473,7 +1487,10 @@ const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c]));
 
 let data = null;
-let selected = null;
+let selected = null;          // highlighted on the map and charts; null when highlight is off
+let openAgent = null;         // shown in the agent panel; always someone once a run has agents
+let highlight = false;
+const syncSelected = () => { selected = highlight ? openAgent : null; };
 let mapKey = null;
 let view = null;             // saved run being viewed; null means the live run
 let liveSim = null;
@@ -1570,6 +1587,8 @@ document.querySelectorAll(".tabs").forEach((bar) => {
     if (tab.dataset.pane === "p-console") { cFollow = true; cToBottom(); $("console-input").focus(); }
     $("console-foot").hidden = !document.querySelector('[data-pane="p-console"][aria-selected="true"]');
     if (tab.dataset.pane === "p-log") loadLog();
+    if (tab.dataset.pane === "act-card") renderActivity();
+    if (tab.dataset.pane === "a-memory") renderMemory();
     if (tab.dataset.pane === "a-plan") scrollPlanToCurrent();
   });
 });
@@ -2614,7 +2633,7 @@ function trailTree(w, story) {
 function trailTreeSvg(w, story, W, H) {
   const nodes = trailTree(w, story);
   const sps = data?.sim?.sec_per_step || 10;
-  const steps = nodes.filter((n) => n.step != null).map((n) => n.step);
+  const steps = [...nodes.filter((n) => n.step != null).map((n) => n.step), ...story.ups.map((u) => u.step).filter((v) => v != null)];
   const x0 = steps.length ? Math.min(...steps) : 0;
   let x1 = steps.length ? Math.max(...steps) : 0;
   if (x1 - x0 < 3600 / sps) x1 = x0 + 3600 / sps;  // at least a game hour across
@@ -2631,65 +2650,91 @@ function trailTreeSvg(w, story, W, H) {
   nodes.filter((n) => n.failed).sort((a, b) => a.name.localeCompare(b.name)).forEach((n) => order.push(n));
   nodes.filter((n) => !order.includes(n)).forEach((n) => order.push(n));
 
+  // One lane per person: a line in their color from when they heard it to the right edge.
   const axisH = 22, foot = 20, gutter = 74, top = 6;
-  const plotL = gutter + 18, plotR = W - plotL, plotB = H - axisH - foot;
-  const px = (st) => plotL + ((st - x0) / (x1 - x0)) * (plotR - plotL);
-  const minDX = 58;
-  const lanes = [], laneOf = new Map();
-  for (const n of order) {
-    const pref = n.from && laneOf.has(n.from) ? laneOf.get(n.from) : 0;
-    const x = px(n.at);
-    const fits = (l) => (lanes[l] || []).every((o) => Math.abs(o - x) >= minDX);
-    let pick = -1;
-    for (let d = 0; d < lanes.length + 1 && pick < 0; d += 1) {
-      for (const l of d ? [pref + d, pref - d] : [pref]) if (l >= 0 && l < lanes.length && fits(l)) { pick = l; break; }
-    }
-    if (pick < 0) { pick = lanes.length; lanes.push([]); }
-    lanes[pick].push(x);
-    laneOf.set(n.name, pick);
-  }
-  const L = Math.max(1, lanes.length), avail = plotB - top;
-  const s = Math.max(14, Math.min(netSprite(W, H), Math.floor(avail / L) - 20));
-  const laneH = Math.min(avail / L, s + 44);
-  const y0 = Math.max(top, Math.min(plotB - L * laneH, (H - L * laneH) / 2 - 7));
-  const yOf = (l) => y0 + laneH * (l + 0.5) - 7;
-  const pos = new Map(order.map((n) => [n.name, {x: px(n.at), y: yOf(laneOf.get(n.name))}]));
-  const wx = 8 + 29, wy = yOf((L - 1) / 2);
+  const plotL = gutter + 18, plotR = W - 16, plotB = H - axisH - foot;
+  // Each lane ends in a small 0–100 stance scale: before (hollow) and after (filled) hearing it.
+  const dbW = 56, dbL = plotR - dbW, lineR = dbL - 14;
+  const px = (st) => plotL + ((st - x0) / (x1 - x0)) * (lineR - 60 - plotL);
+  const dbx = (v) => dbL + (v / 100) * dbW;
+  // Under the lanes, a step chart of how many people had heard it so far.
+  const stripH = 30, sBot = plotB - 2, sTop = sBot - stripH;
+  const L = Math.max(1, order.length), avail = sTop - 8 - top - 8;
+  const laneH = Math.min(avail / L, 34);
+  const y0 = top + 8 + (avail - L * laneH) / 2;
+  const pos = new Map(order.map((n, i) => [n.name, {x: px(n.at), y: y0 + laneH * (i + 0.5)}]));
+  const wx = 8 + 29, wy = y0 + (L * laneH) / 2;
 
   const curve = (ax, ay, bx, by) => { const m = (ax + bx) / 2; return `M${ax.toFixed(1)} ${ay.toFixed(1)}C${m.toFixed(1)} ${ay.toFixed(1)} ${m.toFixed(1)} ${by.toFixed(1)} ${bx.toFixed(1)} ${by.toFixed(1)}`; };
-  const half = s / 2 + 3;
   let edges = "", marks = "";
   for (const n of order) {
     const to = pos.get(n.name), from = n.from ? pos.get(n.from) : null;
-    const d = from ? curve(from.x + half, from.y, to.x - half, to.y) : curve(wx + 29, wy, to.x - half, to.y);
+    const d = from ? curve(Math.max(from.x, to.x - 28), from.y, to.x, to.y) : curve(wx + 29, wy, to.x, to.y);
     if (n.failed) { edges += `<path class="tr-edge failed" d="${d}"/>`; continue; }
     if (!from) { edges += `<path class="tr-edge told" d="${d}"/>`; continue; }
     const convo = n.key && (data?.conversations || []).some((c) => convoKey(c) === n.key);
     const tip = `<b>${tipName(n.from)} → ${tipName(n.name)}</b>In conversation · ${esc(when(n.time) || n.time || "")}${n.quote ? `<span class="tip-quote">“${esc(n.quote)}”</span>` : ""}`;
     edges += `<g data-step="${n.step}"><path class="tr-hit" d="${d}" ${convo ? `data-trail-convo="${esc(n.key)}"` : ""} data-tip-html="${esc(tip)}"/><path class="tr-edge talk" d="${d}" stroke="${agentColor(n.from)}"/></g>`;
   }
+  // Someone hearing it again, from a second teller or the same one later: dashed.
+  for (const u of story.ups) {
+    const from = pos.get(u.speaker);
+    if (!from) continue;
+    for (const name of (u.speakers || []).filter((m) => m !== u.speaker)) {
+      const h = story.heard[name], to = pos.get(name);
+      if (!h || !to || h.step > u.step || (h.from === u.speaker && h.step === u.step)) continue;
+      const x = px(u.step), d = curve(Math.max(from.x, x - 28), from.y, x, to.y);
+      const tip = `<b>${tipName(u.speaker)} → ${tipName(name)}, again</b>In conversation · ${esc(when(u.time) || u.time || "")}${u.quote ? `<span class="tip-quote">“${esc(u.quote)}”</span>` : ""}`;
+      edges += `<g data-step="${u.step}"><path class="tr-hit" d="${d}" data-trail-convo="${esc(u.key)}" data-tip-html="${esc(tip)}"/><path class="tr-edge talk again" d="${d}" stroke="${agentColor(u.speaker)}"/></g>`;
+    }
+  }
+  const heardAt = order.filter((n) => n.step != null && !n.failed).sort((a, b) => a.step - b.step);
+  if (heardAt.length) {
+    const N = heardAt.length, sy = (c) => (sBot - (c / N) * stripH).toFixed(1);
+    const stair = (list) => {
+      let d = `M${px(x0).toFixed(1)} ${sBot}`, c = 0;
+      for (const n of list) { c += 1; d += `H${px(n.step).toFixed(1)}V${sy(c)}`; }
+      return `${d}H${lineR.toFixed(1)}V${sBot}Z`;
+    };
+    const direct = heardAt.filter((n) => !n.from);
+    marks += `<path class="tr-reach all" d="${stair(heardAt)}"/><path class="tr-reach direct" d="${stair(direct)}"/>
+      <text class="axis" x="${plotL - 8}" y="${(sBot - 4).toFixed(1)}" text-anchor="end">Reached</text>
+      <text class="axis" x="${(lineR + 4).toFixed(1)}" y="${(sTop + 9).toFixed(1)}">${N}</text>`;
+  }
   for (const n of order) {
-    const {x, y} = pos.get(n.name), ring = agentColor(n.name);
+    const {x, y} = pos.get(n.name), color = agentColor(n.name);
     const sh = n.step != null ? trailShift(n.name, n.step) : null;
-    const dir = !sh ? "" : sh.after > sh.before ? "up" : sh.after < sh.before ? "down" : "same";
     const tip = tipTable(tipName(n.name, true), n.failed ? [["Missed", esc(n.failed)]] : [
       ["Heard it", esc(when(n.time) || n.time || "")],
       ["From", n.from ? `${tipName(n.from)} in conversation` : "the whisper"],
       ...(sh ? [["Stance", `${sh.before} → ${sh.after}`], ["Change", stanceChangeHtml(sh.after - sh.before)]] : []),
       ...(n.ups ? [["Brought it up", `${n.ups}×`]] : [])]);
+    const line = `M${x.toFixed(1)} ${y.toFixed(1)}H${lineR.toFixed(1)}`;
+    // Direct recipients get a diamond, people who heard it in conversation a dot.
+    const r = 4.5, head = n.from || n.failed ? `<circle class="tr-dot" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4" fill="${color}"/>`
+      : `<path class="tr-dot" d="M${x.toFixed(1)} ${(y - r - 1).toFixed(1)}l${r + 1} ${r + 1}l${-r - 1} ${r + 1}l${-r - 1} ${-r - 1}Z" fill="${color}"/>`;
+    const db = !sh ? "" : `<path class="tr-db-seg" d="M${dbx(sh.before).toFixed(1)} ${y.toFixed(1)}H${dbx(sh.after).toFixed(1)}" stroke="${color}"/>
+      <circle class="tr-db-before" cx="${dbx(sh.before).toFixed(1)}" cy="${y.toFixed(1)}" r="3" stroke="${color}"/>
+      <circle cx="${dbx(sh.after).toFixed(1)}" cy="${y.toFixed(1)}" r="3.5" fill="${color}"/>`;
     marks += `<g class="tr-node${n.failed ? " failed" : ""}" data-trail-agent="${esc(n.name)}" ${n.step != null ? `data-step="${n.step}"` : ""} data-tip-html="${esc(tip)}">
-      <rect class="social-tile" x="${(x - s / 2 - 2).toFixed(1)}" y="${(y - s / 2 - 2).toFixed(1)}" width="${s + 4}" height="${s + 4}" rx="4" style="stroke:${ring}"/>
-      <image href="${esc(sprite(n.name))}" x="${(x - s / 2).toFixed(1)}" y="${(y - s / 2).toFixed(1)}" width="${s}" height="${s}"/>
-      ${dir ? trailShiftMark(dir, x + s / 2 + 1, y + s / 2 + 1, Math.max(4.5, s / 5)) : ""}
-      <text class="social-label" x="${x.toFixed(1)}" y="${(y + s / 2 + 15).toFixed(1)}" text-anchor="middle">${esc(firstName(n.name))}</text></g>`;
+      <path class="tr-hit" d="${line}"/>
+      <path class="tr-line" d="${line}" stroke="${color}"/>
+      ${head}
+      <text class="tr-name" x="${(x + 9).toFixed(1)}" y="${(y - 5).toFixed(1)}" fill="${color}">${esc(firstName(n.name))}</text>
+      ${n.failed ? "" : `<path class="tr-db-track" d="M${dbL} ${y.toFixed(1)}H${plotR}"/>`}${db}</g>`;
   }
+  marks += `<text class="axis" x="${dbL + dbW / 2}" y="${(y0 - 2).toFixed(1)}" text-anchor="middle">Stance</text>`;
   const sent = order.find((n) => !n.from && n.time);
   const wtip = `<b>Whisper</b>${sent ? `Went out ${esc(when(sent.time))}` : "Went out"}<span class="tip-quote">“${esc(w.text || "")}”</span>`;
   const whisperNode = `<g class="tr-you" data-tip-html="${esc(wtip)}"><rect x="8" y="${(wy - 12).toFixed(1)}" width="58" height="24" rx="10"/><text x="${8 + 29}" y="${(wy + 4).toFixed(1)}" text-anchor="middle">Whisper</text></g>`;
   const axis = stanceTimeAxis(x0, x1, dateAt, sps, px, top, plotB);
-  const ky = H - 5, km = (dir, kx) => trailShiftMark(dir, kx, ky - 4, 4.5);
-  // Right-aligned under the axis, as on the stance chart; "No change" ends about 225 units in.
-  const key = `<g class="trail-key" transform="translate(${Math.max(0, plotR - 225).toFixed(1)} 0)" data-tip-html="${esc("<b>Stance after hearing it</b>Each person's reading before they heard it, against the first one after.<span class=\"tip-note\">No mark: no readings on both sides yet.</span>")}">${km("up", 13)}<text x="21" y="${ky}">More for</text>${km("down", 80)}<text x="88" y="${ky}">More against</text>${km("same", 166)}<text x="174" y="${ky}">No change</text></g>`;
+  // Right-aligned under the axis, as on the stance chart; the key ends about 450 units in.
+  const ky = H - 5, kc = ky - 4;
+  const key = `<g class="trail-key" transform="translate(${Math.max(0, plotR - 450).toFixed(1)} 0)" data-tip-html="${esc("<b>Stance before and after hearing it</b>Each person's reading before they heard it (hollow), against the first one after (filled), on a 0 (against) to 100 (for) scale.<span class=\"tip-note\">No dots: no readings on both sides yet.</span>")}">
+    <path class="tr-key-mark" d="M6 ${kc - 5}l5 5l-5 5l-5 -5Z"/><text x="16" y="${ky}">Told directly</text>
+    <circle class="tr-key-mark" cx="100" cy="${kc}" r="4"/><text x="109" y="${ky}">Heard in conversation</text>
+    <path class="tr-db-track" d="M240 ${kc}H262"/><circle class="tr-db-before tr-key-ring" cx="242" cy="${kc}" r="3"/><circle class="tr-key-mark" cx="259" cy="${kc}" r="3.5"/><text x="268" y="${ky}">Before → after</text>
+    <path class="tr-edge talk again" d="M362 ${kc}H384" stroke="var(--muted)"/><text x="390" y="${ky}">Heard again</text></g>`;
   return `<svg class="trail-axis" viewBox="0 0 ${W} ${H}" role="group" aria-label="Who heard this whisper and when: the people it reached, and who heard it from them in conversation">${axis.under}${edges}${whisperNode}${marks}${axis.labels}${key}</svg>`;
 }
 
@@ -2941,7 +2986,7 @@ function stanceNearest(ev) {
   return bestDist > STANCE_HIT_R ** 2 ? null : best;
 }
 
-// The line segment under the pointer, solid or dotted (only the selected agent's when one is picked).
+// The line segment under the pointer, solid or dotted (only the highlighted agent's when highlight is on).
 function stanceGapAt(loc) {
   for (const g of stanceGaps) {
     if (selected && g.name !== selected) continue;
@@ -2956,6 +3001,7 @@ function stanceClick(ev) {
   const hit = stanceNearest(ev);
   if (!hit) return;
   if (hit.kind === "convo") showConvo(hit.convo);
+  else if (hit.kind === "reading" && hit.name === openAgent) showReadingMemories(hit.name, hit.step);
   else if (hit.name !== selected) selectAgent(hit.name);
 }
 
@@ -3229,6 +3275,16 @@ function renderStance() {
     svg += `<line class="fork" x1="${px(start).toFixed(1)}" y1="${PLOT_T}" x2="${px(start).toFixed(1)}" y2="${PLOT_B}"/>
       <text class="axis" x="${(px(start) + 5).toFixed(1)}" y="${PLOT_T + 10}">this run starts</text>`;
   }
+  // A labeled rule where each whisper first reached someone.
+  let lastLabel = -Infinity;
+  trailSent().forEach((w, i) => {
+    const steps = Object.values(w.received).map((v) => v.step).filter((v) => v != null);
+    const at = Math.min(...steps);
+    if (!steps.length || at < x0 || at > x1) return;
+    const x = px(at), label = x - lastLabel >= 64;
+    if (label) lastLabel = x;
+    svg += `<line class="whisper-rule" x1="${x.toFixed(1)}" y1="${PLOT_T}" x2="${x.toFixed(1)}" y2="${PLOT_B}"/>${label ? `<text class="axis whisper-label" x="${(x + 4).toFixed(1)}" y="${PLOT_B - 4}">Whisper ${i + 1}</text>` : ""}`;
+  });
   if (wf && wf.at != null && wf.at <= x1) {
     const wx = Math.max(PLOT_L, px(wf.at));
     svg += `<rect class="after-whisper" x="${wx.toFixed(1)}" y="${PLOT_T}" width="${(PLOT_R - wx).toFixed(1)}" height="${PLOT_B - PLOT_T}"/>
@@ -3312,7 +3368,8 @@ function renderStance() {
       const y = yAt(got.step);
       if (y != null) marks += `<path class="mark" fill="${s.color}" d="${STANCE_EVENT_MARKS.midrun_whisper.d(+px(got.step).toFixed(1), y)}"/>`;
     }
-    return {s, d: d.trim(), sleep, unrated, marks, last};
+    const dots = segs.flat().map((p) => `<circle class="dot" cx="${p.x}" cy="${p.y}" r="2" fill="${s.color}"/>`).join("");
+    return {s, d: d.trim(), sleep, unrated, marks: dots + marks, last};
   });
 
   const labelled = drawnSeries.filter((r) => r.last).sort((a, b) => a.last.y - b.last.y);
@@ -3365,7 +3422,7 @@ function stanceNote(rows) {
       : methods[0] === "rubric_v1" ? "Rubric v1 (0–100)"
       : "Legacy direct scores (1–scale), shown by their original relative position",
     models.length > 1 ? `Mixed models (${models.join(", ")}), so levels aren't comparable` : models[0] ? `Model: ${models[0]}` : "",
-    selected ? `▲ conversation (click to read it) · ◆ whisper · ■ reflection, for ${String(selected).split(" ")[0]}` : "Pick an agent to see what reached them: ▲ conversations, ◆ whispers, ■ reflections",
+    selected ? `▲ conversation (click to read it) · ◆ whisper · ■ reflection, for ${String(selected).split(" ")[0]}` : "Highlight an agent to see what reached them: ▲ conversations, ◆ whispers, ■ reflections",
   ].filter(Boolean);
   $("stance-note").textContent = parts.join(" · ");
 }
@@ -3393,11 +3450,6 @@ function socialEdgeWidth(count) {
   return Math.min(8, 1 + 1.25 * Math.log1p(Math.max(0, count)));
 }
 
-function netStanceColor(score, bands) {
-  if (score == null) return "#9299A4";
-  const band = (v) => (bands || []).find((b) => v >= b.min && v <= b.max)?.color;
-  return score < 45 ? band(25) || "#c0563f" : score > 55 ? band(75) || "#2f7d52" : band(50) || "#c9a227";
-}
 const netStanceWord = (score) => score == null ? "unrated" : score < 45 ? "opposed" : score > 55 ? "support" : "mixed";
 
 const netDay = (d) => `${d.toLocaleDateString(undefined, {weekday: "short"})} ${d.toTimeString().slice(0, 5)}`;
@@ -3464,23 +3516,25 @@ function renderNetwork() {
   const pairsHtml = (name) => { const l = (withWhom[name] || []).map(([y, c]) => `${tipName(y)}${c > 1 ? ` ${c}×` : ""}`), out = []; for (let i = 0; i < l.length; i += 2) out.push(l.slice(i, i + 2).join(", ")); return out.join(",<br>"); };
   const stanceOf = (n) => n.score == null ? null : stanceScore100(n);
   const tipOf = (n, v) => `${n.name}\nStance ${v ?? "–"} · ${netStanceWord(v)}\n${talks[n.name] || 0} conversations${pairsOf(n.name) ? `\nTalked with ${pairsOf(n.name)}` : ""}`;
-  const bands = network?.bands;
-  const opp = netStanceColor(25, bands), mid = netStanceColor(50, bands), sup = netStanceColor(75, bands);
-  paint($("social-legend"), `<span><i style="background:${opp}"></i>Opposed</span><span><i style="background:${mid}"></i>Mixed</span><span><i style="background:${sup}"></i>Support</span><span><i style="background:#9299A4"></i>Unrated</span><span><i class="line"></i>Thicker = talked more · darker = more recent</span>`);
+  paint($("social-legend"), `<span><i class="line"></i>Thicker = talked more · darker = more recent</span><span><i class="line whisper"></i>Passed on a whisper</span><span>Number = latest stance, 0 against to 100 for</span>`);
 
   const pos = socialPositions(nodes, width, height), at = new Map(pos.map((p) => [p.name, p]));
   const s = netSprite(width, height);
+  // Conversations that passed a whisper on: the focused one's, or any whisper's.
   const traveled = new Set(), reached = new Set();
   if (focus.whisper) {
     const w = (data?.whispers || []).find((x) => x.id === focus.whisper);
     Object.keys(w?.received || {}).forEach((n) => reached.add(n));
+  }
+  {
     for (const row of data?.mentions || []) {
-      const ms = (row.mentions || []).filter((m) => m.whisper_id === focus.whisper);
+      const ms = (row.mentions || []).filter((m) => !focus.whisper || m.whisper_id === focus.whisper);
       if (!ms.length) continue;
       traveled.add((row.speakers || []).slice().sort().join("|"));
       ms.forEach((m) => [m.speaker, ...(m.new_hearers || [])].forEach((n) => n && reached.add(n)));
     }
   }
+  const near = new Set(selected ? [selected] : []);
   const known = edges.map((e) => e.step).filter((x) => x != null);
   const lo = Math.min(...known), hi = Math.max(...known);
   let svg = edges.map((e) => {
@@ -3489,6 +3543,7 @@ function renderNetwork() {
     const key = `${e.source}|${e.target}`;
     const recency = e.step == null || !(hi > lo) ? .55 : .25 + .65 * ((e.step - lo) / (hi - lo));
     const sel = selected && (e.source === selected || e.target === selected) ? " sel" : "";
+    if (sel) { near.add(e.source); near.add(e.target); }
     return `<line class="social-edge${sel}${traveled.has(key) ? " whispered" : ""}" data-a="${esc(e.source)}" data-b="${esc(e.target)}" x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke-width="${socialEdgeWidth(e.count).toFixed(1)}" style="opacity:${recency.toFixed(2)}"/>`
       + `<line class="social-hit" data-pair="${esc(e.source)}|${esc(e.target)}" x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" data-tip-html="${esc(pairTip(e.source, e.target, e))}"/>`;
   }).join("");
@@ -3499,17 +3554,16 @@ function renderNetwork() {
     const [lx, ly, anchor] = [p.x, under ? p.y + s / 2 + 15 : p.y - s / 2 - 7, "middle"];
     const tip = tipOf(n, v);
     const tipHtml = tipTable(tipName(n.name, true), [
-      ["Stance", `<span style="color:${netStanceColor(v, bands)}">${v ?? "–"}</span>${v == null ? "" : "/100"}`],
+      ["Stance", `${v ?? "–"}${v == null ? "" : "/100"}`],
       ["Position", esc(netStanceWord(v))],
       ["Conversations", String(talks[n.name] || 0)],
       ...(pairsOf(n.name) ? [["Talked with", pairsHtml(n.name)]] : [])]);
-    return `<g class="social-node${n.name === selected ? " selected" : ""}${reached.has(n.name) ? " reached" : ""}" data-network-node="${esc(n.name)}" tabindex="0" role="button" aria-label="${esc(tip)}" data-tip-html="${esc(tipHtml)}">
+    return `<g class="social-node${n.name === selected ? " selected" : ""}${reached.has(n.name) ? " reached" : ""}${near.has(n.name) ? " near" : ""}" data-network-node="${esc(n.name)}" tabindex="0" role="button" aria-label="${esc(tip)}" data-tip-html="${esc(tipHtml)}">
       <rect class="social-tile" x="${p.x - s / 2 - 2}" y="${p.y - s / 2 - 2}" width="${s + 4}" height="${s + 4}" rx="4" style="stroke:${ring}"/>
       <image href="${esc(sprite(n.name))}" x="${p.x - s / 2}" y="${p.y - s / 2}" width="${s}" height="${s}"/>
-      <circle class="social-stance" cx="${p.x + s / 2 + 1}" cy="${p.y + s / 2 + 1}" r="${Math.max(4, s / 6).toFixed(1)}" fill="${netStanceColor(v, bands)}"/>
-      <text class="social-label" x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="${anchor}">${esc(first)}</text></g>`;
+      <text class="social-label" x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="${anchor}">${esc(first)} <tspan class="social-score">${v ?? "–"}</tspan></text></g>`;
   }).join("");
-  paint(box, `<svg class="social-net${focus.whisper ? " whisper" : ""}" viewBox="0 0 ${width} ${height}" role="group" aria-label="Who talks with whom: completed conversations and latest stance">${svg}</svg>`);
+  paint(box, `<svg class="social-net${focus.whisper ? " whisper" : ""}${selected ? " ego" : ""}" viewBox="0 0 ${width} ${height}" role="group" aria-label="Who talks with whom: completed conversations and latest stance">${svg}</svg>`);
 }
 
 function socialHover(pair, agent) {
@@ -3563,6 +3617,220 @@ onFocus(() => renderNetwork());
 const graphResize = new ResizeObserver(() => { renderStance(); renderNetwork(); });
 graphResize.observe($("social-network"));
 graphResize.observe($("stance"));
+
+/* ---------------- memory ---------------- */
+
+// The open agent's whole memory as of its last save (/dashboard/memory/), with
+// each stance reading's evidence, so a rating can be traced to what it cited.
+const MEM_KINDS = [["event", "Events"], ["chat", "Chats"], ["thought", "Thoughts"], ["reflection", "Reflections"]];
+let mem = null, memKey = null, memFetched = 0, memSig = null;
+let memKind = "all", memSort = "new", memQuery = "", memOpen = null;
+let memFocus = null;  // {sim, name, step}: show what this stance reading cited
+const MEM_ROWS = 200;
+let memLimit = MEM_ROWS;
+// How close a memory's time must be to the log entry it is matched with.
+const MEM_WHISPER_MS = 60000, MEM_CHAT_MS = 30 * 60000;
+const memDate = (t) => { const d = t ? new Date(String(t).replace(" ", "T")) : null; return d && !isNaN(d) ? d : null; };
+
+function loadMemory() {
+  const sim = view || liveSim;
+  if (!sim || !openAgent) return;
+  const key = `${sim}|${openAgent}`;
+  if (key === memKey && Date.now() - memFetched < 15000) return;
+  if (key !== memKey) { mem = null; memOpen = null; memLimit = MEM_ROWS; }
+  memKey = key; memFetched = Date.now();
+  fetch(`/dashboard/memory/${encodeURIComponent(sim)}/?agent=${encodeURIComponent(openAgent)}`).then((r) => r.json())
+    .then((d) => { if (memKey === key) { mem = d; renderMemory(); } }).catch(() => {});
+}
+
+function showReadingMemories(name, step) {
+  memFocus = {sim: view || liveSim, name, step};
+  memOpen = null;
+  selectAgent(name);
+  document.querySelector('[data-pane="a-memory"]').click();
+}
+
+function renderMemory() {
+  const pane = $("a-memory");
+  if (pane.hidden || !openAgent) return;
+  loadMemory();
+  if (!mem || mem.name !== openAgent) { memSig = null; paint(pane, `<div class="empty">Loading memories…</div>`); return; }
+  // The meter is live; the rest only changes with the memories, the logs or the controls.
+  const live = data?.sim?.agent?.name === openAgent ? data.sim.agent : null;
+  const [trig, trigMax] = Array.isArray(live?.reflect_trigger) ? live.reflect_trigger : [0, 0];
+  const meterText = trigMax ? `Reflects after ${Math.max(0, Math.round(trig))} more points of importance` : "";
+  const sig = [memKey, mem.saved_time, mem.nodes.length, mem.readings.length, memKind, memSort, memQuery, memOpen, JSON.stringify(memFocus), memLimit,
+    (data?.conversations || []).length, (data?.whispers || []).length, (data?.opinions || []).length, pane.clientWidth].join("|");
+  if (sig === memSig) {
+    const m = $("mem-meter");
+    if (m) { m.textContent = meterText; m.hidden = !meterText; }
+    return;
+  }
+  memSig = sig;
+  const color = agentColor(openAgent), byId = new Map(mem.nodes.map((n) => [n.id, n]));
+  const focused = memFocus && memFocus.name === openAgent && memFocus.sim === (view || liveSim);
+  const reading = focused ? mem.readings.find((r) => r.step === memFocus.step) || {step: memFocus.step, evidence: null} : null;
+  const open = memOpen && byId.get(memOpen);
+  const lit = new Set(reading ? reading.evidence || [] : open ? [open.id, ...open.filling] : []);
+  const kindName = Object.fromEntries(MEM_KINDS.map(([k, l]) => [k, l.slice(0, -1)]));
+  const when = (n) => { const d = memDate(n.created); return d ? netDay(d) : ""; };
+  // Tie memories back to the run's logs: a whispered thought has no sources and
+  // is made the moment the whisper arrives; a chat matches the logged
+  // conversation with the same people nearest in time (within half an hour).
+  const at = (n) => memDate(n.created)?.getTime();
+  const whisperOf = new Map();
+  for (const w of data?.whispers || []) {
+    const r = w.received?.[openAgent], t = parseGameTime(r?.time)?.getTime();
+    const n = t != null && mem.nodes.find((x) => x.kind === "thought" && !x.filling.length && Math.abs(at(x) - t) < MEM_WHISPER_MS);
+    if (n) whisperOf.set(n.id, {w, step: r.step});
+  }
+  const convoOf = (n) => {
+    const who = new Set((n.lines || []).map((l) => Array.isArray(l) ? l[0] : null).filter(Boolean)), t = at(n);
+    if (!who.size || t == null) return null;
+    let best = null, gap = MEM_CHAT_MS;
+    for (const c of data?.conversations || []) {
+      const sp = c.speakers || [], ct = parseGameTime(c.time)?.getTime();
+      if (ct == null || sp.length !== who.size || !sp.every((x) => who.has(x))) continue;
+      if (Math.abs(ct - t) <= gap) { best = c; gap = Math.abs(ct - t); }
+    }
+    return best;
+  };
+
+  // Strip: one row per kind, x = when it was made, dot size = importance.
+  const W = Math.max(240, pane.clientWidth - 8), rowH = 16, top = 6, gut = 70;
+  const times = mem.nodes.map((n) => memDate(n.created)?.getTime()).filter(Boolean);
+  const t0 = Math.min(...times), t1 = Math.max(t0 + 1, ...times);
+  const sx = (t) => gut + ((t - t0) / (t1 - t0)) * (W - gut - 8);
+  let strip = MEM_KINDS.map(([k, label], i) => `<text class="row-label" x="0" y="${top + rowH * i + rowH / 2 + 4}">${label}</text><line class="row-line" x1="${gut}" x2="${W - 8}" y1="${top + rowH * i + rowH / 2}" y2="${top + rowH * i + rowH / 2}"/>`).join("");
+  for (const n of mem.nodes) {
+    const d = memDate(n.created), i = MEM_KINDS.findIndex(([k]) => k === n.kind);
+    if (!d || i < 0) continue;
+    const tip = `<b>${esc(kindName[n.kind])} · ${esc(when(n))}</b>${esc(n.description || "")}<span class="tip-note">Importance ${n.poignancy ?? "–"}</span>`;
+    strip += `<circle class="m-dot${lit.has(n.id) ? " on" : ""}" data-mem-open="${esc(n.id)}" cx="${sx(d.getTime()).toFixed(1)}" cy="${top + rowH * i + rowH / 2}" r="${(1.5 + 0.4 * Math.min(10, n.poignancy || 0)).toFixed(1)}" fill="${color}" data-tip-html="${esc(tip)}"/>`;
+  }
+  const svg = `<svg class="mem-strip${lit.size ? " focus" : ""}" viewBox="0 0 ${W} 84" role="img" aria-label="Every memory by when it was made and its kind; bigger dots matter more to the agent">${strip}</svg>`;
+
+  // List: a reading's evidence in the order it was cited, or everything filtered.
+  let list, note = "";
+  if (reading) {
+    list = (reading.evidence || []).map((id) => byId.get(id)).filter(Boolean);
+    const d = parseGameTime(reading.time);
+    const said = list.length ? `What the stance reading ${d ? `at ${esc(netDay(d))} ` : ""}${reading.score != null ? `(${reading.score}/${reading.scale || 100}) ` : ""}was based on`
+      : reading.evidence ? "That reading cited no memories saved so far." : "That reading didn't record which memories it used.";
+    note = `<div class="mem-note"><span>${said}</span><button class="w-link" type="button" data-mem-all>Show all</button></div>`;
+  } else {
+    const q = memQuery.toLowerCase();
+    list = mem.nodes.filter((n) => (memKind === "all" || n.kind === memKind) && (!q || String(n.description || "").toLowerCase().includes(q)));
+    if (memSort === "imp") list = list.slice().sort((a, b) => (b.poignancy || 0) - (a.poignancy || 0) || b.count - a.count);
+    const latest = mem.readings[mem.readings.length - 1];
+    if (latest) note = `<div class="mem-note"><span>${list.length} of ${mem.nodes.length} memories</span><button class="w-link" type="button" data-mem-reading="${latest.step}">What the latest stance reading cited</button></div>`;
+  }
+  const row = (n) => {
+    const isOpen = n.id === memOpen, src = n.filling.map((id) => byId.get(id)).filter(Boolean);
+    const wh = whisperOf.get(n.id), convo = n.kind === "chat" && convoOf(n);
+    const sh = wh && trailShift(openAgent, wh.step);
+    const link = wh ? `<button class="w-link" type="button" data-moved-whisper="${esc(wh.w.id)}">Open whisper</button>`
+      : convo ? `<button class="w-link" type="button" data-moved-convo="${esc(convoKey(convo))}">Open conversation</button>` : "";
+    const more = n.lines?.length ? `<button class="w-link" type="button" data-mem-open="${esc(n.id)}">${isOpen ? "Hide" : "Show"} conversation</button>`
+      : src.length ? `<button class="w-link" type="button" data-mem-open="${esc(n.id)}">${isOpen ? "Hide" : "From"} ${src.length} memor${src.length === 1 ? "y" : "ies"}</button>` : "";
+    const sub = !isOpen ? "" : n.lines?.length
+      ? `<p class="mem-sub">${n.lines.map((l) => Array.isArray(l) ? `<b style="color:${agentColor(l[0])}">${esc(firstName(l[0]))}:</b> ${esc(l[1])}` : esc(l)).join("<br>")}</p>`
+      : `<p class="mem-sub">${src.map((x) => `${esc(kindName[x.kind] || x.kind)} · ${esc(x.description || "")}`).join("<br>")}</p>`;
+    const label = wh ? "◆ Whisper" : kindName[n.kind] || n.kind;
+    const moved = sh ? `<span title="Stance before and after they heard it">${sh.before} → ${sh.after}</span>` : "";
+    return `<div class="mem-row${lit.has(n.id) ? " on" : ""}" style="--who:${color}"><div class="mem-meta"><span>${esc(label)}</span><span>${esc(when(n))}</span>${moved}<span class="imp" title="How much it matters to them, 1 to 10">Importance ${n.poignancy ?? "–"}</span></div><p class="mem-text">${esc(n.description || "")}</p><div class="mem-links">${more}${link}</div>${sub}</div>`;
+  };
+  const tools = reading ? "" : `<div class="mem-tools"><div class="seg" role="group" aria-label="Kind">${[["all", "All"], ...MEM_KINDS].map(([k, l]) => `<button type="button" data-mem-kind="${k}" aria-pressed="${k === memKind}">${l}</button>`).join("")}</div>
+    <div class="seg" role="group" aria-label="Order"><button type="button" data-mem-sort="new" aria-pressed="${memSort === "new"}">Newest</button><button type="button" data-mem-sort="imp" aria-pressed="${memSort === "imp"}">Most important</button></div>
+    <input id="mem-q" type="search" placeholder="Search memories" value="${esc(memQuery)}" aria-label="Search memories"></div>`;
+  const meter = `<div class="mind-reflect" id="mem-meter" data-tip="${esc("Next reflection\nThey stop to reflect once enough important things have happened")}"${meterText ? "" : " hidden"}>${esc(meterText)}</div>`;
+  const more = list.length > memLimit ? `<button class="w-link mind-more" type="button" data-mem-more>Show ${Math.min(MEM_ROWS, list.length - memLimit)} more of ${list.length - memLimit}</button>` : "";
+  const saved = mem.saved_time ? `<div class="hint">As of the last save, ${esc(netWhen(mem.saved_time))}</div>` : "";
+  const hadFocus = document.activeElement?.id === "mem-q";
+  paint(pane, `${svg}${meter}${tools}${note}${list.slice(0, memLimit).map(row).join("") || `<div class="empty">No memories match.</div>`}${more}${saved}`);
+  if (hadFocus) { const q = $("mem-q"); q.focus(); q.setSelectionRange(q.value.length, q.value.length); }
+}
+
+$("a-memory").addEventListener("click", (e) => {
+  const t = e.target.closest("[data-mem-kind], [data-mem-sort], [data-mem-open], [data-mem-all], [data-mem-reading], [data-mem-more]");
+  if (!t) return;
+  if (t.dataset.memKind) { memKind = t.dataset.memKind; memLimit = MEM_ROWS; }
+  if (t.dataset.memSort) memSort = t.dataset.memSort;
+  if (t.dataset.memMore != null) memLimit += MEM_ROWS;
+  if (t.dataset.memOpen) { memOpen = memOpen === t.dataset.memOpen ? null : t.dataset.memOpen; memFocus = null; }
+  if (t.dataset.memAll != null) memFocus = null;
+  if (t.dataset.memReading) memFocus = {sim: view || liveSim, name: openAgent, step: +t.dataset.memReading};
+  renderMemory();
+});
+$("a-memory").addEventListener("input", (e) => { if (e.target.id === "mem-q") { memQuery = e.target.value; memLimit = MEM_ROWS; renderMemory(); } });
+
+/* ---------------- activity timeline ---------------- */
+
+// One lane per agent: each bar is a stay at one place (from /dashboard/timeline/),
+// on the same time axis as the stance chart. Time at home is faded so going out stands out.
+let actData = null, actSim = null, actFetched = 0, actBusy = false;
+function renderActivity() {
+  if ($("act-card").hidden) return;
+  const sim = view || liveSim;
+  if (sim && (sim !== actSim || (!actBusy && Date.now() - actFetched > (view ? 60000 : 5000)))) {
+    if (sim !== actSim) actData = null;
+    actSim = sim; actFetched = Date.now(); actBusy = true;
+    fetch(`/dashboard/timeline/${encodeURIComponent(sim)}/`).then((r) => r.json())
+      .then((d) => { if (actSim === sim) { actData = d; drawActivity(); } }).catch(() => {})
+      .finally(() => { actBusy = false; });
+  }
+  drawActivity();
+}
+
+function drawActivity() {
+  const box = $("act-chart");
+  const W = Math.max(280, Math.round(box.clientWidth || 600)), H = Math.max(120, Math.round(box.clientHeight || 260));
+  const names = rosterOrder().filter((n) => actData?.agents?.[n]?.length);
+  if (!names.length) {
+    paint(box, emptyMsg(view || liveSim ? "No movement saved for this run yet." : "Start a run to see where each agent spends their time."));
+    return;
+  }
+  const sps = data?.sim?.sec_per_step || 10, every = actData.every || 6;
+  const x0 = Math.min(...names.map((n) => actData.agents[n][0][0])), x1 = Math.max(x0 + every, actData.last);
+  const ref = parseGameTime(data?.sim?.curr_time), refStep = data?.sim?.step;
+  const dateAt = (st) => !ref || refStep == null ? null : new Date(ref.getTime() + (st - refStep) * sps * 1000);
+  const when = (st) => { const d = dateAt(st); return d ? netDay(d) : `step ${st}`; };
+  const plotL = Math.min(110, labelWidth(names.map(firstName)) + 16), plotR = W - 8, top = 4, plotB = H - 24;
+  const px = (st) => plotL + ((st - x0) / (x1 - x0)) * (plotR - plotL);
+  const laneH = (plotB - top) / names.length, barH = Math.max(6, Math.min(22, laneH - 6));
+  const axis = stanceTimeAxis(x0, x1, dateAt, sps, px, top, plotB);
+  const talks = data?.conversations || [];
+  let lanes = "";
+  names.forEach((n, i) => {
+    const y = top + laneH * i + (laneH - barH) / 2, color = agentColor(n);
+    const homeName = placeName("home", n);
+    let bars = "";
+    for (const [from, to, place, action] of actData.agents[n]) {
+      const x = px(from), w = Math.max(1, Math.min(plotR, px(to + every)) - x);
+      const shown = placeName(place, n), home = place === "home" || shown === homeName;
+      const tip = tipTable(tipName(n, true), [["Place", esc(shown)], ["Doing", esc(action)], ["From", esc(when(from))], ["To", esc(when(to + every))]]);
+      bars += `<rect class="act-bar${home ? " home" : ""}" data-act-agent="${esc(n)}" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${barH}" rx="2" fill="${color}" data-tip-html="${esc(tip)}"/>`;
+      const label = home ? "home" : shown;
+      if (barH >= 12 && w > labelWidth([label]) + 8) bars += `<text class="act-place${home ? " home" : ""}" x="${(x + 4).toFixed(1)}" y="${(y + barH / 2 + 4).toFixed(1)}">${esc(label)}</text>`;
+    }
+    for (const c of talks) {
+      if (!(c.speakers || []).includes(n) || c.step == null || c.step < x0) continue;
+      const others = c.speakers.filter((m) => m !== n).map((m) => tipName(m)).join(", ");
+      const tip = `<b>${tipName(n)} talked with ${others}</b>${esc(c.time ? netWhen(c.time) : "")}${c.summary ? `<span class="tip-quote">${esc(c.summary)}</span>` : ""}`;
+      bars += `<rect class="act-talk" x="${(px(c.step) - 1).toFixed(1)}" y="${(y - 3).toFixed(1)}" width="2" height="${barH + 6}" data-tip-html="${esc(tip)}"/>`;
+    }
+    lanes += `<g class="act-lane${selected && selected !== n ? " dim" : ""}"><text class="act-name" x="${plotL - 8}" y="${(y + barH / 2 + 4).toFixed(1)}" text-anchor="end" fill="${color}">${esc(firstName(n))}</text>${bars}</g>`;
+  });
+  paint(box, `<svg class="trail-axis" viewBox="0 0 ${W} ${H}" role="group" aria-label="Where each agent spent their time, one lane per agent">${axis.under}${lanes}${axis.labels}</svg>`);
+}
+
+$("act-card").addEventListener("mousemove", (e) => chartTipMove(e));
+$("act-card").addEventListener("mouseleave", () => { $("chart-tip").hidden = true; });
+$("act-card").addEventListener("click", (e) => {
+  const bar = e.target.closest("[data-act-agent]");
+  if (bar) selectAgent(bar.dataset.actAgent);
+});
+new ResizeObserver(() => drawActivity()).observe($("act-chart"));
 
 /* ---------------- log ---------------- */
 
@@ -3768,69 +4036,61 @@ $("log-jump").onclick = () => { $("p-log").scrollTop = $("p-log").scrollHeight; 
 /* ---------------- roster + inspector ---------------- */
 
 function renderRoster() {
+  const strip = $("agent-strip");
   let roster = data?.sim?.roster || [];
   const preview = !roster.length;
-  if (preview) {
-    roster = rosterOrder().map((name) => ({name}));
-    if (roster.length) showRoster(true);
-  }
-  const keyMark = (dir) => `<svg class="stance-arrow" viewBox="-6 -6 12 12" aria-hidden="true">${trailShiftMark(dir, 0, 0, 4.5)}</svg>`;
-  const key = `<span class="stance-key" data-tip-html="${esc("<b>Latest stance move</b>Each agent's latest reading against the one before.")}">${keyMark("up")}More for${keyMark("down")}More against${keyMark("same")}No change</span>`;
-  paint($("roster-title"), roster.length ? `Agents<span class="count">${roster.length}</span>${key}` : "Agents");
-  paint($("roster"), roster.map((a) => `
-    <li><button class="agent" type="button" data-name="${esc(a.name)}" aria-current="${a.name === selected}" ${preview ? "disabled" : ""}>
-      <img class="sprite" src="${sprite(a.name)}" alt="" style="--who:${agentColor(a.name)}">
-      <span style="min-width:0">
-        <span class="name">${esc(a.name)}</span>
-        <div class="doing${view ? " saved" : ""}" ${view ? 'title="What they were doing when the run was saved"' : ""}>${preview ? "Waiting for a run" : agentStatus(a)}</div>
-      </span>
-      ${preview ? "" : stanceArrow(a.name)}
-    </button></li>`).join("") || `<li class="empty" style="padding:16px">Agents appear here once a simulation is running.</li>`);
+  if (preview) roster = rosterOrder().map((name) => ({name}));
+  paint(strip, roster.map((a) => {
+    const st = preview ? null : agentStance(a.name), open = a.name === openAgent;
+    const tip = preview ? "" : `<b>${esc(a.name)}</b>${agentStatus(a)}<span class="tip-note">${open ? (highlight ? "Click to stop highlighting" : "Click to highlight on the map and charts") : "Click to open"}</span>`;
+    return `<button class="chip-agent${open && highlight ? " lit" : ""}" type="button" data-chip="${esc(a.name)}" aria-pressed="${open}" aria-label="${esc(a.name)}" style="--who:${agentColor(a.name)}" ${preview ? "disabled" : `data-tip-html="${esc(tip)}"`}><img src="${sprite(a.name)}" alt="">${st ? `<span class="v">${st.score}</span>${stanceArrow(a.name, false)}` : ""}</button>`;
+  }).join("") || `<span class="empty">Agents appear here once a simulation is running.</span>`);
+  paint($("open-name"), openAgent && !preview ? `<span style="color:${agentColor(openAgent)}">${esc(openAgent)}</span>` : "");
 }
 
-function showRoster(open) {
-  $("inspector").classList.toggle("listing", open);
-}
-
-// Center the map on the picked agent, or show the whole town when none is picked.
+// Center the map on the highlighted agent, or show the whole town when highlight is off.
 function aimMap() {
-  $("map").contentWindow?.postMessage(selected ? {type: "focus", name: selected} : {type: "overview"}, location.origin);
+  $("map").contentWindow?.postMessage(selected ? {type: "focus", name: selected, color: agentColor(selected)} : {type: "overview"}, location.origin);
 }
 
-$("who").addEventListener("click", (e) => {
-  if (e.target.closest("[data-show-map]")) { aimMap(); return; }
-});
-$("agent-back").addEventListener("click", () => {
-  showRoster(true);
-  selected = null;
-  aimMap();
-  if (pickFilter) { convoFilter = convoFilter.filter((n) => n !== pickFilter); pickFilter = null; renderConvos(); }
-  drawn.roster = null;
-  renderStance(); renderNetwork(); renderTrail();
-  poll();
-});
-
-$("roster").addEventListener("click", (e) => {
-  const b = e.target.closest(".agent");
+// Chips: a click opens that agent; clicking the open one toggles highlighting.
+$("agent-strip").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-chip]");
   if (!b) return;
-  const name = b.dataset.name;
-  const a = data?.sim?.agent;
-  paint($("who"), whoHtml(name, a?.name === name ? a : (data?.sim?.roster || []).find((r) => r.name === name)));
-  selectAgent(name);
+  if (b.dataset.chip === openAgent) { highlight = !highlight; syncSelected(); aimMap(); refreshFocus(); return; }
+  openAgentPanel(b.dataset.chip);
+});
+$("agent-strip").addEventListener("keydown", (e) => {
+  if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+  const chips = [...$("agent-strip").querySelectorAll("[data-chip]")];
+  const i = chips.findIndex((c) => c.dataset.chip === openAgent), next = chips[i + (e.key === "ArrowRight" ? 1 : -1)];
+  if (!next) return;
+  e.preventDefault();
+  openAgentPanel(next.dataset.chip);
+  $("agent-strip").querySelector(`[data-chip="${CSS.escape(next.dataset.chip)}"]`)?.focus();
 });
 
-let pickFilter = null;
-function selectAgent(name) {
-  selected = name;
-  showRoster(false);
-  if (pickFilter && pickFilter !== name) convoFilter = convoFilter.filter((n) => n !== pickFilter);
-  if (!convoFilter.includes(name)) { convoFilter = [...convoFilter, name].slice(-2); pickFilter = name; }
-  else if (pickFilter !== name) pickFilter = null;
-  renderConvos();
+function refreshFocus() {
+  renderRoster(); renderStance(); renderNetwork(); renderTrail(); renderActivity();
+}
+
+// Open an agent in the panel. Highlighting stays as it was, and follows the open agent.
+function openAgentPanel(name) {
+  if (name !== openAgent) {
+    openAgent = name;
+    try { localStorage.setItem("dash-open-agent", name); } catch (err) { /* private mode */ }
+    nowViewOpen = nowHistOpen = nowChatOpen = movedAll = false;
+  }
+  syncSelected();
   aimMap();
-  drawn.roster = null;
-  nowViewOpen = nowHistOpen = nowChatOpen = movedAll = false;
+  refreshFocus();
   poll();
+}
+
+// Picking an agent on a chart opens them and highlights them there.
+function selectAgent(name) {
+  highlight = true;
+  openAgentPanel(name);
 }
 
 
@@ -3844,7 +4104,7 @@ function placeName(addr, name) {
   return home ? placeName(home) : place;
 }
 
-// What the agent is doing right now, with its emoji; the place lives in Mind and the tooltips.
+// What the agent is doing right now, with its emoji; the place lives in Now and the tooltips.
 function agentStatus(a) {
   const [act, at] = String(a.act_description || "").split(" @ ");
   if (a.chatting_with) return `${esc(a.act_pronunciatio || "💬")} Talking with <b style="color:${agentColor(a.chatting_with)}">${esc(a.chatting_with.split(" ")[0])}</b>`;
@@ -3882,29 +4142,25 @@ function stanceTipHtml(name, st) {
     ["Change", stanceChangeHtml(st.before == null ? null : st.score - st.before)]]);
 }
 
-// The ▲▼● trend mark with its stance tooltip, as in the agent list.
+// The ▲▼● trend mark with its stance tooltip, as on the agent chips.
 function stanceArrow(name, tip = true) {
   const st = agentStance(name);
   if (!st) return "";
   const dir = st.trend === "↑" ? "up" : st.trend === "↓" ? "down" : "same";
   return `<svg class="stance-arrow" viewBox="-6 -6 12 12"${tip ? ` data-tip-html="${esc(stanceTipHtml(name, st))}"` : ""}>${trailShiftMark(dir, 0, 0, 4.5)}</svg>`;
 }
-function whoHtml(name, a) {
-  return `<button class="who-face" type="button" data-show-map data-tip="Show on map"><img class="sprite" src="${sprite(name)}" alt="Show ${esc(name)} on the map" style="--who:${agentColor(name)}"></button>
-    <span class="who-name" style="color:${agentColor(name)}">${esc(name)}</span>${stanceArrow(name)}`;
-}
 let nowViewOpen = false, nowHistOpen = false, nowChatOpen = false, movedAll = false;
 
 function renderAgent() {
   const a = data?.sim?.agent;
-  if (!a) {
-    paint($("who"), `<span class="who-name">Pick an agent</span>`);
-    ["a-mind", "a-plan", "a-profile"].forEach((id) => paint($(id), `<div class="empty">Pick an agent to see what they're doing and thinking.</div>`));
+  // A poll sent before a switch can still bring the previous agent.
+  if (!a || a.name !== openAgent) {
+    ["a-mind", "a-memory", "a-plan", "a-profile"].forEach((id) => paint($(id), `<div class="empty">${openAgent ? "Loading…" : "Agents appear here once a simulation is running."}</div>`));
     return;
   }
-  paint($("who"), whoHtml(a.name, a));
 
   paint($("a-mind"), mindHtml(a));
+  renderMemory();
 
   let t = 0;
   const idx = a.schedule_idx;
@@ -3941,18 +4197,11 @@ function renderAgent() {
     <div class="convo-fade"></div>`);
 }
 
-// A game time ("February 13, 2023, 09:00:00") or memory time ("2023-02-13 09:00:00") as a Date.
-function anyTime(s) {
-  const m = /(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2})/.exec(s || "");
-  return m ? new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]) : parseGameTime(s);
-}
 // "Tue 14:09".
 function dayTime(d) {
   return d ? `${d.toLocaleDateString(undefined, {weekday: "short"})} ${d.toTimeString().slice(0, 5)}` : "";
 }
 const MOVED_SHOWN = 8;
-
-
 
 function mindHtml(a) {
   const st = agentStance(a.name);
@@ -3961,11 +4210,12 @@ function mindHtml(a) {
     ? `<span class="mind-stance" data-tip-html="${esc(stanceTipHtml(a.name, st))}">${stanceArrow(a.name, false)}${st.score}/100 · ${esc(st.label)}${st.before != null && st.before !== st.score ? ` ${stanceChangeHtml(st.score - st.before)}` : ""}</span><span class="when">${esc(dayTime(parseGameTime(st.time)))}</span>`
     : `<span class="mind-stance none">${view ? "No stance readings in this run." : every ? `No stance readings yet. The first comes at step ${(Math.floor(step / every) + 1) * every}.` : "Stance readings are off. Turn them on in settings."}</span>`;
 
+  // What reached them, live from the run's logs: whispers (with their stance either
+  // side) and conversations. Their memories, and what each reading cited, are in Memory.
   const readings = (data?.opinions || []).filter((r) => r.name === a.name && r.score != null).sort((x, y) => (x.step || 0) - (y.step || 0));
-  const val = stanceScore100;
   const around = (at) => {
     const b = readings.filter((r) => (r.step || 0) <= at).pop(), f = readings.find((r) => (r.step || 0) > at);
-    return b && f ? `${val(b)} → ${val(f)} · ` : "";
+    return b && f ? `${stanceScore100(b)} → ${stanceScore100(f)} · ` : "";
   };
   const items = [];
   for (const w of data?.whispers || []) {
@@ -3973,20 +4223,8 @@ function mindHtml(a) {
     if (r) items.push({date: parseGameTime(r.time), html: row("◆ Whisper", around(r.step || 0) + dayTime(parseGameTime(r.time)), `“${w.text || ""}”`, `data-moved-whisper="${esc(w.id)}"`)});
   }
   for (const c of data?.conversations || []) {
-    // Earlier runs count too: a continued run's agents carry those talks in memory.
     if (!(c.speakers || []).includes(a.name)) continue;
     items.push({date: parseGameTime(c.time), html: row(esc((c.speakers || []).map(firstName).join(" & ")), dayTime(parseGameTime(c.time)), c.summary || "", `data-moved-convo="${esc(convoKey(c))}"`, true)});
-  }
-  const thinking = [
-    ...memEpisodes(a.reflections).map((ep) => ({created: ep.created, label: "■ Reflection", text: ep.headline.description})),
-    ...(a.thoughts || []).map((n) => ({created: n.created, label: "Thought", text: n.description})),
-  ].sort((x, y) => (anyTime(y.created) || 0) - (anyTime(x.created) || 0)).slice(0, 5);
-  for (const t of thinking) items.push({date: anyTime(t.created), html: row(t.label, dayTime(anyTime(t.created)), t.text)});
-  // Skip evidence already listed above as a thought or reflection.
-  const listed = new Set(thinking.map((t) => `${t.text}|${t.created}`));
-  for (const n of a.evidence || []) {
-    if (listed.has(`${n.description}|${n.created}`)) continue;
-    items.push({date: anyTime(n.created), html: row("Memory", dayTime(anyTime(n.created)), n.description, `title="One of the memories behind their latest stance reading"`)});
   }
   items.sort((x, y) => (y.date || 0) - (x.date || 0));
   const shown = movedAll ? items : items.slice(0, MOVED_SHOWN);
@@ -3994,7 +4232,6 @@ function mindHtml(a) {
   const viewText = a.currently || "";
   const hist = a.history || [];
   const talking = a.chatting_with && a.chat && a.chat.length;
-  const [trig, trigMax] = Array.isArray(a.reflect_trigger) ? a.reflect_trigger : [0, 0];
   return `<div class="convo-bar mind-bar">${bar}</div>
     ${st?.rationale ? `<p class="mind-why m-card">${esc(st.rationale)}</p>` : ""}
     ${talking ? `<button class="convo-row" type="button" data-toggle-chat><span class="convo-main"><span class="convo-top"><span class="pair">Talking with ${esc(firstName(a.chatting_with))} ${nowChatOpen ? "↓" : "→"}</span><span class="when">now</span></span></span></button>
@@ -4005,10 +4242,9 @@ function mindHtml(a) {
       <div class="mind-links">${viewText.length > 200 ? `<button class="w-link" type="button" data-toggle-view>${nowViewOpen ? "Show less" : "Show more"}</button>` : ""}
       ${hist.length > 1 ? `<button class="w-link" type="button" data-toggle-hist>${nowHistOpen ? "Hide earlier views" : `Changed ${hist.length - 1} time${hist.length === 2 ? "" : "s"}`}</button>` : ""}</div>
       ${nowHistOpen ? `<div class="mind-hist">${hist.slice().reverse().map((h) => row(`Step ${h.step}`, esc(h.time || ""), h.currently || "")).join("")}</div>` : ""}</div>` : ""}
-    <div class="convo-day mind-head"><span>What moved them</span>${whisperLive() ? `<button class="w-link" type="button" data-whisper-to="${esc(a.name)}" title="It becomes one of their memories, as if they'd heard it themselves">Write a whisper</button>` : ""}</div>
-    ${shown.length ? shown.map((x) => x.html).join("") : `<div class="empty">Nothing has reached them yet.</div>`}
+    <div class="convo-day mind-head"><span>What reached them</span>${whisperLive() ? `<button class="w-link" type="button" data-whisper-to="${esc(a.name)}" title="It becomes one of their memories, as if they'd heard it themselves">Write a whisper</button>` : ""}</div>
+    ${shown.length ? shown.map((x) => x.html).join("") : `<div class="empty">No whispers or conversations yet.</div>`}
     ${items.length > MOVED_SHOWN ? `<button class="w-link mind-more" type="button" data-moved-all>${movedAll ? "Show fewer" : `Show all ${items.length}`}</button>` : ""}
-    ${trigMax ? `<div class="mind-reflect" data-tip="${esc("Next reflection\nThey stop to reflect once enough important things have happened")}">Reflects after ${Math.max(0, Math.round(trig))} more points of importance</div>` : ""}
     <div class="convo-fade"></div>`;
 
   function row(label, when, text, attrs, labelIsHtml) {
@@ -4030,17 +4266,6 @@ function scrollPlanToCurrent() {
   pane.scrollTop += offset - pane.clientHeight / 2 + cur.offsetHeight / 2;
 }
 
-function memEpisodes(nodes) {
-  const by = new Map();
-  (nodes || []).forEach((n) => {
-    if (!by.has(n.created)) by.set(n.created, []);
-    by.get(n.created).push(n);
-  });
-  return [...by].map(([created, group]) => ({
-    created, nodes: group,
-    headline: group.reduce((best, n) => ((n.poignancy || 0) > (best.poignancy || 0) ? n : best), group[0]),
-  }));
-}
 
 $("inspector").addEventListener("mousemove", chartTipMove);
 $("inspector").addEventListener("mouseleave", () => { $("chart-tip").hidden = true; });
@@ -4048,9 +4273,9 @@ $("inspector").addEventListener("mouseleave", () => { $("chart-tip").hidden = tr
 $("inspector").addEventListener("click", (e) => {
   const mc = e.target.closest("[data-moved-convo]");
   if (mc) { const c = (data?.conversations || []).find((x) => convoKey(x) === mc.dataset.movedConvo); if (c) showConvo(c); return; }
+  if (e.target.closest("[data-moved-all]")) { movedAll = !movedAll; renderAgent(); return; }
   const mw = e.target.closest("[data-moved-whisper]");
   if (mw) { if (!whisperOpen) whisperListScroll = $("p-events").scrollTop; whisperOpen = mw.dataset.movedWhisper; renderEvents(); document.querySelector('[data-pane="p-events"]').click(); $("p-events").scrollTop = 0; return; }
-  if (e.target.closest("[data-moved-all]")) { movedAll = !movedAll; renderAgent(); return; }
   if (e.target.closest("[data-toggle-hist]")) { nowHistOpen = !nowHistOpen; renderAgent(); return; }
   if (e.target.closest("[data-toggle-chat]")) { nowChatOpen = !nowChatOpen; renderAgent(); return; }
   if (e.target.closest("[data-toggle-view]")) { nowViewOpen = !nowViewOpen; renderAgent(); return; }
@@ -4063,13 +4288,13 @@ $("inspector").addEventListener("click", (e) => {
 $("ask-form").onsubmit = (e) => {
   e.preventDefault();
   const q = $("ask-input").value.trim();
-  if (!q || !selected) return;
-  send(`call -- interview ${selected} ;; ${q}`, true);
+  if (!q || !openAgent) return;
+  send(`call -- interview ${openAgent} ;; ${q}`, true);
   $("ask-input").value = "";
 };
 const askMine = (text) => `<div class="msg right" style="--who:var(--muted)"><div class="msg-lines"><div class="msg-name">You</div><div class="msg-text">${esc(text)}</div></div></div>`;
-const askTheirs = (html) => `<div class="msg left" style="--who:${agentColor(selected)}"><img src="${sprite(selected)}" alt=""><div class="msg-lines"><div class="msg-name">${esc(selected.split(" ")[0])}</div><div class="msg-text">${html}</div></div></div>`;
-$("ask-reset").onclick = () => { if (selected) send(`call -- interview ${selected} ;; end_convo`, true); };
+const askTheirs = (html) => `<div class="msg left" style="--who:${agentColor(openAgent)}"><img src="${sprite(openAgent)}" alt=""><div class="msg-lines"><div class="msg-name">${esc(openAgent.split(" ")[0])}</div><div class="msg-text">${html}</div></div></div>`;
+$("ask-reset").onclick = () => { if (openAgent) send(`call -- interview ${openAgent} ;; end_convo`, true); };
 const ASK_SUGGESTION = "How do you feel about the datacenter?";
 $("ask-log").addEventListener("click", (e) => {
   const q = e.target.closest("[data-ask-suggest]")?.dataset.askSuggest;
@@ -4083,11 +4308,11 @@ function renderInterview() {
   if (view && tab.getAttribute("aria-selected") === "true") document.querySelector('[data-pane="a-mind"]').click();
   $("ask-form").hidden = !!view;
   if (view) { paint($("ask-log"), ""); return; }
-  if (!selected) { paint($("ask-log"), `<div class="empty">Pick an agent to interview.</div>`); return; }
-  const first = selected.split(" ")[0];
+  if (!openAgent) { paint($("ask-log"), `<div class="empty">Agents appear here once a simulation is running.</div>`); return; }
+  const first = openAgent.split(" ")[0];
   document.querySelector("#a-ask .ask-label").textContent = `Interview with ${first}`;
   $("ask-input").placeholder = `Ask ${first} something`;
-  const prefix = `call -- interview ${selected} ;; `;
+  const prefix = `call -- interview ${openAgent} ;; `;
   let bubbles = [];
   for (const r of data?.results || []) {
     if (!r.cmd.startsWith(prefix)) continue;
@@ -4120,20 +4345,14 @@ function renderHeader() {
   const current = view || liveName || "";
   const firstName = liveName || (s === "starting" ? data?.launch?.sim || "Starting" : "No live run");
   const firstNote = liveName ? "live" : s === "starting" ? "starting" : "";
-  const savedAt = (r) => {
-    const t = parseGameTime(r.curr_time);
-    return t ? `saved ${t.toLocaleDateString(undefined, {weekday: "short"})} ${t.toTimeString().slice(0, 5)}` : `saved at step ${r.step}`;
-  };
   const opt = (value, name, note) => `<button class="run-opt" type="button" role="option" data-value="${esc(value)}" aria-selected="${value === current}" title="${esc(note ? `${name}, ${note}` : name)}"><span class="run-opt-name">${esc(name)}</span>${note ? `<span class="run-opt-note">${esc(note)}</span>` : ""}</button>`;
   const saved = (data?.sims || []).filter((r) => r.name !== liveName);
   const dc = saved.filter((r) => r.maze === "the_ville_datacenter");
   const other = saved.filter((r) => r.maze !== "the_ville_datacenter");
   const liveDot = `<span class="status" data-s="${liveName ? s : s === "starting" ? "starting" : "stopped"}"></span>`;
   const menu = [opt(liveName || "", liveName ? "Live run" : firstName, liveName || firstNote).replace('<span class="run-opt-name">', `${liveDot}<span class="run-opt-name">`)];
-  if (dc.length) menu.push(`<div class="run-group">Datacenter runs</div>${dc.map((r) => opt(r.name, r.name, savedAt(r))).join("")}`);
-  if (other.length) menu.push(`<div class="run-group">Other simulations</div>${other.map((r) => opt(r.name, r.name, savedAt(r))).join("")}`);
-  const cost = $("run-cost").hidden ? "" : $("run-cost").textContent;
-  if (cost) menu.push(`<button class="run-opt usage-opt" type="button" data-open-usage><span class="run-opt-name">API usage</span><span class="run-opt-note">${esc(cost)}</span></button>`);
+  if (dc.length) menu.push(`<div class="run-group">Datacenter runs</div>${dc.map((r) => opt(r.name, r.name)).join("")}`);
+  if (other.length) menu.push(`<div class="run-group">Other simulations</div>${other.map((r) => opt(r.name, r.name)).join("")}`);
   paint($("run-menu"), menu.join(""));
   $("run-name").textContent = view || firstName;
   const nameBox = $("run-name");
@@ -4221,7 +4440,6 @@ $("run-menu").onclick = (e) => {
   const o = e.target.closest(".run-opt");
   if (!o) return;
   showRunMenu(false);
-  if (o.dataset.openUsage != null) { $("tab-usage").click(); return; }
   switchRun(o.dataset.value);
 };
 $("run-menu").onkeydown = (e) => {
@@ -4240,26 +4458,39 @@ $("btn-fork-here").onclick = () => openRun(view);
 async function poll() {
   clearTimeout(poll.t);
   try {
-    const q = selected ? `?agent=${encodeURIComponent(selected)}` : "";
+    const q = openAgent ? `?agent=${encodeURIComponent(openAgent)}` : "";
     const res = await fetch(`/dashboard/state/${q}`);
     data = await res.json();
     data.liveSim = data.sim?.sim_code;
     data.livePid = data.sim?.pid;
     liveSim = data.liveSim;
     if (view) {
-      const runRes = await fetch(`/dashboard/run/${encodeURIComponent(view)}/${q}`);
-      if (runRes.ok) Object.assign(data, await runRes.json());
-      else { view = null; toast("That run couldn't be loaded."); }
+      // A saved run doesn't change: fetch it again only for another run or agent, or once a minute.
+      const key = `${view}|${openAgent}`;
+      if (key !== poll.runKey || Date.now() - poll.runAt > 60000) {
+        const runRes = await fetch(`/dashboard/run/${encodeURIComponent(view)}/${q}`);
+        if (runRes.ok) { poll.run = await runRes.json(); poll.runKey = key; poll.runAt = Date.now(); }
+        else { view = null; poll.runKey = null; toast("That run couldn't be loaded."); }
+      }
+      if (view) Object.assign(data, poll.run);
     }
     const names = (data.sim?.roster || []).map((a) => a.name);
-    if (selected && !names.includes(selected)) { selected = null; showRoster(true); aimMap(); }
+    if (names.length && !names.includes(openAgent)) {
+      let last = null;
+      try { last = localStorage.getItem("dash-open-agent"); } catch (err) { /* private mode */ }
+      openAgent = names.includes(last) ? last : names[0];
+      highlight = false;
+      syncSelected(); aimMap();
+      poll.again = true;  // fetch the newly opened agent's details right away
+    }
     watchRuns();
     renderHeader(); renderSettings(); renderRoster(); renderAgent(); renderInterview();
     renderTitle();
-    renderConvos(); renderEvents(); renderResults(); renderStance(); renderTrail(); renderNetwork();
+    renderConvos(); renderEvents(); renderResults(); renderStance(); renderTrail(); renderNetwork(); renderActivity();
     if ($("whisper-dialog").open) updateWhisperForm();
   } catch (e) { /* frontend server restarting */ }
-  poll.t = setTimeout(poll, 1000);
+  poll.t = setTimeout(poll, poll.again ? 0 : 1000);
+  poll.again = false;
 }
 
 /* ---------------- launch ---------------- */
@@ -4388,8 +4619,7 @@ function openRun(fork) {
   $("r-error").textContent = "";
   if (start) {
     const sims = data?.sims || [];
-    const savedAt = (x) => { const t = parseGameTime(x.curr_time); return t ? `saved ${t.toLocaleDateString(undefined, {weekday: "short"})} ${t.toTimeString().slice(0, 5)}` : `step ${x.step}`; };
-    const opt = (group) => (x) => ({value: x.name, name: x.name, note: savedAt(x), group});
+    const opt = (group) => (x) => ({value: x.name, name: x.name, group});
     $("r-fork").value = typeof fork === "string" ? fork : "";
     ddSet("r-fork", [...sims.filter((x) => x.maze === "the_ville_datacenter").map(opt("Datacenter runs")),
                      ...sims.filter((x) => x.maze !== "the_ville_datacenter").map(opt("Other simulations"))]);
@@ -4645,7 +4875,7 @@ function chartTipMove(e) {
   tip.style.top = `${Math.max(8, Math.min(y, innerHeight - h - 8))}px`;
 }
 function markListEnd(pane) { pane.classList.toggle("at-end", pane.scrollTop + pane.clientHeight >= pane.scrollHeight - 2); }
-for (const id of ["p-convos", "p-events", "p-log", "a-mind", "a-plan", "a-profile"]) {
+for (const id of ["p-convos", "p-events", "p-log", "a-mind", "a-memory", "a-plan", "a-profile"]) {
   const pane = $(id);
   pane.addEventListener("scroll", () => markListEnd(pane), {passive: true});
   pane.addEventListener("toggle", () => markListEnd(pane), true);
