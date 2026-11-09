@@ -164,12 +164,14 @@ button, input, select, textarea { font: inherit; color: inherit; }
 #inspector, #charts, #activity { padding-block: var(--card-y); }
 /* Keeps scrolling lists clear of the card's rounded bottom corner. */
 #inspector, #activity { padding-bottom: var(--list-bottom); }
-/* Bottom fade only while more is below; .at-end is set from script. */
+/* Bottom fade only while more is below, top fade once scrolled; .at-end and .scrolled are set from script. */
 #inspector > .pane:is(#a-mind, #a-memory, #a-plan, #a-profile) {
-  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - var(--space-6)), transparent);
-  mask-image: linear-gradient(to bottom, #000 calc(100% - var(--space-6)), transparent);
+  --fade-t: 0px; --fade-b: var(--space-6);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 var(--fade-t), #000 calc(100% - var(--fade-b)), transparent);
+  mask-image: linear-gradient(to bottom, transparent, #000 var(--fade-t), #000 calc(100% - var(--fade-b)), transparent);
 }
-#inspector > .pane.at-end { -webkit-mask-image: none; mask-image: none; }
+#inspector > .pane.at-end { --fade-b: 0px; }
+#inspector > :is(#a-mind, #a-plan, #a-profile).scrolled { --fade-t: var(--space-5); }
 #inspector > .pane > .convo-fade { display: none; }
 .tabs { display: flex; align-items: center; min-height: var(--bar-h); gap: var(--space-half); padding: 0 calc(var(--card-x) - var(--space-3)); overflow-x: auto; overflow-y: hidden; }
 .tab {
@@ -264,11 +266,11 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .act-talk { fill: var(--ink); opacity: .75; }
 /* The agent panel: a row of every agent on top, one always open. Clicking the
    open one again highlights them on the map and charts (filled chip). */
-#inspector { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto auto minmax(0, 1fr); }
+#inspector { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto auto auto minmax(0, 1fr); }
 #inspector > .agent-strip { grid-column: 1 / -1; grid-row: 2; }
 .open-name { grid-column: 1; grid-row: 1; align-self: center; margin: 0; padding-left: var(--card-x); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fs-head); font-weight: var(--w-medium); color: var(--ink-head); }
 #inspector > .tabs { grid-column: 2; grid-row: 1; justify-content: flex-end; padding: 0 var(--card-x) 0 0; }
-#inspector > .pane { grid-column: 1 / -1; grid-row: 3; min-height: 0; }
+#inspector > .pane { grid-column: 1 / -1; grid-row: 4; min-height: 0; }
 .agent-strip { display: flex; gap: 6px; padding: var(--space-1) var(--card-x) var(--space-3); }
 .chip-agent { flex: 1 1 0; min-width: 0; justify-content: center; display: inline-flex; align-items: center; gap: 4px; height: 34px; padding: 0 2px; border: 2px solid transparent; border-radius: 10px; background: var(--hover); cursor: pointer; font-size: var(--fs-sub); font-weight: var(--w-medium); color: var(--who); transition: background-color 120ms ease-out, border-color 120ms ease-out; }
 .chip-agent:hover { background: var(--paper); }
@@ -282,31 +284,43 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .chip-agent.lit .v { color: rgba(255, 255, 255, .8); }
 #inspector .pane { padding: calc(var(--space-3) + var(--card-y-extra)) var(--card-x) 0; overscroll-behavior: none; }
 #inspector .pane > .convo-fade { margin-top: 0; }
-#inspector #a-mind { padding-top: 0; }
+/* 2px top padding; Memory's pinned bar uses top: -2px to cover it. */
+#inspector :is(#a-mind, #a-memory, #a-plan, #a-profile) { padding-top: 2px; }
 #inspector .empty { font-size: var(--fs-sub); color: var(--muted); padding: var(--space-1) 0; }
 .mind-stance { display: inline-flex; align-items: center; gap: var(--space-1); min-width: 0; font-size: var(--fs-title); font-weight: var(--w-medium); color: var(--ink-head); font-variant-numeric: tabular-nums; white-space: nowrap; cursor: default; }
 .mind-stance span { color: var(--muted); font-weight: var(--w-regular); }
+.mind-stance .lbl { font-weight: var(--w-medium); color: inherit; }
 .mind-stance.none { white-space: normal; font-size: var(--fs-sub); font-weight: var(--w-regular); color: var(--muted); }
-.mind-bar .when { flex: none; color: var(--faint); font-size: var(--fs-meta); font-variant-numeric: tabular-nums; }
-.mind-why { margin: var(--space-1) 0 var(--space-2); font-size: var(--fs-body); line-height: 1.45; color: var(--ink); }
-.mind-links { display: flex; gap: var(--space-3); margin-top: var(--space-1); }
+/* The open agent's stance, under the chips on every tab; lines up with the panes' text and dates. */
+#inspector > .mind-bar { grid-column: 1 / -1; grid-row: 3; display: flex; align-items: center; justify-content: space-between; gap: var(--space-3);
+  height: var(--row2-h); padding: 0 calc(var(--card-x) + var(--inner-x)); }
+/* Text outside the cards starts where the text inside them does, in line with the stance line. */
+#inspector > .pane :is(.convo-day, .mem-note, .hint) { padding-inline: var(--inner-x); }
+/* The memory strip sits in a soft card; the card's padding replaces the strip's own. */
+#inspector > .pane .mem-strip-card { background: var(--hover); border-radius: var(--radius-card); padding: var(--space-2) var(--inner-x) 0; margin-bottom: var(--space-2); }
+/* Interview shows the stance line inside its card instead. */
+#inspector:has(> #a-ask:not([hidden])) > .mind-bar { display: none; }
+.ask-stance { display: contents; }
+:is(.mind-bar, .ask-top) .when { flex: none; color: var(--faint); font-size: var(--fs-meta); font-variant-numeric: tabular-nums; }
+.ask-top .when { order: 2; }
+.mind-why { margin: 0 0 var(--space-2); font-size: var(--fs-body); line-height: 1.45; color: var(--muted); }
+.mind-links { display: flex; justify-content: flex-end; gap: var(--space-3); margin-top: var(--space-1); }
 .mind-links:empty { display: none; }
 .mind-head { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-3); }
 .mind-head .w-link { font-size: var(--fs-meta); }
-.mind-more { margin: var(--space-1) 0; }
-.mind-reflect { margin-top: var(--space-3); font-size: var(--fs-meta); color: var(--faint); cursor: default; }
+.mind-more { display: block; margin: var(--space-1) 0 var(--space-1) auto; }
 #inspector .convo-row .convo-top .pair { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .convo-row.static { cursor: default; }
 .convo-row.static:hover { background: none; }
 .chat.mini { gap: var(--space-2); margin: var(--space-1) 0 var(--space-2); }
 .chat.mini .msg > img { width: 24px; height: 24px; }
 .chat.mini .msg-text { font-size: var(--fs-body); }
-.view-text { margin: 0; max-width: 70ch; font-size: var(--fs-body); line-height: 1.5; color: var(--ink); }
+.view-text { margin: 0; font-size: var(--fs-body); line-height: 1.45; color: var(--muted); }
 .view-text.clamp { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-.prof-sec p { margin: 0; font-size: var(--fs-body); line-height: 1.5; color: var(--ink); }
+.prof-sec p { margin: 0; font-size: var(--fs-body); line-height: 1.45; color: var(--muted); }
 .facts { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: var(--space-1) var(--space-3); margin: 0; font-size: var(--fs-body); align-items: baseline; }
 .facts dt { color: var(--faint); font-size: var(--fs-meta); font-weight: var(--w-medium); }
-.facts dd { margin: 0; color: var(--ink); }
+.facts dd { margin: 0; color: var(--muted); }
 .chev-icon { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
 
 
@@ -318,27 +332,45 @@ button, input, select, textarea { font: inherit; color: inherit; }
 #a-mind .convo-row.static:hover { background: var(--hover); }
 .m-card { padding: var(--space-2) var(--inner-x); margin-bottom: var(--space-2); }
 /* Memory tab: a strip of every memory by time and kind, then the list. */
-.mem-tools { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; margin: var(--space-2) 0; }
-.mem-tools input { flex: 1 1 120px; min-width: 0; height: 26px; padding: 0 var(--space-2); border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--panel); font-size: var(--fs-meta); }
-.mem-strip { display: block; width: 100%; height: 84px; margin-bottom: var(--space-2); }
+/* "Memories", the search and the filter stay pinned while the list scrolls under them;
+   Memory has no top fade, so this bar's own soft bottom edge does that job. */
+.mem-sticky { position: sticky; top: -2px; z-index: 3; padding-bottom: var(--space-3); margin-bottom: calc(-1 * var(--space-3));
+  background: linear-gradient(var(--panel) calc(100% - var(--space-3)), color-mix(in srgb, var(--panel) 0%, transparent)); }
+.mem-tools { display: flex; gap: var(--space-2); align-items: center; justify-content: space-between; margin: 0 0 var(--space-2); }
+/* Opens to the left of the filter button, kinds in columns, so it stays inside the pane. */
+.convo-menu.mem-menu { grid-template-columns: repeat(3, minmax(0, 1fr)); width: 330px; top: 0; right: calc(100% + var(--space-1)); }
+.mem-menu > .seg, .mem-menu > .menu-head { grid-column: 1 / -1; }
+.mem-tools .pill { padding-left: var(--space-2); }
+.mem-count { flex: none; margin-right: auto; font-size: var(--fs-meta); color: var(--faint); font-variant-numeric: tabular-nums; }
+.mem-menu .seg { display: flex; margin: var(--space-1); }
+.mem-menu .seg button { flex: 1; white-space: nowrap; }
+.mem-menu .menu-head { padding: var(--space-2) var(--space-2) var(--space-1); font-size: var(--fs-meta); font-weight: var(--w-medium); color: var(--faint); }
+/* The open search field from the Conversations card. */
+.search-line.mem-search { flex: 0 1 280px; min-width: 0; width: auto; gap: var(--space-2); height: 31px; padding: 0 var(--space-3);
+  border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
+.search-line.mem-search:focus-within { border-color: var(--faint); }
+.mem-search .log-search::-webkit-search-cancel-button { -webkit-appearance: none; display: none; }
+.mem-search .s-icon { flex: none; width: 14px; height: 14px; color: var(--faint); }
+.mem-search .log-search { height: 100%; font-size: var(--fs-head); font-weight: var(--w-medium); color: var(--ink); }
+.mem-search .log-search::placeholder { color: var(--faint); opacity: 1; }
+.mem-strip { display: block; width: 100%; height: 88px; }
 .mem-strip .row-label { fill: var(--faint); font-size: var(--fs-axis); }
 .mem-strip .row-line { stroke: var(--line); }
 .mem-strip .m-dot { cursor: pointer; opacity: .55; }
 .mem-strip.focus .m-dot { opacity: .15; }
 .mem-strip .m-dot.on { opacity: 1; stroke: var(--ink); stroke-width: 1.5; }
 .mem-note { display: flex; justify-content: space-between; gap: var(--space-2); align-items: baseline; font-size: var(--fs-meta); color: var(--muted); margin-bottom: var(--space-2); }
-.mem-row { padding: var(--space-2) var(--inner-x); margin-bottom: var(--space-1); background: var(--hover); border-radius: var(--radius-card); }
+.mem-row { padding: var(--space-2) var(--inner-x); margin-bottom: var(--space-2); background: var(--hover); border-radius: var(--radius-card); }
 .mem-row.on { box-shadow: inset 3px 0 0 var(--who); }
-.mem-meta { display: flex; gap: var(--space-2); font-size: var(--fs-meta); color: var(--faint); font-weight: var(--w-medium); }
-.mem-meta .imp { margin-left: auto; font-variant-numeric: tabular-nums; }
-.mem-links { display: flex; gap: var(--space-3); }
+.mem-saved { text-align: right; padding-bottom: var(--space-4); }
+.mem-links { display: flex; justify-content: flex-end; gap: var(--space-3); margin-top: var(--space-1); }
 .mem-links:empty { display: none; }
-.mem-text { margin: 2px 0 0; font-size: var(--fs-body); line-height: 1.4; color: var(--ink); }
+.mem-row .convo-sum { display: block; }
 .mem-sub { margin: var(--space-1) 0 0; padding-left: var(--space-3); border-left: 2px solid var(--line); font-size: var(--fs-meta); color: var(--muted); line-height: 1.45; }
-.plan-row:last-child, .prof-sec:last-of-type { margin-bottom: 0; }
+.plan-row:last-child { margin-bottom: 0; }
 .card-head { font-size: var(--fs-meta); font-weight: var(--w-medium); color: var(--faint); margin-bottom: var(--space-1); }
 .goals { list-style: none; margin: 0; padding: 0; counter-reset: goal; display: grid; gap: var(--space-1); }
-.goals li { counter-increment: goal; display: flex; gap: var(--space-2); font-size: var(--fs-body); color: var(--ink); line-height: 1.4; }
+.goals li { counter-increment: goal; display: flex; gap: var(--space-2); font-size: var(--fs-body); color: var(--muted); line-height: 1.45; }
 .goals li::before { content: counter(goal); flex: none; width: 12px; color: var(--faint); font-size: var(--fs-meta); font-variant-numeric: tabular-nums; line-height: 1.65; }
 .m-card .convo-row, .m-card .convo-row.static:hover { background: none; padding-inline: 0; margin-bottom: 0; }
 .plan-row .when { font-variant-numeric: tabular-nums; }
@@ -354,10 +386,15 @@ pre, .mono { font-family: var(--mono); font-size: var(--fs-meta); line-height: 1
 .bubble-wait { color: var(--muted); font-style: italic; }
 #a-ask:not([hidden]) { display: flex; flex-direction: column; }
 #inspector #a-ask { padding-top: 0; }
-.convo-bar.ask-top { justify-content: flex-start; gap: var(--space-1); }
-.ask-label { font-size: var(--fs-meta); font-weight: var(--w-medium); color: var(--faint); }
-.ask-top .w-link { margin-left: auto; font-size: var(--fs-meta); }
-#ask-log { flex: 1 0 auto; }
+/* flex: none, or a long chat squeezes it and the stance line jumps. The extra
+   bottom padding keeps the fade below the text when the chat scrolls under it. */
+.convo-bar.ask-top { flex: none; justify-content: flex-start; gap: var(--space-3); padding: 0 0 var(--space-5);
+  height: calc(var(--row2-h) + var(--space-5)); margin-bottom: calc(var(--space-2) - var(--space-5)); }
+.ask-top .w-link { order: 1; margin-left: auto; font-size: var(--fs-meta); }
+#ask-log { flex: 1 0 auto; display: flex; flex-direction: column; }
+.ask-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-2); color: var(--muted); font-size: var(--fs-body); }
+.ask-empty img { width: 40px; height: 40px; border: 2px solid var(--who); border-radius: var(--radius-card); background: var(--panel); image-rendering: pixelated; object-fit: contain; }
+.ask-empty b { color: var(--who); font-weight: var(--w-medium); }
 #ask-log .chat { gap: var(--space-2); }
 #ask-log .msg-text { font-size: var(--fs-body); }
 #ask-form.ask-bar { position: sticky; bottom: 0; margin: 0 calc(-1 * var(--card-x)); isolation: isolate; }
@@ -437,9 +474,9 @@ pre, .mono { font-family: var(--mono); font-size: var(--fs-meta); line-height: 1
 .convo-row.inherited { opacity: .7; }
 .faces { display: flex; flex: none; padding-top: 2px; position: relative; }
 /* Two faces wide even with one, so row text aligns. */
-.convo-row .faces { min-width: 50px; }
+.convo-row .faces { min-width: 56px; }
 .faces img { width: 30px; height: 30px; border-radius: var(--radius-sm); background: var(--paper); box-shadow: 0 0 0 2px var(--panel); image-rendering: pixelated; object-fit: contain; }
-.faces img + img { margin-left: -4px; }
+.faces img + img { margin-left: var(--overlap, -4px); }
 .convo-main { flex: 1; min-width: 0; display: grid; gap: 2px; }
 .convo-top { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-3); }
 .convo-top .pair { color: var(--ink-head); font-weight: var(--w-medium); font-size: var(--fs-title); }
@@ -451,7 +488,7 @@ pre, .mono { font-family: var(--mono); font-size: var(--fs-meta); line-height: 1
   height: calc(var(--row2-h) + var(--space-1)); margin: 0 calc(-1 * var(--inner-x)); padding: var(--space-1) var(--inner-x) 0;
   background: var(--hover); border-radius: var(--radius-card) var(--radius-card) 0 0;
 }
-.reader-head .faces { padding-top: 0; }
+.reader-head .faces { padding-top: 0; min-width: 56px; }
 .reader-title { min-width: 0; display: grid; line-height: 1.25; }
 .reader-title b { font-size: var(--fs-title); font-weight: var(--w-medium); color: var(--ink-head); }
 .reader-title > span { color: var(--faint); font-size: var(--fs-meta); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -664,32 +701,32 @@ details.log-err pre { margin: 2px 0 var(--space-2); font-size: var(--fs-meta); c
 #settings .row { margin-top: var(--space-3); }
 .s-actions { display: flex; gap: var(--space-2); flex-wrap: wrap; }
 .warn-box { background: var(--amber-soft); border-radius: var(--radius-card); padding: var(--space-3) var(--space-3); font-size: var(--fs-body); margin-bottom: 14px; }
-#p-usage:not([hidden]) { display: flex; flex-direction: column; padding: 0; overscroll-behavior: none; }
+#p-usage:not([hidden]) { display: flex; flex-direction: column; padding: 0; overflow: auto; overscroll-behavior: none; }
 .seg { display: inline-flex; gap: 2px; padding: 2px; border: 1px solid var(--line); border-radius: var(--radius-sm); }
 /* Asymmetric padding centers the letters optically. */
 .seg button { border: 0; background: none; padding: 1.5px var(--space-2) 0.5px; border-radius: var(--radius-inner); font-size: var(--fs-meta); font-weight: var(--w-medium); color: var(--muted); cursor: pointer; }
 .seg button[aria-pressed="true"] { background: var(--paper); color: var(--ink-head); }
-.u-info { display: inline-flex; color: var(--muted); cursor: help; }
 .u-kpis { flex: none; display: flex; align-items: baseline; gap: var(--space-3); white-space: nowrap; }
-.u-tools { flex: none; display: flex; align-items: center; gap: var(--space-1); }
-.u-tools .seg { flex: 1 1 auto; min-width: 0; display: flex; }
+.u-tools { flex: none; display: flex; align-items: center; gap: var(--space-2); }
+.u-tools .seg { flex: none; display: flex; }
 .u-tools .seg button { flex: 1 1 auto; min-width: 0; padding-inline: 4px; }
 .u-kpis > div { display: flex; align-items: baseline; }
 .u-kpis b { font-size: var(--fs-head); line-height: 1.25; font-weight: var(--w-medium); letter-spacing: -0.01em; margin-right: var(--space-1); font-variant-numeric: tabular-nums; }
 .u-kpis span { font-size: var(--fs-meta); color: var(--faint); }
 .u-kpis > .u-live span { margin-left: var(--space-1); }
-.u-grid { flex: 1 1 0; min-height: 0; display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-2); padding: 0 var(--card-x); }
-.u-col { min-height: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+/* Switches on top, then the time chart beside cost by agent; failed calls replace both when open.
+   Headings sit outside the cards, in line with the text inside them. */
+.u-grid { flex: none; min-height: 100%; box-sizing: border-box; display: flex; flex-direction: column; padding: var(--space-2) var(--card-x) var(--space-4); }
+.u-grid .convo-day { padding-inline: var(--inner-x); }
+.u-fails-link { margin-left: auto; font-size: var(--fs-meta); }
+/* The chart row takes the spare height; agent rows spread to fill it. */
+.u-row { flex: 1 0 auto; display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: var(--space-2); }
+.u-row .u-card { flex: 1; }
+.u-time { min-height: 150px; }
+.u-col { min-width: 0; display: flex; flex-direction: column; }
 .u-card { min-height: 0; display: flex; flex-direction: column; position: relative; padding: var(--space-2) var(--inner-x); border-radius: var(--radius-card); background: var(--hover); }
-.u-col > .u-card { flex: none; }
-.u-col > .u-grow { flex: 1 1 0; min-height: 84px; }
-.u-col > .u-fails { flex: 1 1 0; min-height: 60px; }
-.u-mix { padding-block: var(--space-1); }
-.u-mix .u-key { margin-bottom: 0; }
-.u-fails .u-errlog { flex: 1 1 0; }
-.u-grid h3 { margin: 0 0 var(--space-1); font-size: var(--fs-title); font-weight: var(--w-medium); color: var(--ink-head); }
 .u-hbars { --labels: calc(14px + var(--name-w, 48px) + 2 * var(--space-2)); flex: 1; min-height: 48px; display: grid; grid-template-rows: minmax(0, 1fr) 14px; }
-.u-agents { min-height: 0; display: grid; grid-auto-rows: minmax(13px, 1fr); }
+.u-agents { min-height: 0; display: grid; grid-auto-rows: minmax(18px, 1fr); }
 .u-agent { display: grid; grid-template-columns: 14px var(--name-w, 48px) minmax(0, 1fr); gap: var(--space-2); align-items: center; font-size: var(--fs-axis); line-height: 1; color: var(--faint); }
 .u-agent .skel-box { width: 14px; height: 14px; border-radius: 3px; background: var(--line); opacity: .7; }
 .u-agent .skel-name { height: 7px; width: 70%; border-radius: 2px; background: var(--line); opacity: .7; }
@@ -739,25 +776,15 @@ details.log-err pre { margin: 2px 0 var(--space-2); font-size: var(--fs-meta); c
 /* Short tooltips: each value right after its label, no column. */
 .chart-tip .tip-lines { display: grid; gap: 2px; margin-top: var(--space-1); color: var(--ink); }
 .chart-tip .tip-lines .k { font-size: var(--fs-meta); font-weight: var(--w-medium); color: var(--faint); margin-right: var(--space-2); }
-.u-stack { flex: none; display: flex; gap: 1px; height: 8px; border-radius: var(--radius-xs); overflow: hidden; }
-.u-stack i { display: block; height: 100%; }
-.u-key { display: flex; flex-wrap: wrap; gap: 0 var(--space-2); margin: var(--space-1) 0 var(--space-2); font-size: var(--fs-meta); font-weight: var(--w-medium); line-height: 1.35; color: var(--faint); }
-.u-key span { display: inline-flex; align-items: center; gap: var(--space-1); }
-.u-key i { width: 8px; height: 8px; border-radius: 2px; }
-.u-errlog {
-  flex: 1; min-height: 0; overflow: hidden auto; display: grid; grid-template-columns: minmax(0, 1fr); align-content: start; gap: var(--space-1); overscroll-behavior: none;
-  /* --fade-top/--fade-bottom are set from script. */
-  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 var(--fade-top, 0px), #000 calc(100% - var(--fade-bottom, 0px)), transparent);
-  mask-image: linear-gradient(to bottom, transparent, #000 var(--fade-top, 0px), #000 calc(100% - var(--fade-bottom, 0px)), transparent);
-}
+.u-errlog { display: grid; grid-template-columns: minmax(0, 1fr); align-content: start; gap: var(--space-1); }
 .u-errlog .result { display: flex; align-items: center; gap: var(--space-2); min-width: 0; font-family: var(--mono); font-size: var(--fs-meta); line-height: 1.6; }
 .u-errlog .result .cmd { flex: none; font-size: var(--fs-meta); color: var(--brick); }
-.u-errlog .result .msg { min-width: 0; flex: 1; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.u-errlog .result .msg { min-width: 0; flex: 1; color: var(--muted); }
 .u-copy { margin-left: auto; flex: none; display: inline-flex; border: 0; background: none; padding: 2px; border-radius: var(--radius-inner); color: var(--muted); cursor: pointer; }
 .u-copy:hover { color: var(--ink); background: var(--hover); }
 .u-copy svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
-@media (max-width: 1100px) { .u-grid { grid-template-columns: minmax(0, 1fr); gap: var(--space-4); } .u-agents { grid-auto-rows: 20px; } .u-vchart { min-height: 140px; } }
+@media (max-width: 1100px) { .u-row { grid-template-columns: minmax(0, 1fr); } .u-time { min-height: 140px; } }
 .toggle { display: inline-flex; gap: var(--space-2); align-items: center; color: var(--muted); font-size: var(--fs-sub); margin-bottom: var(--space-2); }
 
 /* ---------- stance graph ---------- */
@@ -936,8 +963,6 @@ dialog .row { display: flex; justify-content: flex-end; gap: var(--space-2); mar
 #w-menu .who-opt { padding: 2px var(--space-1); font-size: var(--fs-meta); gap: var(--space-1); }
 #w-menu .who-opt img { width: 20px; height: 20px; border-width: 1.5px; }
 #w-menu .hint-row { padding: 0 var(--space-1) 2px; }
-.w-more { position: absolute; right: -4px; bottom: -4px; min-width: 16px; height: 16px; padding: 0 3px; display: grid; place-items: center;
-  border-radius: var(--radius-inner); background: var(--paper); color: var(--muted); font-size: var(--fs-axis); font-weight: var(--w-medium); box-shadow: 0 0 0 2px var(--panel); }
 .w-item .convo-top .pair, .w-preview .convo-top .pair { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden;
   -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent); }
 .w-item .convo-top .when, .w-preview .convo-top .when { display: inline-flex; align-items: center; gap: var(--space-1); white-space: nowrap; font-variant-numeric: tabular-nums; }
@@ -963,16 +988,18 @@ details.w-seeds > summary::-webkit-details-marker { display: none; }
 .w-seed .txt { color: var(--muted); overflow-wrap: anywhere; }
 .reader-foot { flex: none; display: flex; justify-content: flex-end; padding: 0 0 var(--space-2); }
 .w-sub { margin: var(--space-3) 0 var(--space-1); font-size: var(--fs-meta); font-weight: var(--w-medium); color: var(--faint); }
-.w-mention { display: flex; gap: var(--space-3); align-items: flex-start; width: calc(100% + 2 * var(--space-2)); text-align: left; border: 0; background: none; padding: var(--space-2); margin-inline: calc(-1 * var(--space-2)); border-radius: var(--radius-card); cursor: pointer; }
-.w-mention:hover { background: var(--paper); }
-.w-mention .convo-main { flex: 1; min-width: 0; }
-.w-mention q { quotes: "\201C" "\201D"; }
-.w-mention img { width: 24px; height: 24px; border: 1.5px solid var(--who); border-radius: var(--radius-sm); background: var(--paper); image-rendering: pixelated; object-fit: contain; }
+.reader q { quotes: "\201C" "\201D"; }
+/* The title above stays put; the list scrolls under a short fade. */
+#activity #w-list .reader .reader-scroll { padding-top: var(--space-3);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 6px, #000 22px, #000 calc(100% - var(--space-6)), transparent);
+  mask-image: linear-gradient(to bottom, transparent 6px, #000 22px, #000 calc(100% - var(--space-6)), transparent); }
+/* Same gap above the title as between the date and the whisper. */
+#w-list .reader > .w-sub { margin: 2.5px 0 0; }
 .reader-head .w-actions { margin-left: auto; display: flex; gap: var(--space-1); }
 .reader-head .w-actions .btn { padding: var(--space-1) var(--space-3); font-size: var(--fs-body); border-color: transparent; background: var(--paper); color: var(--ink-head); }
 .reader-head .w-actions .btn:hover:not(:disabled) { border-color: transparent; background: color-mix(in srgb, var(--paper), var(--ink) 6%); }
 .w-preview { display: flex; align-items: center; gap: var(--space-2); min-width: 0; margin-top: var(--space-2); padding: var(--space-2); border-radius: var(--radius-card); background: var(--paper); font-size: var(--fs-sub); }
-.w-preview .faces img, .w-preview .w-more { box-shadow: 0 0 0 2px var(--paper); }
+.w-preview .faces img { box-shadow: 0 0 0 2px var(--paper); }
 .w-preview .txt { min-width: 0; flex: 1; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .w-actions { display: flex; gap: var(--space-2); }
 
@@ -1099,6 +1126,13 @@ body { background: var(--panel); }
   background: none; border-radius: var(--radius-inner);
 }
 :is(#p-convos .convo-row, #p-events .w-item, #a-mind button.convo-row):hover { background: var(--hover); }
+/* Now tab: the reasoning, the view and each thing that reached them sit in soft cards. */
+#a-mind :is(.m-card, .convo-row) { background: var(--hover); border-radius: var(--radius-card); }
+#a-mind button.convo-row:hover { background: var(--paper); }
+/* Plan: each task in a soft card; names stay quiet except the current one. */
+#a-plan .plan-row { background: var(--hover); border-radius: var(--radius-card); }
+#a-plan .plan-row .pair { color: var(--muted); font-weight: var(--w-regular); }
+#a-plan .plan-row.current .pair { color: var(--ink); font-weight: var(--w-medium); }
 .charts-body > section:not([hidden]), .social-panel, .trail-side, .trail-panel, .reader, .reader-head { background: none; }
 /* Buttons: flat, a hairline border; the primary one is solid ink. */
 .btn:hover:not(:disabled) { border-color: var(--faint); }
@@ -1164,8 +1198,8 @@ body { background: var(--panel); }
 #activity .reader .reader-scroll > :first-child { margin-top: 0; }
 
 /* Agent tabs: profile answers and today's goals in soft cards; the interview in one card like the console. */
-#inspector #a-profile .prof-sec { background: var(--paper); border-radius: 8px; padding: var(--space-3); margin-bottom: var(--space-2); }
-#inspector #a-plan .m-card:has(> .goals) { background: var(--paper); border-radius: 8px; padding: var(--space-3); }
+#inspector #a-profile .prof-sec { background: var(--hover); border-radius: var(--radius-card); }
+#inspector #a-plan .m-card:has(> .goals) { background: var(--hover); border-radius: var(--radius-card); }
 #inspector > #a-ask:not([hidden]) { --panel: var(--paper); background: var(--paper); border-radius: 8px; margin: 0 var(--space-3); padding-inline: var(--space-3); }
 #a-ask #ask-form.ask-bar { margin-inline: calc(-1 * var(--space-3)); }
 #a-ask #ask-form.ask-bar::before { border-radius: 0 0 8px 8px; }
@@ -1254,6 +1288,7 @@ body { background: var(--panel); }
 
     <section class="card" aria-label="Agents" id="inspector">
       <div class="agent-strip" id="agent-strip" role="toolbar" aria-label="Agents"></div>
+      <div class="mind-bar" id="stance-line"></div>
       <h2 class="open-name" id="open-name"></h2>
       <div class="tabs" role="tablist">
         <button class="tab" role="tab" aria-selected="true" data-pane="a-mind">Now</button>
@@ -1266,15 +1301,14 @@ body { background: var(--panel); }
       <div class="pane" id="a-plan" hidden></div>
       <div class="pane" id="a-ask" hidden>
         <div class="convo-bar ask-top">
-          <span class="ask-label">Interview</span>
-          <span class="u-info" data-tip="About interviews&#10;Answers come from the agent's memories. Nothing you ask is saved to them. Questions sent during a run wait until it ends." aria-label="About interviews"><svg class="tool-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg></span>
+          <div class="ask-stance" id="ask-stance"></div>
           <button class="w-link" type="button" id="ask-reset">Start over</button>
         </div>
         <div id="ask-log"></div>
         <form class="console-bar ask-bar" id="ask-form">
           <label for="ask-input" class="sr-only">Question</label>
           <div class="c-input">
-            <input id="ask-input" autocomplete="off" placeholder="Ask a question">
+            <input id="ask-input" autocomplete="off" placeholder="Ask a question" title="Answers come from the agent's memories. Nothing you ask is saved to them. Questions sent during a run wait until it ends.">
             <button class="c-send" type="submit" aria-label="Ask (Enter)" title="Ask (Enter)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 10 4 15l5 5"/><path d="M20 4v7a4 4 0 0 1-4 4H4"/></svg></button>
           </div>
         </form>
@@ -1589,7 +1623,7 @@ document.querySelectorAll(".tabs").forEach((bar) => {
     if (tab.dataset.pane === "p-log") loadLog();
     if (tab.dataset.pane === "act-card") renderActivity();
     if (tab.dataset.pane === "a-memory") renderMemory();
-    if (tab.dataset.pane === "a-plan") scrollPlanToCurrent();
+    if (tab.dataset.pane === "a-plan") $("a-plan").scrollTop = 0;
   });
 });
 
@@ -1892,6 +1926,7 @@ function convoKey(c) {
 
 let openConvo = null;
 let convoListScroll = 0;
+let convoBack = null;  // {whisper, scroll} when the open conversation came from a whisper
 let convoFilter = [];
 let convoMenuOpen = false;
 // One static node, moved into the freshly drawn row on each render.
@@ -2011,6 +2046,7 @@ $("p-convos").addEventListener("click", (e) => {
     renderConvos();
   } else if (row) {
     convoListScroll = $("p-convos").scrollTop;
+    convoBack = null;
     openConvo = row.dataset.openConvo;
     renderConvos();
     $("p-convos").scrollTop = 0;
@@ -2018,6 +2054,16 @@ $("p-convos").addEventListener("click", (e) => {
     openConvo = null;
     renderConvos();
     $("p-convos").scrollTop = convoListScroll;
+    // Opened from a whisper: Back returns to it, where it was scrolled.
+    if (convoBack) {
+      const {whisper, scroll} = convoBack;
+      convoBack = null;
+      whisperOpen = whisper;
+      renderEvents();
+      document.querySelector('[data-pane="p-events"]').click();
+      const list = $("w-list").querySelector(".reader-scroll");
+      if (list) list.scrollTop = scroll;
+    }
   }
 });
 
@@ -2035,7 +2081,8 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && convoMenuOpen) { convoMenuOpen = false; renderConvos(); }
 });
 
-function showConvo(c) {
+function showConvo(c, back = null) {
+  convoBack = back;
   // Inherited conversations are hidden unless the "from earlier runs" toggle is on.
   if (c.inherited) showInherited = true;
   // An agent filter that leaves this conversation out would stop it opening.
@@ -2122,10 +2169,12 @@ function whisperFacts(w) {
 }
 
 
-function whisperFaceSlot(names) {
-  const more = names.length - 2;
-  return `<span class="faces">${names.slice(0, 2).map((x) => `<img src="${sprite(x)}" alt="" style="--who:${agentColor(x)}">`).join("")}${more > 0 ? `<span class="w-more">+${more}</span>` : ""}</span>`;
+// Every face, overlapped to fit the two-face slot list rows use (2 x 30px - 4px).
+function faceStack(names, attrs = () => 'alt=""') {
+  const n = names.length, overlap = n > 2 ? `calc((56px - ${n} * 30px) / ${n - 1})` : "-4px";
+  return `<span class="faces" style="--overlap:${overlap}">${names.map((x) => `<img src="${sprite(x)}" ${attrs(x)} style="--who:${agentColor(x)}">`).join("")}</span>`;
 }
+const whisperFaceSlot = (names) => faceStack(names);
 
 // Progress or why a whisper is stuck, shown after its status; times live in the reader.
 function whisperFact(w, f) {
@@ -2174,18 +2223,20 @@ function whisperItems() {
 
 function whisperReader(w) {
   const f = whisperFacts(w);
-  const faces = `<span class="faces">${w.targets.map((n) => {
+  const faces = faceStack(w.targets, (n) => {
     const r = w.received?.[n], err = w.failed?.[n];
     const t = r && parseGameTime(r.time);
     const st = err ? `Didn't reach them: ${err}` : r ? `Heard it ${t ? gameLabel(t) : `at step ${r.step}`}` : f.status === "cancelled" ? "Cancelled" : "Waiting";
-    return `<img src="${sprite(n)}" alt="${esc(n)}" style="--who:${agentColor(n)}" data-tip="${esc(`${n}\n${st}`)}"${err ? ` data-tip-color="var(--brick)"` : ""}>`;
-  }).join("")}</span>`;
+    return `alt="${esc(n)}" data-tip="${esc(`${n}\n${st}`)}"${err ? ` data-tip-color="var(--brick)"` : ""}`;
+  });
   const ups = (data?.mentions || []).flatMap((row) => (row.mentions || []).filter((m) => m.whisper_id === w.id).map((m) => ({...m, row})));
   const mentions = ups.map((m) => {
     const t = parseGameTime(m.row.time);
-    const others = (m.row.speakers || []).filter((n) => n !== m.speaker).map((n) => String(n).split(" ")[0]).join(" & ");
-    return `<button class="w-mention" type="button" data-open-convo-key="${esc(convoKey(m.row))}" style="--who:${agentColor(m.speaker)}">
-      <img src="${sprite(m.speaker)}" alt=""><span class="convo-main"><span class="convo-top"><span class="pair">${esc(String(m.speaker).split(" ")[0])} to ${esc(others || "someone")}</span>${t ? `<span class="when">${esc(gameLabel(t))}</span>` : ""}</span><q class="convo-sum">${esc(m.quote)}</q></span></button>`;
+    const listeners = (m.row.speakers || []).filter((n) => n !== m.speaker);
+    // Same row as the Conversations list: the speaker's face first, then who heard it.
+    return `<button class="convo-row" type="button" data-open-convo-key="${esc(convoKey(m.row))}">
+      <span class="faces">${[m.speaker, ...listeners].slice(0, 2).map((n) => `<img src="${sprite(n)}" alt="" style="--who:${agentColor(n)}">`).join("")}</span>
+      <span class="convo-main"><span class="convo-top"><span class="pair">${esc(firstName(m.speaker))} to ${esc(listeners.map(firstName).join(" & ") || "someone")}</span>${t ? `<span class="when">${esc(gameLabel(t))}</span>` : ""}</span><q class="convo-sum">${esc(m.quote)}</q></span></button>`;
   }).join("");
   const upcoming = ["scheduled", "sending", "waiting", "failed"].includes(f.status);
   const day = upcoming ? "Upcoming" : f.time ? f.time.toLocaleDateString(undefined, {weekday: "short", month: "short", day: "numeric"}) : "Earlier";
@@ -2196,9 +2247,9 @@ function whisperReader(w) {
       <span class="w-actions">${whisperActions(w)}</span>
       <span class="reader-where"><span>${whisperStatus(f)} · ${esc(upcoming || !(f.time instanceof Date) ? f.when : f.time.toTimeString().slice(0, 5))}</span></span>
     </div>
-    <div class="reader-scroll">${f.missed.length ? `<div class="w-error">Didn't reach ${esc(whisperAudience(f.missed))}: ${esc(w.failed[f.missed[0]])}</div>` : ""}
+    ${f.missed.length ? `<div class="w-error">Didn't reach ${esc(whisperAudience(f.missed))}: ${esc(w.failed[f.missed[0]])}</div>` : ""}
     <div class="w-sub">Came up in conversation</div>
-    ${mentions || `<div class="w-list-note">${f.reached ? "Not yet. It shows here once someone brings it up." : "Once it reaches someone, the conversations where it comes up are listed here."}</div>`}
+    <div class="reader-scroll">${mentions || `<div class="w-list-note">${f.reached ? "Not yet. It shows here once someone brings it up." : "Once it reaches someone, the conversations where it comes up are listed here."}</div>`}
   </div>${f.reached && !String(w.id).startsWith("event-") ? `<div class="reader-foot"><button class="w-link" type="button" data-open-trail="${esc(w.id)}">Open in Whisper trail</button></div>` : ""}</div>`;
 }
 
@@ -2312,7 +2363,8 @@ $("p-events").addEventListener("click", async (e) => {
   const convo = e.target.closest("[data-open-convo-key]");
   if (convo) {
     const c = (data?.conversations || []).find((x) => convoKey(x) === convo.dataset.openConvoKey);
-    if (c) showConvo(c); else toast("That conversation isn't in this run's list.");
+    if (c) showConvo(c, {whisper: whisperOpen, scroll: $("w-list").querySelector(".reader-scroll")?.scrollTop || 0});
+    else toast("That conversation isn't in this run's list.");
     return;
   }
   const trail = e.target.closest("[data-open-trail]");
@@ -3626,6 +3678,7 @@ const MEM_KINDS = [["event", "Events"], ["chat", "Chats"], ["thought", "Thoughts
 let mem = null, memKey = null, memFetched = 0, memSig = null;
 let memKind = "all", memSort = "new", memQuery = "", memOpen = null;
 let memFocus = null;  // {sim, name, step}: show what this stance reading cited
+let memMenuOpen = false;
 const MEM_ROWS = 200;
 let memLimit = MEM_ROWS;
 // How close a memory's time must be to the log entry it is matched with.
@@ -3637,7 +3690,7 @@ function loadMemory() {
   if (!sim || !openAgent) return;
   const key = `${sim}|${openAgent}`;
   if (key === memKey && Date.now() - memFetched < 15000) return;
-  if (key !== memKey) { mem = null; memOpen = null; memLimit = MEM_ROWS; }
+  if (key !== memKey) { mem = null; memOpen = null; memLimit = MEM_ROWS; memMenuOpen = false; }
   memKey = key; memFetched = Date.now();
   fetch(`/dashboard/memory/${encodeURIComponent(sim)}/?agent=${encodeURIComponent(openAgent)}`).then((r) => r.json())
     .then((d) => { if (memKey === key) { mem = d; renderMemory(); } }).catch(() => {});
@@ -3655,17 +3708,11 @@ function renderMemory() {
   if (pane.hidden || !openAgent) return;
   loadMemory();
   if (!mem || mem.name !== openAgent) { memSig = null; paint(pane, `<div class="empty">Loading memories…</div>`); return; }
-  // The meter is live; the rest only changes with the memories, the logs or the controls.
-  const live = data?.sim?.agent?.name === openAgent ? data.sim.agent : null;
-  const [trig, trigMax] = Array.isArray(live?.reflect_trigger) ? live.reflect_trigger : [0, 0];
-  const meterText = trigMax ? `Reflects after ${Math.max(0, Math.round(trig))} more points of importance` : "";
-  const sig = [memKey, mem.saved_time, mem.nodes.length, mem.readings.length, memKind, memSort, memQuery, memOpen, JSON.stringify(memFocus), memLimit,
-    (data?.conversations || []).length, (data?.whispers || []).length, (data?.opinions || []).length, pane.clientWidth].join("|");
-  if (sig === memSig) {
-    const m = $("mem-meter");
-    if (m) { m.textContent = meterText; m.hidden = !meterText; }
-    return;
-  }
+  // Only redraw when the memories, the logs or the controls change.
+  const sig = [memKey, mem.saved_time, mem.nodes.length, mem.readings.length, memMenuOpen, memKind, memSort, memQuery, memOpen, JSON.stringify(memFocus), memLimit,
+    (data?.conversations || []).length, (data?.opinions || []).length, pane.clientWidth, rosterOrder().join(","),
+    (data?.whispers || []).map((w) => Object.keys(w.received || {}).length).join(".")].join("|");
+  if (sig === memSig) return;
   memSig = sig;
   const color = agentColor(openAgent), byId = new Map(mem.nodes.map((n) => [n.id, n]));
   const focused = memFocus && memFocus.name === openAgent && memFocus.sim === (view || liveSim);
@@ -3708,7 +3755,17 @@ function renderMemory() {
     const tip = `<b>${esc(kindName[n.kind])} · ${esc(when(n))}</b>${esc(n.description || "")}<span class="tip-note">Importance ${n.poignancy ?? "–"}</span>`;
     strip += `<circle class="m-dot${lit.has(n.id) ? " on" : ""}" data-mem-open="${esc(n.id)}" cx="${sx(d.getTime()).toFixed(1)}" cy="${top + rowH * i + rowH / 2}" r="${(1.5 + 0.4 * Math.min(10, n.poignancy || 0)).toFixed(1)}" fill="${color}" data-tip-html="${esc(tip)}"/>`;
   }
-  const svg = `<svg class="mem-strip${lit.size ? " focus" : ""}" viewBox="0 0 ${W} 84" role="img" aria-label="Every memory by when it was made and its kind; bigger dots matter more to the agent">${strip}</svg>`;
+  // Day markers along the bottom: a faint line at each midnight with the day's name.
+  const axisY = top + rowH * MEM_KINDS.length + 12;
+  const d0 = new Date(t0); d0.setHours(24, 0, 0, 0);
+  for (let d = d0; d.getTime() <= t1; d = new Date(d.getTime() + 86400000)) {
+    const x = sx(d.getTime()).toFixed(1);
+    strip += `<line class="row-line" x1="${x}" x2="${x}" y1="${top}" y2="${axisY - 9}"/><text class="row-label" x="${x}" y="${axisY}" text-anchor="middle">${esc(d.toLocaleDateString(undefined, {weekday: "short"}))} ${d.getDate()}</text>`;
+  }
+  const first = new Date(t0);
+  // Name the first day too, unless its midnight label would crowd it.
+  if (d0.getTime() > t1 || sx(d0.getTime()) - gut > 56) strip += `<text class="row-label" x="${gut}" y="${axisY}">${esc(first.toLocaleDateString(undefined, {weekday: "short"}))} ${first.getDate()}</text>`;
+  const svg = `<svg class="mem-strip${lit.size ? " focus" : ""}" viewBox="0 0 ${W} 88" role="img" aria-label="Every memory by when it was made and its kind; bigger dots matter more to the agent">${strip}</svg>`;
 
   // List: a reading's evidence in the order it was cited, or everything filtered.
   let list, note = "";
@@ -3722,8 +3779,6 @@ function renderMemory() {
     const q = memQuery.toLowerCase();
     list = mem.nodes.filter((n) => (memKind === "all" || n.kind === memKind) && (!q || String(n.description || "").toLowerCase().includes(q)));
     if (memSort === "imp") list = list.slice().sort((a, b) => (b.poignancy || 0) - (a.poignancy || 0) || b.count - a.count);
-    const latest = mem.readings[mem.readings.length - 1];
-    if (latest) note = `<div class="mem-note"><span>${list.length} of ${mem.nodes.length} memories</span><button class="w-link" type="button" data-mem-reading="${latest.step}">What the latest stance reading cited</button></div>`;
   }
   const row = (n) => {
     const isOpen = n.id === memOpen, src = n.filling.map((id) => byId.get(id)).filter(Boolean);
@@ -3731,37 +3786,47 @@ function renderMemory() {
     const sh = wh && trailShift(openAgent, wh.step);
     const link = wh ? `<button class="w-link" type="button" data-moved-whisper="${esc(wh.w.id)}">Open whisper</button>`
       : convo ? `<button class="w-link" type="button" data-moved-convo="${esc(convoKey(convo))}">Open conversation</button>` : "";
-    const more = n.lines?.length ? `<button class="w-link" type="button" data-mem-open="${esc(n.id)}">${isOpen ? "Hide" : "Show"} conversation</button>`
-      : src.length ? `<button class="w-link" type="button" data-mem-open="${esc(n.id)}">${isOpen ? "Hide" : "From"} ${src.length} memor${src.length === 1 ? "y" : "ies"}</button>` : "";
+    const more = src.length ? `<button class="w-link" type="button" data-mem-open="${esc(n.id)}">${isOpen ? "Hide" : "From"} ${src.length} memor${src.length === 1 ? "y" : "ies"}</button>` : "";
     const sub = !isOpen ? "" : n.lines?.length
       ? `<p class="mem-sub">${n.lines.map((l) => Array.isArray(l) ? `<b style="color:${agentColor(l[0])}">${esc(firstName(l[0]))}:</b> ${esc(l[1])}` : esc(l)).join("<br>")}</p>`
       : `<p class="mem-sub">${src.map((x) => `${esc(kindName[x.kind] || x.kind)} · ${esc(x.description || "")}`).join("<br>")}</p>`;
-    const label = wh ? "◆ Whisper" : kindName[n.kind] || n.kind;
-    const moved = sh ? `<span title="Stance before and after they heard it">${sh.before} → ${sh.after}</span>` : "";
-    return `<div class="mem-row${lit.has(n.id) ? " on" : ""}" style="--who:${color}"><div class="mem-meta"><span>${esc(label)}</span><span>${esc(when(n))}</span>${moved}<span class="imp" title="How much it matters to them, 1 to 10">Importance ${n.poignancy ?? "–"}</span></div><p class="mem-text">${esc(n.description || "")}</p><div class="mem-links">${more}${link}</div>${sub}</div>`;
+    const label = wh ? "Whisper ◆" : kindName[n.kind] || n.kind;
+    // Same shape as Now's rows: title and time on top, the text below, links at the bottom right.
+    const meta = [sh ? `${sh.before} → ${sh.after}` : "", `Importance ${n.poignancy ?? "–"}`, when(n)].filter(Boolean).join(" · ");
+    return `<div class="mem-row${lit.has(n.id) ? " on" : ""}" style="--who:${color}"><div class="convo-main"><span class="convo-top"><span class="pair">${esc(label)}</span><span class="when">${esc(meta)}</span></span><span class="convo-sum">${namesHtml(n.description || "")}</span></div>${sub}<div class="mem-links">${more}${link}</div></div>`;
   };
-  const tools = reading ? "" : `<div class="mem-tools"><div class="seg" role="group" aria-label="Kind">${[["all", "All"], ...MEM_KINDS].map(([k, l]) => `<button type="button" data-mem-kind="${k}" aria-pressed="${k === memKind}">${l}</button>`).join("")}</div>
-    <div class="seg" role="group" aria-label="Order"><button type="button" data-mem-sort="new" aria-pressed="${memSort === "new"}">Newest</button><button type="button" data-mem-sort="imp" aria-pressed="${memSort === "imp"}">Most important</button></div>
-    <input id="mem-q" type="search" placeholder="Search memories" value="${esc(memQuery)}" aria-label="Search memories"></div>`;
-  const meter = `<div class="mind-reflect" id="mem-meter" data-tip="${esc("Next reflection\nThey stop to reflect once enough important things have happened")}"${meterText ? "" : " hidden"}>${esc(meterText)}</div>`;
+  // Search on the left; kind and order live in a filter menu, as on the Conversations card.
+  const opt = (attr, k, label, on) => `<button class="who-opt" type="button" ${attr}="${k}" aria-pressed="${on}"><span>${label}</span></button>`;
+  const menu = memMenuOpen ? `<div class="convo-menu mem-menu"><div class="seg" role="group" aria-label="Order"><button type="button" data-mem-sort="new" aria-pressed="${memSort === "new"}">Newest</button><button type="button" data-mem-sort="imp" aria-pressed="${memSort === "imp"}">Most important</button></div>
+    <div class="menu-head">Show</div>${[["all", "All"], ...MEM_KINDS].map(([k, l]) => opt("data-mem-kind", k, l, k === memKind)).join("")}</div>` : "";
+  const kindPill = memKind === "all" ? "" : `<span class="pill">${esc(MEM_KINDS.find(([k]) => k === memKind)?.[1] || memKind)}<button type="button" data-mem-kind="all" aria-label="Show every kind">${X_ICON}</button></span>`;
+  const tools = reading ? "" : `<div class="mem-tools"><div class="search-line mem-search"><svg class="tool-icon s-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input class="log-search" id="mem-q" type="search" placeholder="Search" value="${esc(memQuery)}" aria-label="Search memories"></div>
+    <span class="mem-count">${list.length} of ${mem.nodes.length}</span><div class="convo-tools"><div class="pills">${kindPill}</div><button class="btn icon" type="button" data-filter-toggle data-mem-menu aria-expanded="${memMenuOpen}" aria-label="Filter memories" title="Filter memories"><svg class="tool-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M7 12h10"/><path d="M10 18h4"/></svg></button>${menu}</div></div>`;
   const more = list.length > memLimit ? `<button class="w-link mind-more" type="button" data-mem-more>Show ${Math.min(MEM_ROWS, list.length - memLimit)} more of ${list.length - memLimit}</button>` : "";
-  const saved = mem.saved_time ? `<div class="hint">As of the last save, ${esc(netWhen(mem.saved_time))}</div>` : "";
+  const saved = mem.saved_time ? `<div class="hint mem-saved">As of the last save, ${esc(netWhen(mem.saved_time))}</div>` : "";
   const hadFocus = document.activeElement?.id === "mem-q";
-  paint(pane, `${svg}${meter}${tools}${note}${list.slice(0, memLimit).map(row).join("") || `<div class="empty">No memories match.</div>`}${more}${saved}`);
+  paint(pane, `<div class="convo-day">Timeline</div><div class="mem-strip-card">${svg}</div>${tools ? `<div class="mem-sticky"><div class="convo-day">Memories</div>${tools}</div>` : ""}${note}${list.slice(0, memLimit).map(row).join("") || `<div class="empty">No memories match.</div>`}${more}${saved}`);
   if (hadFocus) { const q = $("mem-q"); q.focus(); q.setSelectionRange(q.value.length, q.value.length); }
 }
 
 $("a-memory").addEventListener("click", (e) => {
-  const t = e.target.closest("[data-mem-kind], [data-mem-sort], [data-mem-open], [data-mem-all], [data-mem-reading], [data-mem-more]");
+  const t = e.target.closest("[data-mem-kind], [data-mem-sort], [data-mem-open], [data-mem-all], [data-mem-more], [data-mem-menu]");
   if (!t) return;
+  if (t.dataset.memMenu != null) memMenuOpen = !memMenuOpen;
   if (t.dataset.memKind) { memKind = t.dataset.memKind; memLimit = MEM_ROWS; }
   if (t.dataset.memSort) memSort = t.dataset.memSort;
   if (t.dataset.memMore != null) memLimit += MEM_ROWS;
   if (t.dataset.memOpen) { memOpen = memOpen === t.dataset.memOpen ? null : t.dataset.memOpen; memFocus = null; }
   if (t.dataset.memAll != null) memFocus = null;
-  if (t.dataset.memReading) memFocus = {sim: view || liveSim, name: openAgent, step: +t.dataset.memReading};
   renderMemory();
 });
+document.addEventListener("click", (e) => {
+  // A click inside the menu re-renders it, leaving the clicked element detached.
+  if (memMenuOpen && e.target.isConnected && !e.target.closest("#a-memory .convo-tools")) { memMenuOpen = false; renderMemory(); }
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && memMenuOpen) { e.stopPropagation(); memMenuOpen = false; renderMemory(); }
+}, true);
 $("a-memory").addEventListener("input", (e) => { if (e.target.id === "mem-q") { memQuery = e.target.value; memLimit = MEM_ROWS; renderMemory(); } });
 
 /* ---------------- activity timeline ---------------- */
@@ -4154,6 +4219,9 @@ let nowViewOpen = false, nowHistOpen = false, nowChatOpen = false, movedAll = fa
 function renderAgent() {
   const a = data?.sim?.agent;
   // A poll sent before a switch can still bring the previous agent.
+  const line = a && a.name === openAgent ? stanceLineHtml(a) : "";
+  paint($("stance-line"), line);
+  paint($("ask-stance"), line);
   if (!a || a.name !== openAgent) {
     ["a-mind", "a-memory", "a-plan", "a-profile"].forEach((id) => paint($(id), `<div class="empty">${openAgent ? "Loading…" : "Agents appear here once a simulation is running."}</div>`));
     return;
@@ -4173,20 +4241,18 @@ function renderAgent() {
   // Strip a leading "1)", "2." or dash.
   const goals = (a.daily_req || []).map((g) => String(g).replace(/^\s*(?:\d+[.)]|[-–•*])\s*/, "").trim()).filter(Boolean);
   const cap = (g) => g.charAt(0).toUpperCase() + g.slice(1);
-  paint($("a-plan"), `${goals.length ? `<div class="m-card"><div class="card-head">Goals for today</div><ol class="goals">${goals.map((g) => `<li>${esc(cap(g))}</li>`).join("")}</ol></div>` : ""}
+  paint($("a-plan"), `${goals.length ? `<div class="convo-day">Goals for today</div><div class="m-card"><ol class="goals">${goals.map((g) => `<li>${esc(cap(g))}</li>`).join("")}</ol></div>` : ""}
     <div class="convo-day">Schedule</div>
     ${rows ? `<ul class="plan-list">${rows}</ul>` : `<div class="empty">No schedule yet. It's written when their day starts.</div>`}
     <div class="convo-fade"></div>`);
-  // Follow the current task only when it changes, so scrolling back isn't undone each poll.
-  const planKey = `${a.name}:${idx}`;
-  if (planKey !== scrollPlanToCurrent.key && !$("a-plan").hidden) scrollPlanToCurrent();
 
   // The first three sections exist only on casts built to measure belief change.
-  const head = (title) => `<div class="card-head">${title}</div>`;
+  // Same shape as Now: the heading outside, the text in a soft card.
+  const head = (title) => `<div class="convo-day">${title}</div>`;
   const sec = (title, text) => text
-    ? `<section class="prof-sec m-card">${head(title)}<p>${esc(String(text).charAt(0).toUpperCase() + String(text).slice(1))}</p></section>` : "";
+    ? `${head(title)}<div class="prof-sec m-card"><p>${namesHtml(String(text).charAt(0).toUpperCase() + String(text).slice(1))}</p></div>` : "";
   const home = placeName(a.living_area) || place(a.living_area);
-  const who = a.age || home || a.innate ? `<section class="prof-sec m-card">${head("Who they are")}<dl class="facts">${a.age ? `<dt>Age</dt><dd>${esc(a.age)}</dd>` : ""}${home ? `<dt>Home</dt><dd>${esc(home)}</dd>` : ""}${a.innate ? `<dt>Traits</dt><dd>${esc(a.innate)}</dd>` : ""}</dl></section>` : "";
+  const who = a.age || home || a.innate ? `${head("Who they are")}<div class="prof-sec m-card"><dl class="facts">${a.age ? `<dt>Age</dt><dd>${esc(a.age)}</dd>` : ""}${home ? `<dt>Home</dt><dd>${esc(home)}</dd>` : ""}${a.innate ? `<dt>Traits</dt><dd>${esc(a.innate)}</dd>` : ""}</dl></div>` : "";
   paint($("a-profile"), `
     ${sec("What's at stake", a.stake)}
     ${sec("Cares about", a.values)}
@@ -4197,19 +4263,31 @@ function renderAgent() {
     <div class="convo-fade"></div>`);
 }
 
+// Escaped text with each agent's full or first name in their color.
+function namesHtml(text) {
+  const forms = rosterOrder().flatMap((n) => [[n, n], [firstName(n), n]]).sort((a, b) => b[0].length - a[0].length);
+  if (!forms.length) return esc(text);
+  const who = new Map(forms), re = new RegExp(`\\b(${forms.map(([f]) => f.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})\\b`, "g");
+  return esc(text).replace(re, (m) => `<span class="c-agent" style="color:${agentColor(who.get(m))}">${m}</span>`);
+}
+
 // "Tue 14:09".
 function dayTime(d) {
   return d ? `${d.toLocaleDateString(undefined, {weekday: "short"})} ${d.toTimeString().slice(0, 5)}` : "";
 }
 const MOVED_SHOWN = 8;
 
-function mindHtml(a) {
+// "Moderate opposition ▲ 35/100 +10 · Tue 22:00", shown above every agent tab.
+function stanceLineHtml(a) {
   const st = agentStance(a.name);
   const every = data?.settings?.opinion_steps || 0, step = data?.sim?.step || 0;
-  const bar = st
-    ? `<span class="mind-stance" data-tip-html="${esc(stanceTipHtml(a.name, st))}">${stanceArrow(a.name, false)}${st.score}/100 · ${esc(st.label)}${st.before != null && st.before !== st.score ? ` ${stanceChangeHtml(st.score - st.before)}` : ""}</span><span class="when">${esc(dayTime(parseGameTime(st.time)))}</span>`
+  return st
+    ? `<span class="mind-stance" data-tip-html="${esc(stanceTipHtml(a.name, st))}"><span class="lbl">${esc(st.label)}</span>${stanceArrow(a.name, false)}${st.score}/100${st.before != null && st.before !== st.score ? ` ${stanceChangeHtml(st.score - st.before)}` : ""}</span><span class="when">${esc(dayTime(parseGameTime(st.time)))}</span>`
     : `<span class="mind-stance none">${view ? "No stance readings in this run." : every ? `No stance readings yet. The first comes at step ${(Math.floor(step / every) + 1) * every}.` : "Stance readings are off. Turn them on in settings."}</span>`;
+}
 
+function mindHtml(a) {
+  const st = agentStance(a.name);
   // What reached them, live from the run's logs: whispers (with their stance either
   // side) and conversations. Their memories, and what each reading cited, are in Memory.
   const readings = (data?.opinions || []).filter((r) => r.name === a.name && r.score != null).sort((x, y) => (x.step || 0) - (y.step || 0));
@@ -4220,7 +4298,7 @@ function mindHtml(a) {
   const items = [];
   for (const w of data?.whispers || []) {
     const r = w.received?.[a.name];
-    if (r) items.push({date: parseGameTime(r.time), html: row("◆ Whisper", around(r.step || 0) + dayTime(parseGameTime(r.time)), `“${w.text || ""}”`, `data-moved-whisper="${esc(w.id)}"`)});
+    if (r) items.push({date: parseGameTime(r.time), html: row("Whisper ◆", around(r.step || 0) + dayTime(parseGameTime(r.time)), `“${w.text || ""}”`, `data-moved-whisper="${esc(w.id)}"`)});
   }
   for (const c of data?.conversations || []) {
     if (!(c.speakers || []).includes(a.name)) continue;
@@ -4232,16 +4310,15 @@ function mindHtml(a) {
   const viewText = a.currently || "";
   const hist = a.history || [];
   const talking = a.chatting_with && a.chat && a.chat.length;
-  return `<div class="convo-bar mind-bar">${bar}</div>
-    ${st?.rationale ? `<p class="mind-why m-card">${esc(st.rationale)}</p>` : ""}
+  return `${st?.rationale ? `<div class="convo-day">Their reasoning</div><p class="mind-why m-card">${namesHtml(st.rationale)}</p>` : ""}
     ${talking ? `<button class="convo-row" type="button" data-toggle-chat><span class="convo-main"><span class="convo-top"><span class="pair">Talking with ${esc(firstName(a.chatting_with))} ${nowChatOpen ? "↓" : "→"}</span><span class="when">now</span></span></span></button>
       ${nowChatOpen ? `<div class="chat mini">${a.chat.map(([who, text]) => `
         <div class="msg ${who === a.name ? "right" : "left"}" style="--who:${agentColor(who)}"><img src="${sprite(who)}" alt="${esc(who)}"><div class="msg-lines"><div class="msg-text">${esc(text)}</div></div></div>`).join("")}</div>` : ""}` : ""}
     ${viewText ? `<div class="convo-day">${view ? "How they saw things when the run was saved" : "How they see things"}</div>
-      <div class="m-card"><p class="view-text${nowViewOpen ? "" : " clamp"}">${esc(viewText)}</p>
+      <div class="m-card"><p class="view-text${nowViewOpen ? "" : " clamp"}">${namesHtml(viewText)}</p>
+      ${nowHistOpen ? `<div class="mind-hist">${hist.slice().reverse().map((h) => row(`Step ${h.step}`, esc(h.time || ""), h.currently || "")).join("")}</div>` : ""}
       <div class="mind-links">${viewText.length > 200 ? `<button class="w-link" type="button" data-toggle-view>${nowViewOpen ? "Show less" : "Show more"}</button>` : ""}
-      ${hist.length > 1 ? `<button class="w-link" type="button" data-toggle-hist>${nowHistOpen ? "Hide earlier views" : `Changed ${hist.length - 1} time${hist.length === 2 ? "" : "s"}`}</button>` : ""}</div>
-      ${nowHistOpen ? `<div class="mind-hist">${hist.slice().reverse().map((h) => row(`Step ${h.step}`, esc(h.time || ""), h.currently || "")).join("")}</div>` : ""}</div>` : ""}
+      ${hist.length > 1 ? `<button class="w-link" type="button" data-toggle-hist>${nowHistOpen ? "Hide earlier views" : `Changed ${hist.length - 1} time${hist.length === 2 ? "" : "s"}`}</button>` : ""}</div></div>` : ""}
     <div class="convo-day mind-head"><span>What reached them</span>${whisperLive() ? `<button class="w-link" type="button" data-whisper-to="${esc(a.name)}" title="It becomes one of their memories, as if they'd heard it themselves">Write a whisper</button>` : ""}</div>
     ${shown.length ? shown.map((x) => x.html).join("") : `<div class="empty">No whispers or conversations yet.</div>`}
     ${items.length > MOVED_SHOWN ? `<button class="w-link mind-more" type="button" data-moved-all>${movedAll ? "Show fewer" : `Show all ${items.length}`}</button>` : ""}
@@ -4251,21 +4328,9 @@ function mindHtml(a) {
     const tag = attrs && attrs.startsWith("data-") ? "button" : "div";
     return `<${tag} class="convo-row${tag === "div" ? " static" : ""}"${tag === "button" ? ` type="button"` : ""} ${attrs || ""}><span class="convo-main">
       <span class="convo-top"><span class="pair">${labelIsHtml ? label : esc(label)}</span><span class="when">${esc(when)}</span></span>
-      ${text ? `<span class="convo-sum">${esc(text)}</span>` : ""}</span></${tag}>`;
+      ${text ? `<span class="convo-sum">${namesHtml(text)}</span>` : ""}</span></${tag}>`;
   }
 }
-
-function scrollPlanToCurrent() {
-  const pane = $("a-plan");
-  const cur = pane.querySelector(".plan-row.current");
-  const a = data?.sim?.agent;
-  scrollPlanToCurrent.key = a ? `${a.name}:${a.schedule_idx}` : null;
-  if (!cur) return;
-  // scrollIntoView would also scroll the page.
-  const offset = cur.getBoundingClientRect().top - pane.getBoundingClientRect().top;
-  pane.scrollTop += offset - pane.clientHeight / 2 + cur.offsetHeight / 2;
-}
-
 
 $("inspector").addEventListener("mousemove", chartTipMove);
 $("inspector").addEventListener("mouseleave", () => { $("chart-tip").hidden = true; });
@@ -4295,11 +4360,6 @@ $("ask-form").onsubmit = (e) => {
 const askMine = (text) => `<div class="msg right" style="--who:var(--muted)"><div class="msg-lines"><div class="msg-name">You</div><div class="msg-text">${esc(text)}</div></div></div>`;
 const askTheirs = (html) => `<div class="msg left" style="--who:${agentColor(openAgent)}"><img src="${sprite(openAgent)}" alt=""><div class="msg-lines"><div class="msg-name">${esc(openAgent.split(" ")[0])}</div><div class="msg-text">${html}</div></div></div>`;
 $("ask-reset").onclick = () => { if (openAgent) send(`call -- interview ${openAgent} ;; end_convo`, true); };
-const ASK_SUGGESTION = "How do you feel about the datacenter?";
-$("ask-log").addEventListener("click", (e) => {
-  const q = e.target.closest("[data-ask-suggest]")?.dataset.askSuggest;
-  if (q) { $("ask-input").value = q; $("ask-input").focus(); }
-});
 
 function renderInterview() {
   // Interviews need the run loaded, so saved runs don't get the tab at all.
@@ -4310,7 +4370,6 @@ function renderInterview() {
   if (view) { paint($("ask-log"), ""); return; }
   if (!openAgent) { paint($("ask-log"), `<div class="empty">Agents appear here once a simulation is running.</div>`); return; }
   const first = openAgent.split(" ")[0];
-  document.querySelector("#a-ask .ask-label").textContent = `Interview with ${first}`;
   $("ask-input").placeholder = `Ask ${first} something`;
   const prefix = `call -- interview ${openAgent} ;; `;
   let bubbles = [];
@@ -4327,7 +4386,7 @@ function renderInterview() {
     }
   }
   paint($("ask-log"), bubbles.length ? `<div class="chat">${bubbles.join("")}</div>`
-    : `<div class="convo-day">Try asking</div><button class="convo-row" type="button" data-ask-suggest="${esc(ASK_SUGGESTION)}"><span class="convo-main"><span class="convo-top"><span class="pair">${esc(ASK_SUGGESTION)}</span></span></span></button>`);
+    : `<div class="ask-empty" style="--who:${agentColor(openAgent)}"><img src="${sprite(openAgent)}" alt=""><span>Start a conversation with <b>${esc(first)}</b></span></div>`);
 }
 
 /* ---------------- header + map ---------------- */
@@ -4684,6 +4743,7 @@ const usd = (n) => n == null ? "n/a" : n >= 100 ? `$${n.toFixed(0)}` : n >= 1 ? 
 const num = (n) => n >= 1e6 ? `${(n / 1e6).toFixed(2)}M` : n >= 1e4 ? `${(n / 1e3).toFixed(1)}k` : String(Math.round(n || 0));
 
 let usageScope = "run";
+let usageFailsOpen = false;
 let usageMeasure = "cost";
 const USAGE_SCOPES = [["run", "Run", "This run"], ["today", "Today", "Today"], ["all", "All", "All time"]];
 const MEASURES = {
@@ -4691,19 +4751,9 @@ const MEASURES = {
   tokens: {label: "Tokens", title: "Tokens", noun: "tokens", of: (g) => g.in + g.out, at: 2, fmt: (n) => num(n), axis: (n) => axisNum(n)},
   calls: {label: "Calls", title: "Calls", noun: "calls", of: (g) => g.calls, at: 3, fmt: (n) => num(n), axis: (n) => axisNum(n)},
 };
-const MIX_COLORS = ["#3b6ea5", "#b08b1e", "#2a8f8f", "#a8456b", "#6b6f3f", "#b4552d"];
 const COPY_ICON = `<svg viewBox="0 0 24 24" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>`;
 const CHECK_ICON = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>`;
 const errorText = (e) => `${new Date(e.ts * 1000).toISOString()} ${e.model || "?"}${e.status ? ` HTTP ${e.status}` : ""}${e.persona ? ` ${e.persona}` : ""}\n${e.error || ""}`;
-
-function mixStack(groups, label, m) {
-  if (!groups.length) return `<div class="u-stack"><i style="width:100%;background:var(--line)"></i></div><div class="u-key">None yet</div>`;
-  const sorted = groups.slice().sort((a, b) => m.of(b) - m.of(a));
-  const total = sorted.reduce((t, g) => t + m.of(g), 0) || 1;
-  const color = (i) => MIX_COLORS[i % MIX_COLORS.length];
-  return `<div class="u-stack">${sorted.map((g, i) => `<i style="width:${(m.of(g) / total) * 100}%;background:${color(i)}" data-tip="${esc(`${label(g.name)}\nCost ${usd(g.cost)}\nCalls ${num(g.calls)}\nTokens ${num(g.in + g.out)}`)}" data-tip-color="${color(i)}"></i>`).join("")}</div>
-    <div class="u-key">${sorted.map((g, i) => `<span><i style="background:${color(i)}"></i>${esc(label(g.name))}</span>`).join("")}</div>`;
-}
 
 function labelWidth(texts) {
   const c = (labelWidth.c ||= document.createElement("canvas").getContext("2d"));
@@ -4785,11 +4835,10 @@ function renderUsage() {
   const perMin = (x) => x / (r5.minutes || 5);
   const lat = u.latency;
   const sc = u.scopes[usageScope], t = sc.totals;
+  if (!sc.errors.length) usageFailsOpen = false;
   const m = MEASURES[usageMeasure];
   const agents = sc.agents.slice().sort((a, b) => m.of(b) - m.of(a));
   const agentAxis = niceAxis(Math.max(0, ...agents.map(m.of)), 2);
-  const source = (n) => n === "step" ? "steps" : n;
-  const model = (n) => n.replace(/^text-embedding-3-.*/, "embeddings");
   // Per game hour counts the run's step calls only, for every measure.
   const perGameHour = usageScope !== "run" || !u.game_hours || !u.steps ? null : m.of(u.steps) / u.game_hours;
   const live = !view && data?.status === "running";
@@ -4805,30 +4854,23 @@ function renderUsage() {
   paint($("p-usage"), `
     ${u.unpriced.length ? `<div class="warn-box">No price set for ${u.unpriced.map(esc).join(", ")}, so those calls count as $0. Add it to PRICES in translator/dashboard.py.</div>` : ""}
     <div class="u-grid">
-      <div class="u-col"><div class="u-tools">
-        ${segs("Measure", Object.entries(MEASURES).map(([k, x]) => [k, x.label, x.title]), usageMeasure)}${segs("Time range", USAGE_SCOPES, usageScope)}
-        </div><section class="u-card u-grow"><h3 title="${usageScope === "run" ? "Per hour of game time" : sc.series.size >= 86400 ? "Per day" : "Per hour of real time"}">${m.title} over time</h3>${none ? "" : spendChart(sc.series, m)}</section></div>
-      <section class="u-card"><h3>${m.title} by agent</h3>${none ? "" : agents.length ? `<div class="u-hbars" style="--name-w:${labelWidth(agents.map((g) => firstName(g.name)))}px"><div class="u-agents">${agents.map((g) => `
-        <div class="u-agent" style="--who:${agentColor(g.name)};--ticks:${agentAxis.ticks}" data-tip="${esc(`${g.name}\nCost ${usd(g.cost)}\nCalls ${num(g.calls)}\nTokens ${num(g.in + g.out)}`)}" data-tip-color="${agentColor(g.name)}">
-          <img src="${sprite(g.name)}" alt=""><span>${esc(firstName(g.name))}</span><span class="t">${(() => { const v = m.of(g), pct = (v / agentAxis.top) * 100; return pct >= 30 ? `<i style="width:${pct}%">${m.fmt(v)}</i>` : `<i style="width:${pct}%"></i><em>${m.fmt(v)}</em>`; })()}</span>
-        </div>`).join("")}</div>
-        <div class="x-ticks">${Array.from({length: agentAxis.ticks + 1}, (_, k) => `<span style="left:${(k / agentAxis.ticks) * 100}%">${m.axis(agentAxis.top * k / agentAxis.ticks)}</span>`).join("")}</div></div>`
-        : (() => {
-          const names = data?.sim?.persona_order?.length ? data.sim.persona_order : Array.from({length: 6}, () => "");
-          return `<div class="u-hbars" style="--name-w:${names[0] ? labelWidth(names.map(firstName)) : 44}px"><div class="u-agents">${names.map((n) => `
-            <div class="u-agent" style="--who:${n ? agentColor(n) : "var(--line)"};--ticks:1">${n ? `<img src="${sprite(n)}" alt=""><span>${esc(firstName(n))}</span>`
-              : `<span class="skel-box"></span><span class="skel-name"></span>`}<span class="t"></span></div>`).join("")}</div>
-            <div class="x-ticks"><span style="left:0%">${m.axis(0)}</span></div></div>`;
-        })()}</section>
-      <div class="u-col"><section class="u-card u-mix"><h3>By model</h3>${none ? "" : mixStack(sc.models, model, m)}</section>
-        <section class="u-card u-mix"><h3>What triggered it</h3>${none ? "" : mixStack(sc.sources, source, m)}</section>
-                <section class="u-card u-fails"><h3>Failed calls</h3><div class="u-errlog">${sc.errors.length ? sc.errors.map((e, i) => `
-          <div class="result err" data-tip="${esc(`${e.model || "?"}${e.status ? ` · HTTP ${e.status}` : ""} · ${when(e.ts)}${e.persona ? ` · ${e.persona}` : ""}\n${e.error || ""}`)}" data-tip-color="var(--brick)">
-            <span class="cmd">${e.status || "err"}</span><span class="msg">${esc(when(e.ts))}${e.persona ? ` ${esc(firstName(e.persona))}` : ""} · ${esc((e.error || "").replace(/^(\w+Error): /, ""))}</span>
-            <button class="u-copy" type="button" data-u-copy="${i}" aria-label="Copy this error" title="Copy">${COPY_ICON}</button></div>`).join("") : ""}</div></section></div>
+      <div class="u-tools">${segs("Measure", Object.entries(MEASURES).map(([k, x]) => [k, x.label, x.title]), usageMeasure)}${segs("Time range", USAGE_SCOPES, usageScope)}${sc.errors.length ? `<button class="w-link u-fails-link" type="button" data-u-fails>${usageFailsOpen ? "Back to charts" : `${sc.errors.length} failed call${sc.errors.length === 1 ? "" : "s"}`}</button>` : ""}</div>
+      ${usageFailsOpen && sc.errors.length ? "" : `<div class="u-row u-top">
+        <div class="u-col"><div class="convo-day" title="${usageScope === "run" ? "Per hour of game time" : sc.series.size >= 86400 ? "Per day" : "Per hour of real time"}">${m.title} over time</div>
+          <section class="u-card u-time">${none ? "" : spendChart(sc.series, m)}</section></div>
+        <div class="u-col"><div class="convo-day">${m.title} by agent</div><section class="u-card">${none ? "" : agents.length ? `<div class="u-hbars" style="--name-w:${labelWidth(agents.map((g) => firstName(g.name)))}px"><div class="u-agents">${agents.map((g) => `
+          <div class="u-agent" style="--who:${agentColor(g.name)};--ticks:${agentAxis.ticks}" data-tip="${esc(`${g.name}\nCost ${usd(g.cost)}\nCalls ${num(g.calls)}\nTokens ${num(g.in + g.out)}`)}" data-tip-color="${agentColor(g.name)}">
+            <img src="${sprite(g.name)}" alt=""><span>${esc(firstName(g.name))}</span><span class="t">${(() => { const v = m.of(g), pct = (v / agentAxis.top) * 100; return pct >= 30 ? `<i style="width:${pct}%">${m.fmt(v)}</i>` : `<i style="width:${pct}%"></i><em>${m.fmt(v)}</em>`; })()}</span>
+          </div>`).join("")}</div>
+          <div class="x-ticks">${Array.from({length: agentAxis.ticks + 1}, (_, k) => `<span style="left:${(k / agentAxis.ticks) * 100}%">${m.axis(agentAxis.top * k / agentAxis.ticks)}</span>`).join("")}</div></div>`
+          : `<div class="empty">No calls from agents in this range.</div>`}</section></div>
+      </div>`}
+      ${usageFailsOpen && sc.errors.length ? `<div class="convo-day">Failed calls</div><section class="u-card u-fails"><div class="u-errlog">${sc.errors.map((e, i) => `
+        <div class="result err" data-tip="${esc(`${e.model || "?"}${e.status ? ` · HTTP ${e.status}` : ""} · ${when(e.ts)}${e.persona ? ` · ${e.persona}` : ""}\n${e.error || ""}`)}" data-tip-color="var(--brick)">
+          <span class="cmd">${e.status || "err"}</span><span class="msg">${esc(when(e.ts))}${e.persona ? ` ${esc(firstName(e.persona))}` : ""} · ${esc((e.error || "").replace(/^(\w+Error): /, ""))}</span>
+          <button class="u-copy" type="button" data-u-copy="${i}" aria-label="Copy this error" title="Copy">${COPY_ICON}</button></div>`).join("")}</div></section>` : ""}
     </div>`);
   thinTicks($("p-usage"));
-  fadeErrlog();
 }
 function thinTicks(root) {
   for (const axis of root.querySelectorAll(".x-ticks")) {
@@ -4844,14 +4886,7 @@ function thinTicks(root) {
     });
   }
 }
-function fadeErrlog() {
-  const l = document.querySelector(".u-errlog");
-  if (!l) return;
-  l.style.setProperty("--fade-top", l.scrollTop > 1 ? "14px" : "0px");
-  l.style.setProperty("--fade-bottom", l.scrollTop + l.clientHeight < l.scrollHeight - 1 ? "14px" : "0px");
-}
-$("p-usage").addEventListener("scroll", (e) => { if (e.target.matches?.(".u-errlog")) fadeErrlog(); }, true);
-new ResizeObserver(() => { thinTicks($("p-usage")); fadeErrlog(); }).observe($("p-usage"));
+new ResizeObserver(() => thinTicks($("p-usage"))).observe($("p-usage"));
 
 function chartTipMove(e) {
   const el = e.target.closest("[data-tip], [data-tip-html]"), tip = $("chart-tip");
@@ -4874,7 +4909,10 @@ function chartTipMove(e) {
   tip.style.left = `${Math.max(8, Math.min(x, innerWidth - w - 8))}px`;
   tip.style.top = `${Math.max(8, Math.min(y, innerHeight - h - 8))}px`;
 }
-function markListEnd(pane) { pane.classList.toggle("at-end", pane.scrollTop + pane.clientHeight >= pane.scrollHeight - 2); }
+function markListEnd(pane) {
+  pane.classList.toggle("at-end", pane.scrollTop + pane.clientHeight >= pane.scrollHeight - 2);
+  pane.classList.toggle("scrolled", pane.scrollTop > 2);
+}
 for (const id of ["p-convos", "p-events", "p-log", "a-mind", "a-memory", "a-plan", "a-profile"]) {
   const pane = $(id);
   pane.addEventListener("scroll", () => markListEnd(pane), {passive: true});
@@ -4905,8 +4943,9 @@ $("usage-kpis").addEventListener("mouseleave", () => { $("chart-tip").hidden = t
 $("p-usage").addEventListener("mouseleave", () => { $("chart-tip").hidden = true; });
 $("p-usage").addEventListener("click", (e) => {
   const scope = e.target.closest("[data-u-scope]"), measure = e.target.closest("[data-u-measure]");
-  if (scope) { usageScope = scope.dataset.uScope; renderUsage(); }
+  if (scope) { usageScope = scope.dataset.uScope; usageFailsOpen = false; renderUsage(); }
   if (measure) { usageMeasure = measure.dataset.uMeasure; renderUsage(); }
+  if (e.target.closest("[data-u-fails]")) { usageFailsOpen = !usageFailsOpen; renderUsage(); }
 });
 $("p-usage").addEventListener("click", (e) => {
   const copy = e.target.closest("[data-u-copy]");

@@ -15,7 +15,7 @@ const element = (id) => {
 const drawn = {};
 const context = vm.createContext({
   data: null, view: null, selected: null, drawn, $: element,
-  document: {getElementById: () => null},
+  document: {getElementById: () => null, addEventListener() {}},
   esc: (s) => String(s ?? "").replace(/[&<>"']/g, (c) =>
     ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c])),
   paint: (el, value) => { el.innerHTML = value; drawn[el.id] = value; },
