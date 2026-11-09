@@ -103,14 +103,43 @@
 	let pre_anims_direction;
 	let pre_anims_direction_dict = {};
 	let pegs = {};   // persona name -> visible peg sprite
-	const PEG_LIFT = 24;   // the 3x peg is taller than the old character; its bubble sits higher
+	// Pixel speech bubble: white box, black border with stepped corners, and a stepped
+	// tail. The container's origin is the tail's tip, placed just above the peg's head.
+	const BUB = 3;   // one art pixel, the same size as the pegs' pixels
+	function speechBubble(scene, text) {
+	  const label = scene.add.text(0, 0, text, {font: "bold 26px monospace", fill: "#000000"});
+	  const gfx = scene.add.graphics();
+	  const box = scene.add.container(0, 0, [gfx, label]).setDepth(3);
+	  box.setText = (t) => {
+	    label.setText(t);
+	    const u = BUB, w = Math.ceil(label.width / u) * u + 8 * u, h = Math.ceil(label.height / u) * u + 4 * u;
+	    const tx = 4 * u, tail = 4 * u;          // tail column and depth
+	    const ox = -tx - u, oy = -(h + tail);      // shift so the tail tip sits at (0, 0)
+	    gfx.clear().fillStyle(0x000000);
+	    gfx.fillRect(ox + u, oy, w - 2 * u, h).fillRect(ox, oy + u, w, h - 2 * u);   // border, stepped corners
+	    for (let i = 0; i < tail / u; i++) gfx.fillRect(ox + tx - u, oy + h - u + i * u, (tail / u - i + 1) * u, u);
+	    gfx.fillStyle(0xffffff);
+	    gfx.fillRect(ox + 2 * u, oy + u, w - 4 * u, h - 2 * u).fillRect(ox + u, oy + 2 * u, w - 2 * u, h - 4 * u);
+	    for (let i = 0; i < tail / u - 1; i++) gfx.fillRect(ox + tx, oy + h - u + i * u, (tail / u - i - 1) * u, u);
+	    label.setPosition(ox + 4 * u, oy + 2 * u);
+	    return box;
+	  };
+	  return box.setText(text);
+	}
+	// Tail tip just above the peg's head (the peg's feet are on the tile's bottom edge, 72px tall).
+	function placeBubble(name) {
+	  const b = personas[name].body;
+	  pronunciatios[name].setPosition(b.x + tile_width / 2 - 6, b.y + tile_width - 72 - 2)
+	    .setDepth(3 + b.y * 1e-6);
+	}
 	const PEG_FACING = {d: 0, l: 1, r: 2, u: 3};
 	const pegRow = (i, d) => (i % 8) * 4 + PEG_FACING[d || "d"];
 	const pegIndex = (name) => Object.keys(spawn_tile_loc).indexOf(name);
 	// Feet on the bottom edge of the persona's tile, centered on it.
 	function syncPeg(name) {
 	  const b = personas[name].body;
-	  pegs[name].setPosition(b.x + tile_width / 2, b.y + tile_width);
+	  pegs[name].setPosition(b.x + tile_width / 2, b.y + tile_width)
+	    .setDepth(2.5 + b.y * 1e-6);   // lower on the map draws in front
 	}
 
 	let curr_maze = "the_ville";
@@ -316,19 +345,11 @@
 	    personas[persona_name] = new_sprite;
 	    // The physics sprite still does the moving; a peg in the persona's color is drawn on it.
 	    new_sprite.setVisible(false);
-	    pegs[persona_name] = this.add.sprite(0, 0, "pegs", pegRow(i, "d") * 3).setOrigin(0.5, 1).setScale(3)
-	      .setDepth(2.5);   // above the foreground layer (depth 2) so the taller peg's head is never cut off; below the bubbles (3)
+	    // Depth is set in syncPeg: above the foreground layer (2) so heads aren't cut off, below the bubbles (3).
+	    pegs[persona_name] = this.add.sprite(0, 0, "pegs", pegRow(i, "d") * 3).setOrigin(0.5, 1).setScale(3);
 	    syncPeg(persona_name);
-	    pronunciatios[persona_name] = this.add.text(
-	                                   new_sprite.body.x - 6, 
-	                                   new_sprite.body.y - 42 - 32 - PEG_LIFT, // DEBUG 1 --- I added 32 offset on Dec 29. 
-	                                   "🦁", {
-	                                   font: "28px monospace", 
-	                                   fill: "#000000", 
-	                                   padding: { x: 8, y: 8}, 
-	                                   backgroundColor: "#ffffff",
-	                                   border:"solid",
-	                                   borderRadius:"10px"}).setDepth(3);
+	    pronunciatios[persona_name] = speechBubble(this, "🦁");
+	    placeBubble(persona_name);
 	  }
 
 	  // Peg walk cycles, one per color and facing.
@@ -449,7 +470,6 @@
 	    for (let i=0; i<Object.keys(personas).length; i++) {
 	      let curr_persona_name = Object.keys(personas)[i];
 	      let curr_persona = personas[curr_persona_name];
-	      let curr_pronunciatio = pronunciatios[Object.keys(personas)[i]];
 
 	      if (execute_count == execute_count_max) { 
 	        let curr_x = execute_movement["persona"][curr_persona_name]["movement"][0];
@@ -495,8 +515,7 @@
 	        }
 
 	        syncPeg(curr_persona_name);
-        curr_pronunciatio.x = curr_persona.body.x - 6; 
-          curr_pronunciatio.y = curr_persona.body.y - 42 - 32 - PEG_LIFT; // DEBUG 1 --- I added 32 offset on Dec 29. 
+        placeBubble(curr_persona_name);
 
           const peg = pegs[curr_persona_name], ci = pegIndex(curr_persona_name);
           if (anims_direction) {
@@ -518,6 +537,7 @@
 	          curr_persona.body.x = movement_target[curr_persona_name][0];
 	          curr_persona.body.y = movement_target[curr_persona_name][1];
 	          syncPeg(curr_persona_name);
+	          placeBubble(curr_persona_name);
 	        }
 	        phase = "process";
 	        execute_count = execute_count_max + 1;
