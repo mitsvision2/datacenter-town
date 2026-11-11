@@ -125,8 +125,10 @@ def _run_log(sim, name, n, start):
 
 
 def _opinions(rows):
-  """Stance readings without their evidence ids, which only the agent view needs."""
-  return [{k: v for k, v in r.items() if k != "evidence"} for r in rows]
+  """Stance readings without evidence ids or selection cosines; the graph only
+  needs the numbers."""
+  return [{k: v for k, v in r.items() if k not in ("evidence", "selection")}
+          for r in rows]
 
 
 EVIDENCE_SHOWN = 5
