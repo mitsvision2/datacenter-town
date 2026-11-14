@@ -28,6 +28,7 @@ import os
 import shutil
 import sys
 import traceback
+import uuid
 
 from selenium import webdriver
 
@@ -41,6 +42,8 @@ from sim_logging import get_logger, setup_logging
 from dashboard_bridge import CommandFeed, record_result, write_state, load_settings
 from llm import usage
 import run_env
+import whisper_plan
+from whisper_trace import WhisperTrace
 
 log = get_logger("reverie")
 
@@ -184,6 +187,13 @@ class ReverieServer:
       reverie_meta["persona_names"], scenario_id=scenario_id)
     self.experiment_logger.write_manifest()
     set_experiment_logger(self.experiment_logger)
+
+    # Whispers planned from the dashboard. A fork inherits what is still
+    # scheduled, and redelivers anything its parent sent after its last save.
+    self.whispers = whisper_plan.Plan(sim_folder)
+    self.whispers.forget_unsaved()
+    self.whisper_trace = WhisperTrace(sim_folder, self.whispers)
+    self.whisper_trace.forget_unsaved(self.step)
     log.info(
       "Reverie ready: personas=%s step=%s time=%s maze=%s scenario=%s",
       reverie_meta["persona_names"], self.step, self.curr_time,
@@ -230,6 +240,7 @@ class ReverieServer:
         self.step, self.curr_time, self.personas)
       self.experiment_logger.log_outcomes(
         self.step, self.curr_time, self.personas, note="save")
+    self.whispers.mark_saved(self.step)
     log.info("Save complete for %s", self.sim_code)
 
 
@@ -291,6 +302,107 @@ class ReverieServer:
     finally:
       for p in unclocked:
         p.scratch.curr_time = None
+
+
+  def deliver_due_whispers(self):
+    """
+    Sends every planned whisper whose time has come, one recipient at a time,
+    and records each so the dashboard can show progress and a cancel can stop
+    the rest. A recipient that fails is recorded and the run carries on. Past
+    the spending cap whispers wait, as a run would, until the cap is raised.
+
+    OUTPUT
+      True if anything was delivered or failed.
+    """
+    delivered = False
+    caller = dict(usage.context)
+    try:
+      while True:
+        due = self.whispers.next_due(self.curr_time)
+        if not due:
+          break
+        cap = load_settings().get("budget_usd")
+        if cap is not None and usage.run_cost >= cap:
+          break
+        whisper, name = due
+        usage.context.update(persona=name, source="whisper", step=self.step)
+        now = self.curr_time.strftime(whisper_plan.TIME_FORMAT)
+        if whisper["status"] == "scheduled":
+          self.whispers.record({"op": "started", "id": whisper["id"], "time": now})
+        row = {"id": whisper["id"], "agent": name, "step": self.step, "time": now}
+        try:
+          self._load_whispers([[name, whisper["text"]]])
+          row["op"] = "sent"
+        except Exception as e:
+          log.exception("Whisper %s to %s failed", whisper["id"], name)
+          row.update(op="failed", error=f"{type(e).__name__}: {e}"[:300])
+        # Recorded the moment the memory exists, before anything else can fail, or
+        # the agent would be told again.
+        self.whispers.record(row)
+        delivered = True
+        if row["op"] == "sent":
+          log.info("Whisper %s sent to %s: %s", whisper["id"], name,
+                   whisper["text"][:160])
+          try:
+            self.experiment_logger.log_event(
+              self.step, self.curr_time, "midrun_whisper", agent=name,
+              text=whisper["text"], extra={"whisper_id": whisper["id"]})
+          except Exception:
+            log.exception("Could not log whisper %s to %s", whisper["id"], name)
+    finally:
+      usage.context.update(caller)
+    return delivered
+
+
+  def trace_whispers(self):
+    """
+    Checks this step's conversations for whispers someone in them knew. Measurement
+    only, so it reads transcripts and leaves agents alone, it is billed apart from
+    the step, and a problem here is logged rather than allowed to end the run.
+    """
+    conversations = self.experiment_logger.new_conversations
+    if not conversations:
+      return
+    self.experiment_logger.new_conversations = []
+    caller = dict(usage.context)
+    usage.context.update(persona=None, source="whisper_trace", step=self.step)
+    try:
+      for conversation in conversations:
+        try:
+          self.whisper_trace.check(conversation, run_gpt_prompt_whisper_mention)
+        except Exception:
+          log.exception("Whisper trace failed for %s", conversation.get("speakers"))
+    finally:
+      usage.context.update(caller)
+
+
+  def plan_console_whisper(self, command):
+    """
+    Plans a whisper typed in the console or the terminal, so it goes out the way a
+    dashboard whisper does, including in the middle of a run. Runs on the command
+    feed's thread: it only reads the cast and appends to the plan, and the main
+    thread does the delivering.
+
+    OUTPUT
+      (ok, what to tell whoever typed it)
+    """
+    target_part, _, text = command[len("call -- whisper"):].partition(";;")
+    # The same rules as the dashboard: one line, and a length the thought fits.
+    target_part, text = target_part.strip(), " ".join(text.split())
+    targets = (list(self.personas.keys()) if target_part.lower() == "all"
+               else [name.strip() for name in target_part.split(",") if name.strip()])
+    if not targets or not text:
+      return False, "Usage: call -- whisper <Agent Name, Agent Name|all> ;; <text>\n"
+    if len(text) > whisper_plan.MAX_CHARS:
+      return False, f"Not sent: keep it under {whisper_plan.MAX_CHARS} characters.\n"
+    unknown = [name for name in targets if name not in self.personas]
+    if unknown:
+      return False, f"Not sent: {', '.join(unknown)} isn't in this run.\n"
+    self.whispers.record({"op": "add", "id": uuid.uuid4().hex[:10], "at": None,
+                          "text": text, "targets": targets})
+    log.info("Console whisper planned for %s: %s", targets, text[:160])
+    return True, (f"Going out to {', '.join(targets)}. The Whispers tab shows "
+                  f"when it arrives.\n")
 
 
   def start_path_tester_server(self): 
@@ -543,6 +655,13 @@ class ReverieServer:
                     "y": m["movement"][1]}
              for name, m in movements["persona"].items()})
 
+          # Before delivering: a conversation this step happened before any
+          # whisper sent this step, so it can't have carried it.
+          self.trace_whispers()
+          # After the agents have moved, so a whisper is stamped with this
+          # step's time on every agent's clock, and they act on it next step.
+          self.deliver_due_whispers()
+
           # After this cycle, the world takes one step forward, and the 
           # current time moves by <sec_per_step> amount. 
           self.step += 1
@@ -605,12 +724,19 @@ class ReverieServer:
     # Commands arrive from the terminal and from the web dashboard.
     self._stop_requested = False
     self._interviews = dict()
-    feed = CommandFeed(on_stop=self.request_stop, initial=initial_commands)
+    feed = CommandFeed(on_stop=self.request_stop, initial=initial_commands,
+                       on_whisper=self.plan_console_whisper)
     write_state(self, "idle")
 
     while True:
       print ("Enter option: ", end="", flush=True)
-      cmd_id, sim_command = feed.get()
+      # A whisper sent while idle goes out now, not when the next run starts.
+      item = None
+      while item is None:
+        item = feed.get(timeout=0.5)
+        if item is None and self.deliver_due_whispers():
+          write_state(self, "idle")
+      cmd_id, sim_command = item
       sim_command = sim_command.strip()
       ret_str = ""
       finished = False
@@ -822,15 +948,27 @@ class ReverieServer:
             for whisper in whispers: 
               clean_whispers += [[agent_name, whisper]]
 
-          self._load_whispers(clean_whispers)
-          log.info("Loaded history: %s whispers from %s",
-                   len(clean_whispers), curr_file)
-          if getattr(self, "experiment_logger", None):
-            for agent_name, whisper in clean_whispers:
+          # One at a time, so a memory that fails doesn't leave the ones before
+          # it stored but unlogged.
+          failed = []
+          for agent_name, whisper in clean_whispers:
+            try:
+              self._load_whispers([[agent_name, whisper]])
+            except Exception:
+              log.exception("Seed memory for %s failed: %s", agent_name, whisper)
+              failed += [agent_name]
+              continue
+            if getattr(self, "experiment_logger", None):
               self.experiment_logger.log_event(
                 self.step, self.curr_time, "history_whisper",
                 agent=agent_name, text=whisper,
                 extra={"source_file": curr_file})
+          log.info("Loaded history: %s of %s whispers from %s",
+                   len(clean_whispers) - len(failed), len(clean_whispers), curr_file)
+          if failed:
+            ret_str += (f"Loaded {len(clean_whispers) - len(failed)} of "
+                        f"{len(clean_whispers)} memories. Failed for: "
+                        f"{', '.join(failed)}. The Log tab has the errors.\n")
 
         elif ("call -- probe now" in sim_command.lower()):
           # Reads every agent's position on the datacenter right now instead
@@ -844,32 +982,6 @@ class ReverieServer:
                         f" {reading['rationale']}\n")
           if not readings:
             ret_str += "No agents have stepped yet, so there is nothing to read.\n"
-
-        elif ("call -- whisper" in sim_command.lower()):
-          # Mid-run event injection.
-          # Ex: call -- whisper Maya Okonkwo ;; The council posted the proposal summary.
-          # Ex: call -- whisper all ;; Utility company issued a statement on grid capacity.
-          payload = sim_command[len("call -- whisper"):].strip()
-          if ";;" not in payload:
-            ret_str += "Usage: call -- whisper <Agent Name|all> ;; <text>\n"
-          else:
-            target_part, whisper_text = payload.split(";;", 1)
-            target_part = target_part.strip()
-            whisper_text = whisper_text.strip()
-            if target_part.lower() == "all":
-              targets = list(self.personas.keys())
-            else:
-              targets = [target_part]
-            clean_whispers = [[name, whisper_text] for name in targets]
-            self._load_whispers(clean_whispers)
-            log.info("Mid-run whisper to %s agent(s): %s",
-                     len(clean_whispers), whisper_text[:160])
-            if getattr(self, "experiment_logger", None):
-              for agent_name, whisper in clean_whispers:
-                self.experiment_logger.log_event(
-                  self.step, self.curr_time, "midrun_whisper",
-                  agent=agent_name, text=whisper)
-            ret_str += f"Whispered to {len(clean_whispers)} agent(s).\n"
 
         print (ret_str)
         record_result(cmd_id, sim_command, True, ret_str)

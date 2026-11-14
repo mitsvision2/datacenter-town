@@ -308,6 +308,36 @@ table.usage th { color: var(--muted); font-weight: 600; }
 .social-legend i { width: 12px; height: 12px; border-radius: 50%; flex: none; }
 @media (max-width: 700px) { .bottom { padding: 0 16px 24px; } }
 
+/* ---------- whisper chart ---------- */
+/* min-width: a grid item is otherwise as wide as its longest whisper in the picker. */
+.trail { padding: 14px 16px 16px; position: relative; min-width: 0; }
+.trail-head { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; }
+.trail-head h2 { margin: 0; font-size: 15px; font-weight: 600; }
+.trail-select { flex: 0 1 auto; min-width: 0; max-width: 100%; border: 1px solid var(--line); background: var(--panel); border-radius: var(--radius-sm); padding: 5px 8px; font-size: 13px; }
+.trail-summary { margin: 8px 0 6px; font-size: 14px; max-width: 80ch; }
+.trail svg { width: 100%; height: auto; display: block; }
+.trail-lane { stroke: var(--line); }
+.trail-knows { stroke: var(--amber); stroke-width: 3; stroke-linecap: round; }
+.trail-link { stroke: var(--line); stroke-width: 1.5; }
+.trail-link.up { stroke: var(--amber); stroke-width: 2; }
+.trail-solid { fill: var(--amber); stroke: var(--panel); stroke-width: 2; }
+.trail-hollow { fill: var(--panel); stroke: var(--amber); stroke-width: 2; }
+.trail-other { fill: var(--faint); stroke: var(--panel); stroke-width: 2; }
+.trail-name { fill: var(--muted); font-size: 12px; }
+.trail-axis { fill: var(--faint); font-size: 11px; }
+.trail-hit { fill: transparent; outline: none; }
+.trail-future { fill: var(--panel); opacity: .72; pointer-events: none; }
+.trail-hit:focus { stroke: var(--ink); stroke-width: 1.5; }
+.trail-key { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 12px; color: var(--muted); margin-top: 6px; }
+.trail-key i { font-style: normal; color: var(--amber); margin-right: 4px; }
+.trail-key i.quiet { color: var(--faint); }
+.trail-events { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 2px; max-height: 340px; overflow: auto; }
+.trail-events li { display: grid; grid-template-columns: 84px minmax(0, 1fr); gap: 12px; padding: 8px 0; border-top: 1px solid var(--line); font-size: 14px; }
+.trail-events .when { color: var(--faint); font-size: 12px; }
+.trail-events blockquote { margin: 4px 0; padding-left: 10px; border-left: 2px solid var(--amber); max-width: 75ch; }
+.trail-events .how { color: var(--muted); max-width: 75ch; }
+@media (max-width: 560px) { .trail-events li { grid-template-columns: minmax(0, 1fr); gap: 2px; } }
+
 /* ---------- dialog ---------- */
 dialog {
   border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--panel);
@@ -321,6 +351,61 @@ dialog label { display: block; font-size: 13px; font-weight: 600; margin: 12px 0
 dialog input, dialog select { width: 100%; border: 1px solid var(--line); background: var(--paper); border-radius: var(--radius-sm); padding: 8px 10px; }
 dialog .row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
 .error-text { color: var(--brick); font-size: 13px; margin-top: 10px; min-height: 1em; }
+
+/* ---------- whispers ---------- */
+.w-bar { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; margin-bottom: 16px; }
+.w-bar .hint { margin: 0; }
+.w-plan { list-style: none; margin: 0 0 8px; padding: 0; display: grid; gap: 8px; }
+.w-plan li {
+  display: grid; grid-template-columns: 104px minmax(0, 1fr) auto; gap: 12px; align-items: start;
+  padding: 8px 10px; background: var(--paper); border-left: 3px solid var(--amber);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0; font-size: 14px;
+}
+.w-plan li[data-status="sending"] { border-left-color: var(--moss); }
+.w-plan li[data-status="failed"] { border-left-color: var(--brick); }
+.w-plan .when, .w-sent .when { color: var(--faint); font-size: 12px; }
+.w-plan .w-error { color: var(--brick); font-size: 12px; margin-top: 2px; }
+.w-actions { display: flex; gap: 6px; }
+
+#whisper-dialog { width: min(660px, calc(100vw - 32px)); }
+#w-drafts { counter-reset: whisper; }
+.w-draft { counter-increment: whisper; padding-bottom: 18px; margin-bottom: 18px; border-bottom: 1px solid var(--line); }
+.w-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+.w-title h3 { margin: 0; font-size: 15px; }
+.w-title h3::before { content: "Whisper " counter(whisper); }
+.w-draft:only-child .w-title { display: none; }
+.w-draft:only-child [data-w-pick="rest"] { display: none; }
+.w-draft:first-child [data-w-pick="same"] { display: none; }
+.w-row { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; margin: 12px 0 6px; }
+.w-row b, dialog label.w-label { font-size: 13px; font-weight: 600; margin: 0; }
+.w-count { color: var(--muted); font-size: 13px; }
+.w-quick { display: flex; gap: 12px; margin-left: auto; }
+.w-link { border: 0; background: none; padding: 0; color: var(--muted); cursor: pointer; font-size: 13px; text-decoration: underline dotted; text-underline-offset: 3px; }
+.w-link:hover { color: var(--ink); }
+.w-people { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+dialog label.w-pick {
+  display: flex; align-items: center; gap: 8px; margin: 0; padding: 4px 10px 4px 4px; cursor: pointer;
+  border: 1px solid var(--line); border-radius: var(--radius-sm); font-size: 14px; font-weight: 500; min-width: 0;
+}
+.w-pick span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.w-pick img { width: 28px; height: 28px; image-rendering: pixelated; flex: none; }
+.w-pick:hover { border-color: var(--muted); }
+.w-pick:has(input:checked) { background: var(--moss-soft); border-color: var(--moss); }
+.w-pick:has(input:focus-visible) { outline: 2px solid var(--moss); outline-offset: 2px; }
+dialog .w-pick input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.w-when { display: flex; gap: 6px; }
+dialog .w-when label.w-pick { padding: 5px 12px; }
+dialog textarea { display: block; width: 100%; resize: vertical; border: 1px solid var(--line); background: var(--paper); border-radius: var(--radius-sm); padding: 8px 10px; }
+.w-at { display: none; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 8px; }
+.w-draft:has(input[value="at"]:checked) .w-at { display: flex; }
+dialog .w-at input { flex: 1 1 200px; width: auto; }
+.w-draft .hint { color: var(--muted); }
+.w-foot { position: sticky; bottom: -22px; margin-bottom: -22px; padding-bottom: 22px; background: var(--panel); }
+.w-foot .row { margin-top: 10px; }
+@media (max-width: 560px) {
+  .w-people { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .w-plan li { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+}
 
 .toast {
   position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%);
@@ -368,6 +453,7 @@ dialog .row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20
 
   <div class="controls">
     <button class="btn primary" id="btn-run" type="button">Run</button>
+    <button class="btn" id="btn-whisper" type="button">Whisper</button>
     <button class="btn" id="btn-stop" type="button">Stop</button>
     <button class="btn" id="btn-save" type="button">Save</button>
     <button class="btn danger" id="btn-fin" type="button">Finish</button>
@@ -479,6 +565,19 @@ dialog .row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20
     <div id="stance"></div>
     <div class="stance-key" id="stance-key"></div>
   </section>
+  <section class="card trail" id="trail-card" aria-labelledby="trail-heading">
+    <div class="stance-tip" id="trail-tip" hidden></div>
+    <div class="trail-head">
+      <h2 id="trail-heading">Where each whisper went</h2>
+      <label class="sr-only" for="trail-select">Whisper to follow</label>
+      <select id="trail-select" class="trail-select" hidden></select>
+    </div>
+    <p class="trail-summary" id="trail-summary"></p>
+    <div id="trail-chart"></div>
+    <div class="trail-key" id="trail-key"></div>
+    <div id="trail-story"></div>
+    <p class="hint" id="trail-note"></p>
+  </section>
   <section class="card social" id="social-card" aria-labelledby="social-heading">
     <div class="social-head">
       <h2 id="social-heading">Social Interaction Network</h2>
@@ -527,6 +626,22 @@ dialog .row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20
       <button class="btn primary" id="r-go" type="button">Run</button>
     </div>
   </form>
+</dialog>
+
+<dialog id="whisper-dialog" aria-labelledby="w-heading">
+  <div>
+    <h2 id="w-heading">Send whispers</h2>
+    <p>A whisper becomes a memory for the people you pick, as if they'd heard it themselves.</p>
+    <div id="w-drafts"></div>
+    <button class="btn" id="w-add" type="button">Add another whisper</button>
+    <div class="w-foot">
+      <div class="error-text" id="w-error" role="alert"></div>
+      <div class="row">
+        <button class="btn" id="w-close" type="button">Close</button>
+        <button class="btn primary" id="w-go" type="button">Send whisper</button>
+      </div>
+    </div>
+  </div>
 </dialog>
 
 <dialog id="settings">
@@ -754,19 +869,638 @@ function showConvo(c) {
                         {once: true});
 }
 
+/* ---------------- whispers ---------------- */
+
+function whisperLive() {
+  return !view && (data?.status === "idle" || data?.status === "running");
+}
+
+// "Everyone" only for the whole cast, so a list of names always means a subset.
+function whisperAudience(names) {
+  const cast = data?.sim?.persona_order || [];
+  return cast.length > 1 && names.length === cast.length
+    ? "Everyone" : names.map((n) => String(n).split(" ")[0]).join(", ");
+}
+
+function gameLabel(d) {
+  return `${d.toLocaleDateString(undefined, {weekday: "short"})} ${d.toTimeString().slice(0, 5)}`;
+}
+
+// A datetime-local input's value, in the same local time parseGameTime reads.
+function toInputTime(d) {
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+// One row per whisper rather than per recipient, since one whisper to five
+// people is logged five times.
+function groupWhispers(rows) {
+  const groups = new Map();
+  rows.forEach((e) => {
+    const key = `${e.event_type}|${e.step}|${e.text}`;
+    if (!groups.has(key)) groups.set(key, {...e, agents: []});
+    groups.get(key).agents.push(e.agent);
+  });
+  return [...groups.values()];
+}
+
+// Whispers wait past the spending cap, the same way a run won't start.
+function whisperCapped() {
+  const sim = data?.sim;
+  const cap = sim?.settings?.budget_usd;
+  return !view && cap != null && sim.run_cost >= cap;
+}
+
+function whisperRow(w) {
+  const at = parseGameTime(w.at);
+  const now = parseGameTime(data?.sim?.curr_time);
+  const reached = w.sent.length;
+  const missed = Object.keys(w.failed);
+  // A "now" whisper is already on its way, so it reads as sending from the start.
+  const sending = w.status === "sending" || (w.status === "scheduled" && !at);
+  const when = w.status === "failed" ? `<b>Failed</b><div class="when">reached ${reached} of ${w.targets.length}</div>`
+    : sending && whisperCapped() ? `<b>Waiting</b><div class="when">spending cap reached</div>`
+    : sending ? `<b>Sending</b><div class="when">${reached + missed.length} of ${w.targets.length} done</div>`
+    : `<b>${esc(gameLabel(at))}</b>${now && at > now ? `<div class="when">in ${esc(spanLabel((at - now) / 1000, 1))}</div>` : ""}`;
+  const button = (action, label) => `<button class="btn small" type="button" data-w-action="${action}" data-w-id="${esc(w.id)}">${label}</button>`;
+  const actions = !whisperLive() ? ""
+    : w.status === "failed" ? button("retry", "Try again") + button("cancel", "Dismiss")
+    : sending ? button("cancel", "Stop")
+    : (button("edit", "Edit") + button("cancel", "Cancel"));
+  return `<li data-status="${sending ? "sending" : esc(w.status)}">
+    <div>${when}</div>
+    <div>${esc(w.text)}<div class="when">To ${esc(whisperAudience(w.targets))}</div>
+      ${missed.length ? `<div class="w-error">Didn't reach ${esc(whisperAudience(missed))}: ${esc(w.failed[missed[0]])}</div>` : ""}</div>
+    <div class="w-actions">${actions}</div>
+  </li>`;
+}
+
 function renderEvents() {
+  const waiting = (data?.whispers || [])
+    .filter((w) => ["scheduled", "sending", "failed"].includes(w.status))
+    .sort((a, b) => (parseGameTime(a.at) || 0) - (parseGameTime(b.at) || 0));
   // Reflections share events.jsonl with whispers, but they are the agent's own
   // thinking rather than something whispered into the run: they belong on the
   // stance graph, not in this pane or its count.
-  const all = (data?.events || []).filter((e) => e.event_type !== "reflection")
-    .slice().reverse();
-  const own = all.filter((e) => !e.inherited);
+  const rows = (data?.events || []).filter((e) => e.event_type !== "reflection");
+  const all = groupWhispers(rows).reverse();
+  const own = groupWhispers(rows.filter((e) => !e.inherited)).reverse();
   const list = showInherited ? all : own;
-  $("n-events").textContent = own.length ? own.length : "";
-  paint($("p-events"), inheritedToggle(all, own) + (list.length ? `<ul class="mem">${list.map((e) => `
-    <li class="${e.inherited ? "inherited" : ""}"><div><b>${esc(e.agent)}</b> ${esc(e.text)}<div class="when">${esc(e.time || "")}, ${e.event_type === "history_whisper" ? "seed history" : "whisper"}${e.inherited ? ", earlier run" : ""}</div></div></li>`).join("")}</ul>`
-    : `<div class="empty">No whispers in this run. Whispers you send, and seeded history, are listed here.</div>`));
+  const scheduled = waiting.filter((w) => w.status !== "failed").length;
+  $("n-events").textContent = [own.length || "", scheduled ? `${scheduled} scheduled` : ""].filter(Boolean).join(", ");
+
+  const running = data?.status === "running";
+  const bar = whisperLive()
+    ? `<div class="w-bar"><button class="btn primary small" type="button" data-w-new>New whisper</button><span class="hint">Pick who hears it, what they hear, and when.</span></div>`
+    : view ? "" : `<div class="empty">Whispers need a loaded run. Start one first; 0 steps is enough.</div>`;
+  const note = !waiting.some((w) => w.at && w.status === "scheduled") ? ""
+    : view ? `<div class="hint">These were still waiting when the run was saved. A new run started from here keeps them.</div>`
+    : running ? "" : `<div class="hint">Game time only moves during a run, so scheduled whispers go out once a run reaches their time.</div>`;
+  paint($("p-events"), bar
+    + (waiting.length ? `<div class="section"><h3>Scheduled</h3><ul class="w-plan">${waiting.map(whisperRow).join("")}</ul>${note}</div>` : "")
+    + `<div class="section"><h3>Sent</h3>${inheritedToggle(all, own)}${list.length ? `<ul class="mem w-sent">${list.map((e) => `
+    <li class="${e.inherited ? "inherited" : ""}"><div><b>${esc(whisperAudience(e.agents))}</b> ${esc(e.text)}<div class="when">${esc(e.time || "")}, ${e.event_type === "history_whisper" ? "seed history" : "whisper"}${e.inherited ? ", earlier run" : ""}</div></div></li>`).join("")}</ul>`
+    : `<div class="empty">Nothing sent in this run yet. Whispers and seed memories are listed here.</div>`}</div>`);
 }
+
+$("p-events").addEventListener("click", async (e) => {
+  if (e.target.closest("[data-w-new]")) { openWhisper(); return; }
+  const b = e.target.closest("[data-w-action]");
+  const w = b && (data?.whispers || []).find((x) => x.id === b.dataset.wId);
+  if (!w) return;
+  const action = b.dataset.wAction;
+  if (action === "edit") {
+    const at = parseGameTime(w.at);
+    openWhisper({names: w.targets, text: w.text, at: at ? toInputTime(at) : null, replaces: w.id});
+  } else if (action === "retry") {
+    openWhisper({names: Object.keys(w.failed), text: w.text, replaces: w.id});
+  } else {
+    const res = await fetch(`/dashboard/whispers/${encodeURIComponent(w.id)}/cancel/`, {method: "POST"});
+    const body = await res.json();
+    toast(res.ok ? (w.status === "failed" ? "Dismissed." : "Whisper cancelled.") : body.error);
+    poll();
+  }
+});
+
+let draftCount = 0;
+let draftSim = null;
+
+function draftHtml({names = [], text = "", at = null, replaces = null} = {}) {
+  draftCount += 1;
+  const people = (data?.sim?.persona_order || []).map((n) => `
+    <label class="w-pick" title="${esc(n)}"><input type="checkbox" value="${esc(n)}" ${names.includes(n) ? "checked" : ""}><img src="${sprite(n)}" alt=""><span>${esc(n.split(" ")[0])}</span></label>`).join("");
+  return `<section class="w-draft" ${replaces ? `data-replaces="${esc(replaces)}"` : ""}>
+    <div class="w-title"><h3></h3><button class="w-link" type="button" data-w-remove>Remove</button></div>
+    <div class="w-row"><b>To</b><span class="w-count"></span>
+      <span class="w-quick">
+        <button class="w-link" type="button" data-w-pick="all">Everyone</button>
+        <button class="w-link" type="button" data-w-pick="rest">Everyone else</button>
+        <button class="w-link" type="button" data-w-pick="same">Same people</button>
+        <button class="w-link" type="button" data-w-pick="none">Clear</button>
+      </span></div>
+    <div class="w-people" role="group" aria-label="Who hears this">${people}</div>
+    <div class="w-row"><label class="w-label" for="w-text-${draftCount}">What they hear</label></div>
+    <textarea id="w-text-${draftCount}" rows="2" maxlength="1000" placeholder="e.g. The council moved the vote to Friday">${esc(text)}</textarea>
+    <div class="w-row"><b>When</b></div>
+    <div class="w-when" role="radiogroup" aria-label="When it goes out">
+      <label class="w-pick"><input type="radio" name="w-when-${draftCount}" value="now" ${at === null ? "checked" : ""}><span>Now</span></label>
+      <label class="w-pick"><input type="radio" name="w-when-${draftCount}" value="at" ${at === null ? "" : "checked"}><span>At a game time</span></label>
+    </div>
+    <div class="w-at">
+      <input type="datetime-local" step="60" aria-label="Game time" value="${esc(at || "")}">
+      <button class="btn small" type="button" data-w-after="10">In 10 min</button>
+      <button class="btn small" type="button" data-w-after="60">In 1 hour</button>
+      <button class="btn small" type="button" data-w-tomorrow>Tomorrow 08:00</button>
+    </div>
+    <div class="hint w-hint"></div>
+  </section>`;
+}
+
+// at is null for "now" and a datetime-local value otherwise, possibly empty.
+function readDraft(el) {
+  return {
+    targets: [...el.querySelectorAll('input[type="checkbox"]:checked')].map((i) => i.value),
+    text: el.querySelector("textarea").value,
+    at: el.querySelector('input[value="at"]').checked ? el.querySelector('input[type="datetime-local"]').value : null,
+    replaces: el.dataset.replaces || null,
+  };
+}
+
+function whisperGoLabel(drafts) {
+  const n = drafts.length;
+  const later = drafts.filter((d) => d.at !== null).length;
+  const noun = n === 1 ? "whisper" : `${n} whispers`;
+  return !later ? `Send ${noun}` : later === n ? `Schedule ${noun}` : `Send and schedule ${noun}`;
+}
+
+function whisperDoneText(drafts) {
+  const n = drafts.length;
+  const later = drafts.filter((d) => d.at !== null).length;
+  const noun = n === 1 ? "whisper" : `${n} whispers`;
+  return !later ? `Sending ${noun}.` : later === n ? `Scheduled ${noun}.` : `Sending ${n - later} and scheduled ${later}.`;
+}
+
+// Says when a draft will really go out, including when the run won't get there.
+function whisperHint(at) {
+  const sim = data?.sim;
+  const running = data?.status === "running";
+  if (whisperCapped()) return "This run has reached its spending cap, so whispers wait until the cap is raised.";
+  if (at === null) return running ? "Goes out at the next step." : "Goes out straight away.";
+  const when = new Date(at);
+  const now = parseGameTime(sim?.curr_time);
+  if (!at || isNaN(when) || !now) return "Pick a date and time.";
+  if (when < now) return `That time has passed. The game clock is at ${gameLabel(now)}.`;
+  const out = `Goes out at ${gameLabel(when)}, ${spanLabel((when - now) / 1000, 1)} of game time from now.`;
+  if (!running) return `${out} It waits for a run to reach that time.`;
+  const end = new Date(now.getTime() + (sim.run_left || 0) * (sim.sec_per_step || 10) * 1000);
+  return when > end ? `${out} This run ends at ${gameLabel(end)}, so it waits for the next one.` : out;
+}
+
+function updateWhisperForm() {
+  const cards = [...$("w-drafts").children];
+  const now = parseGameTime(data?.sim?.curr_time);
+  cards.forEach((el) => {
+    const d = readDraft(el);
+    const cast = el.querySelectorAll('input[type="checkbox"]').length;
+    el.querySelector(".w-count").textContent = `${d.targets.length} of ${cast} picked`;
+    el.querySelector(".w-hint").textContent = whisperHint(d.at);
+    if (now) el.querySelector('input[type="datetime-local"]').min = toInputTime(now);
+  });
+  $("w-go").textContent = whisperGoLabel(cards.map(readDraft));
+}
+
+// Closing the dialog keeps what was written, so a new request adds to it unless
+// the run has changed or nothing has been written yet.
+function openWhisper(prefill) {
+  if (!whisperLive()) { toast("Whispers need a loaded run. Start one first; 0 steps is enough."); return; }
+  const box = $("w-drafts");
+  const started = draftSim === data.liveSim && [...box.children].some((el) => {
+    const d = readDraft(el);
+    return d.targets.length || d.text.trim();
+  });
+  if (!started) box.innerHTML = "";
+  draftSim = data.liveSim;
+  if (prefill || !started) box.insertAdjacentHTML("beforeend", draftHtml(prefill));
+  $("w-error").textContent = "";
+  updateWhisperForm();
+  $("whisper-dialog").showModal();
+  box.lastElementChild.scrollIntoView({block: "nearest"});
+}
+
+$("btn-whisper").onclick = () => openWhisper();
+$("w-close").onclick = () => $("whisper-dialog").close();
+// New whispers stay for next time, but an unsaved edit doesn't: the whisper it
+// edits may have gone out by then, which would leave a draft that can't be sent.
+$("whisper-dialog").addEventListener("close", () => {
+  $("w-drafts").querySelectorAll("[data-replaces]").forEach((el) => el.remove());
+});
+$("w-add").onclick = () => {
+  // Starts at the same moment as the last one, so a batch only needs the time
+  // changing where it differs.
+  const box = $("w-drafts");
+  box.insertAdjacentHTML("beforeend", draftHtml({at: readDraft(box.lastElementChild).at}));
+  updateWhisperForm();
+  box.lastElementChild.scrollIntoView({block: "nearest"});
+  box.lastElementChild.querySelector("input").focus();
+};
+$("w-drafts").addEventListener("input", updateWhisperForm);
+$("w-drafts").addEventListener("change", (e) => {
+  if (e.target.matches('input[value="at"]')) {
+    const input = e.target.closest(".w-draft").querySelector('input[type="datetime-local"]');
+    const now = parseGameTime(data?.sim?.curr_time);
+    if (!input.value && now) input.value = toInputTime(new Date(now.getTime() + 3600000));
+  }
+  updateWhisperForm();
+});
+$("w-drafts").addEventListener("click", (e) => {
+  const card = e.target.closest(".w-draft");
+  if (!card) return;
+  const input = card.querySelector('input[type="datetime-local"]');
+  const now = parseGameTime(data?.sim?.curr_time);
+  const pick = e.target.closest("[data-w-pick]")?.dataset.wPick;
+  const after = e.target.closest("[data-w-after]")?.dataset.wAfter;
+  if (e.target.closest("[data-w-remove]")) {
+    card.remove();
+  } else if (pick) {
+    const taken = new Set([...$("w-drafts").children].filter((c) => c !== card).flatMap((c) => readDraft(c).targets));
+    const before = card.previousElementSibling;
+    const same = new Set(before ? readDraft(before).targets : []);
+    card.querySelectorAll('input[type="checkbox"]').forEach((box) => {
+      box.checked = pick === "all" || (pick === "rest" && !taken.has(box.value))
+        || (pick === "same" && same.has(box.value));
+    });
+  } else if (after && now) {
+    input.value = toInputTime(new Date(now.getTime() + after * 60000));
+  } else if (e.target.closest("[data-w-tomorrow]") && now) {
+    const morning = new Date(now);
+    morning.setDate(morning.getDate() + 1);
+    morning.setHours(8, 0, 0, 0);
+    input.value = toInputTime(morning);
+  } else {
+    return;
+  }
+  updateWhisperForm();
+});
+$("w-go").onclick = async () => {
+  const drafts = [...$("w-drafts").children].map(readDraft);
+  $("w-go").disabled = true;
+  try {
+    const res = await fetch("/dashboard/whispers/", {method: "POST", body: JSON.stringify({sim: data?.liveSim, whispers: drafts})});
+    const body = await res.json();
+    if (!res.ok) { $("w-error").textContent = body.error; return; }
+    $("whisper-dialog").close();
+    $("w-drafts").innerHTML = "";
+    toast(whisperDoneText(drafts));
+    document.querySelector('[data-pane="p-events"]').click();
+    poll();
+  } catch (err) {
+    $("w-error").textContent = "The dashboard server didn't answer. Check that it's still running, then try again.";
+  } finally {
+    $("w-go").disabled = false;
+  }
+};
+
+/* ---------------- whisper chart ---------------- */
+
+// One whisper's path through the run: who was told, who heard it in conversation,
+// and where it came up. Everything here comes from the plan and the mention log;
+// a conversation is only said not to have carried it if the judge was asked.
+function whisperStory(w, mentions, conversations) {
+  const heard = {};
+  for (const [name, at] of Object.entries(w.received || {})) heard[name] = {...at, told: true};
+  const rows = new Map((mentions || []).map((r) => [convoKey(r), r]));
+  const ups = [];
+  for (const row of mentions || []) {
+    const m = (row.mentions || []).find((x) => x.whisper_id === w.id);
+    if (!m) continue;
+    for (const name of m.new_hearers || []) {
+      if (!heard[name]) heard[name] = {step: row.step, time: row.time, told: false, from: m.speaker};
+    }
+    ups.push({...m, step: row.step, time: row.time, speakers: row.speakers, key: convoKey(row)});
+  }
+  const upKeys = new Set(ups.map((u) => u.key));
+  const knewBy = (name, step) => heard[name] && heard[name].step < step;
+  const talks = (conversations || []).filter((c) => !upKeys.has(convoKey(c))).map((c) => {
+    const row = rows.get(convoKey(c));
+    const anyone = (c.speakers || []).some((n) => knewBy(n, c.step || 0));
+    const said = row && row.checked?.includes(w.id) ? "It didn't come up."
+      : !anyone ? "Neither of them had heard it yet."
+      : "This one wasn't checked.";
+    return {step: c.step || 0, time: c.time, speakers: c.speakers || [], key: convoKey(c), said};
+  });
+  const checked = (mentions || []).filter((r) => r.checked?.includes(w.id)).length;
+  return {heard, ups, talks, checked,
+          told: Object.keys(heard).filter((n) => heard[n].told),
+          passedOn: Object.keys(heard).filter((n) => !heard[n].told)};
+}
+
+function whisperSummary(story) {
+  const told = story.told.length, more = story.passedOn.length;
+  return [`Told to ${told} ${told === 1 ? "person" : "people"}.`,
+    more ? `${more} more heard it in conversation.` : "",
+    story.checked
+      ? `It came up in ${story.ups.length} of the ${story.checked} conversation${story.checked === 1 ? "" : "s"} they've had since.`
+      : "They haven't had a conversation since."].filter(Boolean).join(" ");
+}
+
+const firstName = (name) => String(name).split(" ")[0];
+
+// The other side of a conversation, however many people were in it.
+function othersIn(speakers, name) {
+  return speakers.filter((n) => n !== name).map(firstName).join(" and ");
+}
+
+// The same story as the chart, in words, in time order: what a keyboard or screen
+// reader user gets, and where a quote can be read in full.
+function whisperEvents(story) {
+  const told = new Map();
+  for (const name of story.told) {
+    const at = story.heard[name];
+    if (!told.has(at.step)) told.set(at.step, {step: at.step, time: at.time, names: []});
+    told.get(at.step).names.push(name);
+  }
+  return [...[...told.values()].map((t) => ({...t, kind: "told"})),
+          ...story.ups.map((u) => ({...u, kind: "up"}))].sort((a, b) => a.step - b.step);
+}
+
+const TRAIL_LEFT = 76, TRAIL_RIGHT = 16, TRAIL_TOP = 12, TRAIL_LANE = 30;
+let trailWhisper = null;
+let trailPts = [];
+let trailMouse = null;
+
+// Where the axis ends: at least a game hour on, then growing by a quarter each
+// time the run reaches it. A running sim would otherwise redraw the chart under
+// the pointer at every step and take the tooltip away with it.
+function trailAxisEnd(x0, step, sps) {
+  let span = 3600 / sps;
+  while (x0 + span < step) span = Math.ceil(span * 1.25);
+  return x0 + span;
+}
+
+function trailSent() {
+  return (data?.whispers || []).filter((w) => Object.keys(w.received || {}).length);
+}
+
+// Round clock times, so the axis reads the way a schedule does.
+function trailTicks(x0, x1, sps, dateAt) {
+  const start = dateAt(x0);
+  if (!start) return [];
+  const minutes = ((x1 - x0) * sps) / 60;
+  const every = [10, 15, 30, 60, 120, 180, 360, 720, 1440].find((m) => minutes / m <= 6)
+    || Math.ceil(minutes / 6 / 1440) * 1440;
+  const clock = start.getHours() * 60 + start.getMinutes() + start.getSeconds() / 60;
+  const ticks = [];
+  for (let m = (every - clock % every) % every; m <= minutes; m += every) ticks.push(x0 + (m * 60) / sps);
+  return ticks;
+}
+
+function renderTrail() {
+  const sent = trailSent();
+  const sim = data?.sim;
+  $("trail-select").hidden = !sent.length;
+  if (!sent.length || !sim) {
+    trailHide();
+    paint($("trail-chart"), `<div class="empty">${sim ? "Once a whisper has gone out, this shows who heard it, who passed it on, and when it came up in conversation." : "Start a run and send a whisper to see where it goes."}</div>`);
+    for (const id of ["trail-key", "trail-story"]) paint($(id), "");
+    $("trail-summary").textContent = "";
+    $("trail-note").textContent = "";
+    return;
+  }
+  // Newest first, following the latest until a different one is picked.
+  const newest = sent.slice().reverse();
+  const w = sent.find((x) => x.id === trailWhisper) || newest[0];
+  paint($("trail-select"), newest.map((x) => {
+    const at = parseGameTime(Object.values(x.received)[0].time);
+    const text = x.text.length > 70 ? `${x.text.slice(0, 70)}...` : x.text;
+    return `<option value="${esc(x.id)}">${esc(`${at ? `${gameLabel(at)}: ` : ""}${text}`)}</option>`;
+  }).join(""));
+  $("trail-select").value = w.id;
+
+  const story = whisperStory(w, data?.mentions, data?.conversations);
+  $("trail-summary").textContent = whisperSummary(story);
+
+  // The same axis for every whisper, so picking another one doesn't move anything.
+  const cast = sim.persona_order || [];
+  const steps = sent.flatMap((x) => Object.values(x.received).map((r) => r.step));
+  const sps = sim.sec_per_step || 10;
+  const x0 = Math.min(...steps);
+  const x1 = trailAxisEnd(x0, sim.step, sps);
+  const width = Math.max(300, Math.round($("trail-chart").clientWidth || 900));
+  const left = width < 480 ? 58 : TRAIL_LEFT;
+  const plotR = width - TRAIL_RIGHT;
+  const plotL = left + 10;  // Room for a mark at the very start, clear of the names.
+  const px = (s) => +(plotL + ((s - x0) / (x1 - x0)) * (plotR - plotL)).toFixed(1);
+  const lane = new Map(cast.map((n, i) => [n, TRAIL_TOP + i * TRAIL_LANE + TRAIL_LANE / 2]));
+  const bottom = TRAIL_TOP + cast.length * TRAIL_LANE;
+  // To the second: parseGameTime drops seconds, which would put marks up to a
+  // minute out against the axis.
+  const clock = /(\d+):(\d+):(\d+)$/.exec(sim.curr_time || "");
+  const now = parseGameTime(sim.curr_time);
+  if (now && clock) now.setSeconds(+clock[3]);
+  const dateAt = (s) => now && new Date(now.getTime() - (sim.step - s) * sps * 1000);
+  // Rows carry their own game time, which is what a reader should see.
+  const label = (e) => { const d = parseGameTime(e.time) || dateAt(e.step); return d ? gameLabel(d) : `step ${e.step}`; };
+  const fmt = stanceTickFormat((x1 - x0) * sps);
+
+  trailPts = [];
+  let svg = "";
+  for (const s of trailTicks(x0, x1, sps, dateAt)) {
+    svg += `<text class="trail-axis" x="${px(s)}" y="${bottom + 16}" text-anchor="middle">${esc(fmt(dateAt(s)))}</text>`;
+  }
+  for (const name of cast) {
+    const y = lane.get(name);
+    svg += `<text class="trail-name" x="${left - 8}" y="${y + 4}" text-anchor="end">${esc(firstName(name))}</text>
+      <line class="trail-lane" x1="${left}" y1="${y}" x2="${plotR}" y2="${y}"/>`;
+    if (story.heard[name]) svg += `<line class="trail-knows" x1="${px(story.heard[name].step)}" y1="${y}" x2="${plotR}" y2="${y}"/>`;
+  }
+
+  // Every conversation in view, grey unless this whisper came up in it.
+  const link = (c, cls) => {
+    const ys = c.speakers.map((n) => lane.get(n)).filter((y) => y != null);
+    if (ys.length < 2) return "";
+    return `<line class="trail-link${cls}" x1="${px(c.step)}" y1="${Math.min(...ys)}" x2="${px(c.step)}" y2="${Math.max(...ys)}"/>`;
+  };
+  for (const t of story.talks) {
+    if (t.step < x0 || t.step > x1) continue;
+    svg += link(t, "");
+    const ys = t.speakers.map((n) => lane.get(n)).filter((y) => y != null);
+    if (ys.length >= 2) trailPts.push({kind: "talk", x: px(t.step), y: Math.min(...ys), y2: Math.max(...ys), t});
+  }
+  for (const u of story.ups) svg += link(u, " up");
+
+  const marks = [];
+  const mark = (pt, shape) => {
+    trailPts.push(pt);
+    marks.push(`${shape}<circle class="trail-hit" cx="${pt.x}" cy="${pt.y}" r="12" tabindex="0" role="button" data-trail-i="${trailPts.length - 1}" aria-label="${esc(trailText(pt))}"/>`);
+  };
+  const diamond = (x, y, r, cls) => `<path class="${cls}" d="M${x} ${y - r}L${x + r} ${y}L${x} ${y + r}L${x - r} ${y}Z"/>`;
+  // Other whispers, in grey: still there to hover, and a click follows that one.
+  for (const other of sent) {
+    if (other.id === w.id) continue;
+    for (const [name, at] of Object.entries(other.received)) {
+      if (!lane.has(name)) continue;
+      const pt = {kind: "other", x: px(at.step), y: lane.get(name), name, time: at.time, whisper: other};
+      mark(pt, diamond(pt.x, pt.y, 5, "trail-other"));
+    }
+  }
+  for (const u of story.ups) {
+    for (const name of u.speakers) {
+      if (!lane.has(name)) continue;
+      const pt = {kind: "up", x: px(u.step), y: lane.get(name), name, u, firstHeard: (u.new_hearers || []).includes(name)};
+      const raised = name === u.speaker;
+      mark(pt, pt.firstHeard && !raised
+        ? diamond(pt.x, pt.y, 7, "trail-hollow")
+        : `<circle class="${raised ? "trail-solid" : "trail-hollow"}" cx="${pt.x}" cy="${pt.y}" r="5"/>`);
+    }
+  }
+  for (const name of story.told) {
+    if (!lane.has(name)) continue;
+    const at = story.heard[name];
+    const pt = {kind: "told", x: px(at.step), y: lane.get(name), name, time: at.time, text: w.text};
+    mark(pt, diamond(pt.x, pt.y, 7, "trail-solid"));
+  }
+  svg += marks.join("");
+  // Washes out what the run hasn't reached. Moved below rather than drawn here, so
+  // the clock passing doesn't count as a change to the chart.
+  svg += `<rect class="trail-future" y="${TRAIL_TOP}" height="${bottom - TRAIL_TOP}"/>`;
+
+  const before = drawn["trail-chart"];
+  paint($("trail-chart"), `<svg viewBox="0 0 ${width} ${bottom + 24}" role="group" aria-label="Who heard this whisper and when it came up in conversation, one line per person over game time">${svg}</svg>`);
+  // Only on a real repaint: a poll that changes nothing mustn't drop the tooltip,
+  // and if something did change, the pointer is still on whatever is under it.
+  if (drawn["trail-chart"] !== before) {
+    trailHide();
+    if (trailMouse) trailHover(trailMouse);
+  }
+  const future = $("trail-chart").querySelector(".trail-future");
+  if (future) {
+    future.setAttribute("x", px(sim.step));
+    future.setAttribute("width", Math.max(0, plotR - px(sim.step)));
+  }
+
+  paint($("trail-key"), [
+    ["◆", "you told them"], ["◇", "first heard it in conversation"],
+    ["●", "brought it up"], ["○", "was in that conversation"],
+    ["━", "knows about it"], ["│", "a conversation it came up in"],
+  ].map(([s, t]) => `<span><i aria-hidden="true">${s}</i>${t}</span>`).join("")
+    + `<span><i class="quiet" aria-hidden="true">│</i>talked, and it didn't come up</span><span>faded: the run hasn't got there yet</span>`
+    + (sent.length > 1 ? `<span><i class="quiet" aria-hidden="true">◆</i>another whisper</span>` : ""));
+
+  const events = whisperEvents(story);
+  paint($("trail-story"), `<ol class="trail-events">${events.map((e) => e.kind === "told" ? `
+    <li><span class="when">${esc(label(e))}</span><div>You told ${esc(e.names.map(firstName).join(", "))}: ${esc(w.text)}</div></li>` : `
+    <li><span class="when">${esc(label(e))}</span><div><b>${esc(firstName(e.speaker))}</b> brought it up with <b>${esc(othersIn(e.speakers, e.speaker))}</b>.${(e.new_hearers || []).length ? ` ${esc((e.new_hearers || []).map(firstName).join(" and "))} hadn't heard it before.` : ""}
+      <blockquote>${esc(e.quote)}</blockquote><div class="how">${esc(e.how)}</div>
+      ${(data?.conversations || []).some((c) => convoKey(c) === e.key) ? `<button class="w-link" type="button" data-trail-convo="${esc(e.key)}">Read the conversation</button>` : ""}</div></li>`).join("")}</ol>`);
+  $("trail-note").textContent = "A model reads each conversation these people had after hearing it, and it can be wrong, so each point shows the line it relied on. This shows where a whisper came up, not that it changed anyone's mind.";
+}
+
+// What a point says, on hover and to a screen reader.
+function trailText(pt) {
+  if (pt.kind === "told") return `${pt.name} heard this from you. ${pt.time || ""}. ${pt.text}`;
+  if (pt.kind === "other") return `Another whisper to ${pt.name}. ${pt.time || ""}. ${pt.whisper.text}`;
+  if (pt.kind === "talk") return `${pt.t.speakers.join(" and ")} talked. ${pt.t.time || ""}. ${pt.t.said}`;
+  return `${pt.u.speaker} brought it up with ${othersIn(pt.u.speakers, pt.u.speaker)}. ${pt.u.time || ""}. ${pt.u.quote}`;
+}
+
+function trailTip(pt) {
+  if (pt.kind === "told") {
+    return `<b>${esc(pt.name)} heard this from you</b><span class="when">${esc(pt.time || "")}</span><div>${esc(pt.text)}</div>`;
+  }
+  if (pt.kind === "other") {
+    return `<b>Another whisper to ${esc(pt.name)}</b><span class="when">${esc(pt.time || "")}</span><div>${esc(pt.whisper.text)}</div><div class="when">click to follow this one</div>`;
+  }
+  if (pt.kind === "talk") {
+    return `<b>${esc(pt.t.speakers.map(firstName).join(" and "))} talked</b><span class="when">${esc(pt.t.time || "")}</span><div>${esc(pt.t.said)}</div><div class="when">click to read the conversation</div>`;
+  }
+  const {u} = pt;
+  const title = pt.firstHeard && pt.name !== u.speaker
+    ? `${firstName(pt.name)} first heard it here, from ${firstName(u.speaker)}`
+    : `${firstName(u.speaker)} brought it up with ${othersIn(u.speakers, u.speaker)}`;
+  return `<b>${esc(title)}</b><span class="when">${esc(u.time || "")}</span><div>"${esc(u.quote)}"</div><div>${esc(u.how)}</div><div class="when">click to read the conversation</div>`;
+}
+
+function trailHide() { $("trail-tip").hidden = true; }
+
+function trailShow(pt, clientX, clientY) {
+  const tip = $("trail-tip");
+  tip.innerHTML = trailTip(pt);
+  tip.hidden = false;
+  const box = $("trail-card").getBoundingClientRect();
+  const x = clientX - box.left, y = clientY - box.top;
+  const flip = x + 16 + tip.offsetWidth > box.width;
+  tip.style.left = `${Math.max(4, flip ? x - tip.offsetWidth - 16 : x + 16)}px`;
+  tip.style.top = `${Math.max(4, y - tip.offsetHeight - 14)}px`;
+}
+
+// Nearest thing to the cursor, so nobody has to land exactly on a small mark. A
+// mark beats the line running through it.
+function trailNearest(ev) {
+  const svg = $("trail-chart").querySelector("svg");
+  const ctm = svg?.getScreenCTM();
+  if (!ctm) return null;
+  const at = svg.createSVGPoint();
+  at.x = ev.clientX;
+  at.y = ev.clientY;
+  const loc = at.matrixTransform(ctm.inverse());
+  let best = null, bestDist = Infinity;
+  for (const p of trailPts) {
+    const dx = p.x - loc.x;
+    const dy = p.y2 == null ? p.y - loc.y : Math.max(0, p.y - loc.y, loc.y - p.y2);
+    const reach = p.y2 == null ? 16 : 7;
+    const dist = dx * dx + dy * dy;
+    if (dist > reach * reach) continue;
+    const rank = p.y2 == null ? dist : dist + 1000;
+    if (rank < bestDist) { bestDist = rank; best = p; }
+  }
+  return best;
+}
+
+function trailAct(pt) {
+  if (pt.kind === "other") {
+    trailWhisper = pt.whisper.id;
+    renderTrail();
+    return;
+  }
+  const key = pt.kind === "talk" ? pt.t.key : pt.kind === "up" ? pt.u.key : null;
+  const convo = key && (data?.conversations || []).find((c) => convoKey(c) === key);
+  if (convo) showConvo(convo);
+}
+
+$("trail-select").onchange = (e) => { trailWhisper = e.target.value; renderTrail(); };
+function trailHover(ev) {
+  const pt = trailNearest(ev);
+  if (!pt) { $("trail-chart").style.cursor = ""; trailHide(); return; }
+  $("trail-chart").style.cursor = pt.kind === "told" ? "" : "pointer";
+  trailShow(pt, ev.clientX, ev.clientY);
+}
+$("trail-chart").addEventListener("mousemove", (ev) => {
+  trailMouse = {clientX: ev.clientX, clientY: ev.clientY};
+  trailHover(ev);
+});
+$("trail-chart").addEventListener("mouseleave", () => { trailMouse = null; trailHide(); });
+$("trail-chart").addEventListener("click", (ev) => {
+  const pt = trailNearest(ev);
+  if (pt) trailAct(pt);
+});
+$("trail-chart").addEventListener("focusin", (ev) => {
+  const pt = trailPts[ev.target.dataset?.trailI];
+  if (!pt) return;
+  const box = ev.target.getBoundingClientRect();
+  trailShow(pt, box.right, box.top);
+});
+$("trail-chart").addEventListener("focusout", trailHide);
+$("trail-chart").addEventListener("keydown", (ev) => {
+  if (ev.key !== "Enter" && ev.key !== " ") return;
+  const pt = trailPts[ev.target.dataset?.trailI];
+  if (pt) { ev.preventDefault(); trailAct(pt); }
+});
+$("trail-story").addEventListener("click", (ev) => {
+  const key = ev.target.closest("[data-trail-convo]")?.dataset.trailConvo;
+  const convo = key && (data?.conversations || []).find((c) => convoKey(c) === key);
+  if (convo) showConvo(convo);
+});
+new ResizeObserver(() => { if (data) renderTrail(); }).observe($("trail-chart"));
 
 /* ---------------- stance graph ---------------- */
 
@@ -1197,11 +1931,8 @@ function renderAgent() {
     <div class="section"><h3>${view ? "How they saw things when the run was saved" : "How they see things right now"}</h3><p class="quote">${esc(a.currently || "")}</p></div>
     ${(a.history || []).length > 1 ? `<div class="section"><h3>How their view changed</h3><ul class="hist">${a.history.map((h) => `
       <li><div class="when">${esc(h.time || "")}, step ${h.step}</div>${esc(h.currently)}</li>`).join("")}</ul></div>` : ""}
-    <div class="section" ${view ? "hidden" : ""}><h3>Tell ${esc(a.first_name)} something</h3>
-      <form class="form" data-whisper="${esc(a.name)}">
-        <input name="text" autocomplete="off" placeholder="e.g. The council moved the vote to Friday">
-        <button class="btn" type="submit">Whisper</button>
-      </form>
+    <div class="section" ${whisperLive() ? "" : "hidden"}><h3>Tell ${esc(a.first_name)} something</h3>
+      <button class="btn" type="button" data-whisper-to="${esc(a.name)}">Write a whisper</button>
       <div class="hint">It becomes one of their memories, as if they'd heard it themselves.</div>
     </div>`);
 
@@ -1327,6 +2058,8 @@ function memEpisodes(nodes) {
 }
 
 $("inspector").addEventListener("click", (e) => {
+  const to = e.target.closest("[data-whisper-to]");
+  if (to) { openWhisper({names: [to.dataset.whisperTo]}); return; }
   const chip = e.target.closest(".chip[data-mem]");
   if (chip) {
     memCat = chip.dataset.mem;
@@ -1338,16 +2071,6 @@ $("inspector").addEventListener("click", (e) => {
   if (ep && e.target.closest("summary")) {
     if (memOpen.has(ep)) memOpen.delete(ep); else memOpen.add(ep);
   }
-});
-
-$("inspector").addEventListener("submit", (e) => {
-  const form = e.target.closest("[data-whisper]");
-  if (!form) return;
-  e.preventDefault();
-  const text = form.text.value.trim();
-  if (!text) return;
-  send(`call -- whisper ${form.dataset.whisper} ;; ${text}`);
-  form.text.value = "";
 });
 
 /* ---------------- interview ---------------- */
@@ -1429,7 +2152,7 @@ function renderHeader() {
   $("clock-date").textContent = d ? d.toLocaleDateString(undefined, {weekday: "long", month: "long", day: "numeric"}) : (s === "starting" ? "Loading the town" : "Start a simulation to begin");
 
   $("btn-run").disabled = !!view || s === "starting";
-  for (const id of ["btn-save", "btn-fin"]) $(id).disabled = !live || !!view;
+  for (const id of ["btn-save", "btn-fin", "btn-whisper"]) $(id).disabled = !live || !!view;
   $("btn-stop").disabled = s !== "running" || !!view;
   $("console-form").hidden = !!view;
   document.querySelector("#console-foot .chips").hidden = !!view;
@@ -1502,7 +2225,8 @@ async function poll() {
     watchRuns();
     renderHeader(); renderSettings(); renderRoster(); renderAgent(); renderInterview();
     renderTitle();
-    renderConvos(); renderEvents(); renderResults(); renderStance(); renderNetwork();
+    renderConvos(); renderEvents(); renderResults(); renderStance(); renderTrail(); renderNetwork();
+    if ($("whisper-dialog").open) updateWhisperForm();
   } catch (e) { /* frontend server restarting */ }
   poll.t = setTimeout(poll, 1000);
 }

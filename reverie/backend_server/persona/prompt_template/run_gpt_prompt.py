@@ -2630,28 +2630,42 @@ def run_gpt_prompt_generate_next_convo_line(persona, interlocutor_desc, prev_con
 
 
 
+WHISPER_THOUGHT_FAILED = "..."
+
+
 def run_gpt_prompt_generate_whisper_inner_thought(persona, whisper, test_input=None, verbose=False): 
   def create_prompt_input(persona, whisper, test_input=None): 
     prompt_input = [persona.scratch.name, whisper]
     return prompt_input
   
   def __func_clean_up(gpt_response, prompt=""):
-    return gpt_response.split('"')[0].strip()
+    # The template ends on an open quote, so the answer ends on a closing one,
+    # and a chat model may also open its own. Quotes inside the whisper come in
+    # pairs, so only the unmatched quote is the closing one. A thought is one
+    # line: anything after it is the model carrying on, not part of the thought.
+    text = gpt_response.strip().split("\n")[0].strip().removeprefix('"')
+    if text.count('"') % 2:
+      text = text[:text.rindex('"')]
+    return text.strip()
 
   def __func_validate(gpt_response, prompt=""): 
-    try: 
-      __func_clean_up(gpt_response, prompt)
-      return True
-    except:
-      return False 
+    # GPT_request returns TOKEN LIMIT EXCEEDED on any API error. Accepted, that
+    # string or an empty answer would be stored as a real memory.
+    return (gpt_response != "TOKEN LIMIT EXCEEDED"
+            and bool(__func_clean_up(gpt_response, prompt)))
 
   def get_fail_safe(): 
-    return "..."
+    return WHISPER_THOUGHT_FAILED
 
-  gpt_param = {"engine": "text-davinci-003", "max_tokens": 50, 
+  # At 50 a long whisper was stored cut off mid-sentence. This is only a ceiling,
+  # set to fit the dashboard's 1000-character limit.
+  gpt_param = {"engine": "text-davinci-003", "max_tokens": 1024,
                "temperature": 0, "top_p": 1, "stream": False,
                "frequency_penalty": 0, "presence_penalty": 0, "stop": None}
-  prompt_template = "persona/prompt_template/v2/whisper_inner_thought_v1.txt"
+  # v1 asked for "a statement about" the agent, which made the agent the subject
+  # of news about others: "The council published the figure" was stored as "Tom
+  # Whitaker published the figure".
+  prompt_template = "persona/prompt_template/v2/whisper_inner_thought_v2.txt"
   prompt_input = create_prompt_input(persona, whisper)
   prompt = generate_prompt(prompt_input, prompt_template)
 
@@ -2918,6 +2932,89 @@ def run_gpt_generate_iterative_chat_utt(maze, init_persona, target_persona, retr
                "temperature": 0, "top_p": 1, "stream": False,
                "frequency_penalty": 0, "presence_penalty": 0, "stop": None}
   return output, [output, prompt, gpt_param, prompt_input, fail_safe]
+
+def parse_whisper_mention(response, n_lines):
+  """Validates the mention judge's answer without repairing it. It names a line by
+  number, so what gets quoted is read from the transcript and can't be invented."""
+  if not isinstance(response, dict) or type(response.get("came_up")) is not bool:
+    raise ValueError("A mention needs a true or false came_up")
+  if not response["came_up"]:
+    return {"came_up": False}
+  line, how = response.get("line"), response.get("how")
+  if type(line) is not int or not 1 <= line <= n_lines:
+    raise ValueError("A mention's line must be in the conversation")
+  if not isinstance(how, str) or not how.strip():
+    raise ValueError("A mention must say how it was used")
+  return {"came_up": True, "line": line, "how": how.strip()}
+
+
+def run_gpt_prompt_whisper_mention(information, transcript, n_lines):
+  """Whether one piece of information came up in a conversation. An observer: it
+  reads a finished transcript and touches no agent. None when the model gave no
+  valid answer, which is recorded as unchecked, not as "it didn't come up".
+
+  One question per whisper, and the model has to name the specifics before it
+  answers. Asked about a list at once, gpt-4o-mini reported most of the list as
+  mentioned, because nearly every conversation here is about the datacenter.
+
+  A yes is then checked against just the lines it pointed at, since it also marks
+  whoever heard it as knowing the whisper from then on, so a false one sends the
+  chart down a path that never happened. That costs a call only when something is
+  found, which is rare.
+  """
+  def __chat_func_clean_up(gpt_response, prompt=""):
+    return parse_whisper_mention(gpt_response, n_lines)
+
+  def __chat_func_validate(gpt_response, prompt=""):
+    try:
+      parse_whisper_mention(gpt_response, n_lines)
+      return True
+    except (ValueError, TypeError):
+      return False
+
+  prompt_template = "persona/prompt_template/v3_ChatGPT/whisper_mention_v1.txt"
+  prompt = generate_prompt([information, transcript], prompt_template)
+  # Shows the shape without a sample mention to copy.
+  example_output = {"details": [], "found": [], "came_up": False, "line": None, "how": None}
+  special_instruction = ("The output field must be an object with details, found, "
+                         "came_up, line and how, in that order.")
+  output = ChatGPT_safe_generate_response(prompt, example_output, special_instruction,
+                                          3, None, __chat_func_validate,
+                                          __chat_func_clean_up, False, temperature=0)
+  if output is False:
+    return None
+  if not output["came_up"]:
+    return output
+  carries = run_gpt_prompt_whisper_mention_check(information, transcript, output["line"])
+  if carries is None:
+    return None
+  return output if carries else {"came_up": False}
+
+
+def run_gpt_prompt_whisper_mention_check(information, transcript, line):
+  """Whether the lines around <line> really carry the information. None when the
+  model gave no valid answer."""
+  # Wrapped, because the safe call returns False when it runs out of tries, and
+  # a bare answer of False would look the same as that.
+  def __chat_func_clean_up(gpt_response, prompt=""):
+    return {"carries": gpt_response["carries"]}
+
+  def __chat_func_validate(gpt_response, prompt=""):
+    return isinstance(gpt_response, dict) and type(gpt_response.get("carries")) is bool
+
+  turns = transcript.split("\n")
+  # Two turns either way: a fact is often split between a question and its answer.
+  nearby = "\n".join(turns[max(0, line - 3):line + 2])
+  prompt_template = "persona/prompt_template/v3_ChatGPT/whisper_mention_check_v1.txt"
+  prompt = generate_prompt([information, nearby], prompt_template)
+  example_output = {"claim": "", "said": None, "carries": False}
+  special_instruction = ("The output field must be an object with claim, said and "
+                         "carries, in that order.")
+  output = ChatGPT_safe_generate_response(prompt, example_output, special_instruction,
+                                          3, None, __chat_func_validate,
+                                          __chat_func_clean_up, False, temperature=0)
+  return None if output is False else output["carries"]
+
 
 # The line the datacenter stance probe retrieves against. It is never shown to
 # the agent and never stored, so it reads memory without adding to it.

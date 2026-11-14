@@ -1,0 +1,23 @@
+whisper_mention_v1.txt
+
+Variables: 
+!<INPUT 0>! -- the piece of information to look for
+!<INPUT 1>! -- the conversation, one numbered line per turn
+
+<commentblockmarker>###</commentblockmarker>
+Someone in this conversation had been told this:
+"!<INPUT 0>!"
+
+The conversation, one numbered line per turn:
+!<INPUT 1>!
+
+Did this specific information come up in the conversation?
+
+First list the details that make it specific: the people, organisations, places, numbers, dates and events it names. Then look for those details in the conversation. It came up only if the conversation carries what the information actually says, in any words. It did not come up if the conversation is only on the same subject: talking about water use does not carry a particular water figure, and talking about a meeting does not carry a particular date for it. It also did not come up if a detail that matters is missing, or the conversation says the same kind of thing about different people.
+
+Return an object with these keys, in this order:
+"details": the details that make the information specific
+"found": those of them the conversation actually contains, each with the number of the line it is on
+"came_up": true or false
+"line": the number of the first line that carries the information, or null if it did not come up
+"how": if it came up, one short sentence saying what the two people do with it, such as who raises it and how the other responds. Describe only what the transcript shows, and do not guess at motives or at effects beyond it. Otherwise null.

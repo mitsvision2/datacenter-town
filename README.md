@@ -45,6 +45,10 @@ caffeinate -dis
 
 The stance chart marks conversations (▲), whispers (◆) and reflections (■); click a conversation marker to read the transcript. The gear/settings pane sets the defaults for autosave, spending cap, and how often every resident's stance is read (**Read every agent's stance every** — 360 steps is one game hour).
 
+To tell residents something, click **Whisper** at the top of the page. Pick who hears it, write what they hear, and choose **Now** or **At a game time**. **Add another whisper** adds one to the same batch, each with its own people and time. **Everyone else** picks whoever the others left out, so one group can hear one thing while the rest hear another at the same moment, and **Same people** repeats the group above for a series of whispers. Whispers can be added during a run and take effect at the right step without stopping it. The **Whispers** tab lists what's scheduled, with Edit and Cancel, and what's been sent. Game time only moves during a run, so a scheduled whisper goes out once a run reaches its time; anything still scheduled carries over to a new run started from this one.
+
+**Where each whisper went**, below the stance chart, follows one whisper at a time. Each row is a resident, and the line turns amber from the moment they know it. Hover a mark to read the whisper or the line where it came up, and click a conversation to read the transcript. A model reads each conversation that someone who knew the whisper was in, so this costs one extra call per whisper per such conversation, plus one more when it finds something, and nothing in a run with no whispers. Agents often store a whisper without ever repeating it, so expect many whispers to show no mentions at all. Measured on real transcripts that were also used to tune it, 17 of the 18 mentions it flagged were right and it found 17 of the 20 real ones, so each point shows the line it relied on. It shows where a whisper came up, not that it changed anyone's mind.
+
 ### Prerequisites
 - macOS or Linux with **Python 3.11** (`python3.11 --version`). Do not use Python 3.14; the Django 2.2 stack does not install cleanly there.
 - An API key for at least one LLM provider. Embeddings currently use OpenAI (or an OpenAI-compatible endpoint), so an OpenAI key is needed even when chatting through Anthropic.
@@ -128,7 +132,7 @@ Other useful commands:
 | Command | Effect |
 |---------|--------|
 | `call -- whisper all ;; <text>` | Injects a news event into every resident's memory, e.g. `call -- whisper all ;; The council posted a summary of the datacenter proposal.` |
-| `call -- whisper Maya Okonkwo ;; <text>` | Injects an event into one resident's memory |
+| `call -- whisper Maya Okonkwo, Tom Whitaker ;; <text>` | Injects an event into one or more residents' memory, straight away or at the next step of a run. To schedule one for later, use the dashboard |
 | `call -- analysis Elena Chen` | Interviews a resident without saving anything to memory (type `end_convo` to stop) |
 | `print all persona schedule` | Shows every resident's current plan |
 | `save` | Saves progress and keeps the session open |
@@ -148,7 +152,7 @@ Stanford's planner only lets a resident choose a house or bedroom whose name con
 - **Move an older datacenter run onto the new map** (runs created before this map existed, e.g. `testing7b`): save the run, press Ctrl+C, then run `python scripts/datacenter_map.py migrate <sim_name>` and fork it into a new name. This renames the homes inside the run's saved memories and switches its `maze_name`.
 
 ### Where the outputs go
-- **Experiment data:** `environment/frontend_server/storage/<sim>/experiment/` contains `run_manifest.json` (models, personas, scenario), `conversations.jsonl`, `events.jsonl` (history and whisper injections), `agent_snapshots.jsonl` (written every `snapshot_every_n_steps` steps and on save), and `outcomes.jsonl` (written on save).
+- **Experiment data:** `environment/frontend_server/storage/<sim>/experiment/` contains `run_manifest.json` (models, personas, scenario), `conversations.jsonl`, `events.jsonl` (history and whisper injections), `agent_snapshots.jsonl` (written every `snapshot_every_n_steps` steps and on save), `outcomes.jsonl` (written on save), `whispers.jsonl` (planned whispers and who each one reached), and `whisper_mentions.jsonl` (where each whisper came up in conversation).
 - **Backend runtime log:** `reverie/backend_server/logs/datacenter-town.log`. It has step timing, per-agent actions, LLM call latency and failures, CLI commands, and every `print()` line (logger name `print`) and stderr line such as tracebacks (logger name `stderr`), all timestamped. Set `capture_prints = False` in `utils.py` to keep prints console-only.
 - **Frontend runtime log:** `environment/frontend_server/logs/frontend.log`. It has Django startup, request lines (`"POST /update_environment/ ..."`), environment/movement handling in `translator/views.py`, and captured `print()`/stderr output. Set `FRONTEND_LOG_LEVEL=DEBUG` before `runserver` for more detail.
 - Both logs rotate at 5 MB (five backups kept) and use timestamps with a UTC offset, so they can be lined up against each other.

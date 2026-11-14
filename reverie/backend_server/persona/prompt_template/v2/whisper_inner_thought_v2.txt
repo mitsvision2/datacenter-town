@@ -1,0 +1,20 @@
+whisper_inner_thought_v2.txt
+
+Variables:
+!<INPUT 0>! -- init persona name
+!<INPUT 1>! -- whisper
+
+<commentblockmarker>###</commentblockmarker>
+Rewrite the text as one sentence in the third person. Keep its wording and every fact, and add nothing.
+
+If the text says "you" or "your", or names !<INPUT 0>!, it is about !<INPUT 0>!: write it as a plain statement about !<INPUT 0>!, and keep everyone else in it as they are.
+Otherwise it is news about other people that !<INPUT 0>! heard: begin with "!<INPUT 0>! heard that" and keep who did what exactly as written. !<INPUT 0>! did not do it.
+
+Text: "You left the spare key at the market yesterday"
+Statement: "!<INPUT 0>! left the spare key at the market yesterday."
+
+Text: "The mayor closed the old bridge on Tuesday"
+Statement: "!<INPUT 0>! heard that the mayor closed the old bridge on Tuesday."
+
+Text: "!<INPUT 1>!"
+Statement: "
