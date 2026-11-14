@@ -3,7 +3,7 @@ Where each agent was over a run, as stays at one place, from the per-step
 movement files (storage/<sim>/movement/<step>.json).
 
 Reading every step of a long run is slow, so steps are sampled every EVERY
-steps (6 steps of 10 seconds is one game minute) and the result is cached
+steps and the result is cached
 per run; a live run only reads the steps written since the last request.
 """
 import json
@@ -18,7 +18,7 @@ _lock = threading.Lock()
 
 
 def place_of(address):
-  """The sector of an address: "the Ville:Hobbs Cafe:cafe:seating" is "Hobbs Cafe"."""
+  """The sector part of a colon-separated address."""
   parts = [p for p in str(address or "").split(":") if p]
   return parts[1] if len(parts) > 1 else (parts[0] if parts else "")
 

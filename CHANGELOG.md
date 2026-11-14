@@ -3,6 +3,56 @@
 Notable changes to Datacenter Town. Newest first. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## Unreleased: dashboard rework
+
+Branch `danrublop-datacenter-town`. The full write-up, with screenshots, is
+[docs/dashboard-update.md](docs/dashboard-update.md).
+
+### Added
+
+- **Reflections tab**: every saved reflection, newest first. Opening one shows the tree
+  of memories it was drawn from, with zoom, pan and a minimap.
+- **Day view** on the map: one agent's day as snapshots of the town, with
+  conversation, whisper and reflection marks. Clicking a snapshot replays from there.
+- **Replay controls** for saved runs: play, pause, speed and seek. **Show on map** in
+  the readers jumps the replay to that moment.
+- **Map navigation**: drag, zoom, and click an agent to follow them.
+- **Night on the map** from 22:00 to 06:00, the stance probe's night window. Turn it
+  off in Settings.
+- **Activity chart**: where each agent spent their time.
+- **Gap reasons** on the stance chart: why a reading is missing.
+- **Memory tab**: each cited memory's relevance score, and links to whispers and
+  conversations.
+- `GET /dashboard/activity/`, `timeline/`, `memory/`, `reflections/` and `day/`.
+- Whisper deliveries record `node_id`, the memory each whisper became.
+- Each movement step records `asleep` per agent, using the stance probe's rule.
+
+### Changed
+
+- **Look**: a flat design with dark mode, one color per agent, peg sprites and agent chips.
+- **Where each whisper went** is now the **Whisper trail** tab. It supersedes the chart
+  described in the section below:
+  - Stance dots show the reading when the person heard it and their latest, not before
+    and after, so they don't read as an effect.
+  - ■ marks reflections that drew on the whisper.
+  - Grey ticks mark conversations where it was not detected.
+  - The words list under the chart is removed.
+  - Every mark can be opened from the keyboard.
+- **Whispers tab**: actions moved into a reader, cancelled whispers are listed,
+  "Sent to N of M" shows partial sends, and "Everyone" is now "All agents".
+- **Social network**: agents are placed by stance, and each side's stance is shown as
+  it was at the time of a talk.
+- **Map speech bubbles** are short cues; conversation text is not drawn on the map.
+- **Logs are read in full** instead of the last 300 rows, and a live poll sends only
+  new rows.
+- **When no run is live**, the dashboard shows nothing until you open a run from the menu.
+  Interview only works in a live run.
+- **Replay is read-only**: it no longer posts positions to the server.
+
+### Fixed
+
+- Agents flickered between walking and standing during replay.
+
 ## Unreleased: scheduled whispers and the whisper chart
 
 Branch `yaksh-whisper-scheduler`. The full write-up is

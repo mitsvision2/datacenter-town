@@ -63,3 +63,68 @@ class TimelineTests(SimpleTestCase):
     self.move(6, "Store")
     r = tl.activity_timeline("test", every=6)
     self.assertEqual([s[2] for s in r["agents"]["Maya"]], ["Cafe", "Store", "Park"])
+
+
+class DayTests(SimpleTestCase):
+  def setUp(self):
+    from translator import dashboard
+    dashboard._day_cache.clear()
+    self.temp = tempfile.TemporaryDirectory()
+    self.addCleanup(self.temp.cleanup)
+    previous = os.getcwd()
+    os.chdir(self.temp.name)
+    self.addCleanup(os.chdir, previous)
+    tl._cache.clear()
+    folder = Path("storage/test/movement")
+    folder.mkdir(parents=True)
+    Path("storage/test/reverie").mkdir(parents=True)
+    Path("storage/test/reverie/meta.json").write_text(json.dumps({"persona_names": ["Maya", "Luis"]}))
+    # A long cafe stay, a short walk, then the park.
+    for step in range(0, 120, 6):
+      where = "Cafe" if step < 60 else "Road" if step == 60 else "Park"
+      (folder / f"{step}.json").write_text(json.dumps({"meta": {"curr_time": f"t{step}"}, "persona": {
+        "Maya": {"description": f"being at {where} @ the Ville:{where}:x", "movement": [step, 1], "pronunciatio": "☕"},
+        "Luis": {"description": "idle @ the Ville:Home:x", "movement": [5, 5], "pronunciatio": "💤"}}}))
+
+  def test_stays_long_enough_to_count_with_everyone_where_they_stood(self):
+    from translator import dashboard
+    stays = dashboard.agent_day("test", "Maya")["stays"]
+    self.assertEqual([s["place"] for s in stays], ["Cafe", "Park"])  # the short walk is dropped
+    self.assertEqual(stays[0]["step"], 30)  # a little after arriving
+    self.assertEqual(stays[0]["people"]["Luis"][:3], [5, 5, "💤"])
+    self.assertEqual(stays[0]["people"]["Maya"][3:], ["r", False])  # facing the way they last moved
+    self.assertEqual(stays[0]["time"], "t30")
+
+  def test_a_stay_with_a_conversation_is_shown_at_it_with_the_two_facing(self):
+    from translator import dashboard
+    Path("storage/test/experiment").mkdir(parents=True)
+    Path("storage/test/experiment/conversations.jsonl").write_text(json.dumps(
+      {"step": 84, "speakers": ["Maya", "Luis"], "utterances": [["Maya", "hi"]]}) + "\n")
+    move = Path("storage/test/movement/84.json")
+    d = json.loads(move.read_text())
+    for n in d["persona"]:
+      d["persona"][n]["chat"] = [["Maya", "hi"]]
+    move.write_text(json.dumps(d))
+    park = dashboard.agent_day("test", "Maya")["stays"][1]
+    self.assertEqual((park["step"], park["convo"]["speakers"]), (84, ["Maya", "Luis"]))
+    self.assertEqual(park["people"]["Luis"][3], "r")  # faces the person they're talking to
+
+  def test_the_runs_asleep_flag_wins_over_the_activity_text(self):
+    from translator import dashboard
+    # A step just before, one tile away: without the flag she would show as walking.
+    d29 = json.loads(Path("storage/test/movement/30.json").read_text())
+    d29["persona"]["Maya"]["movement"] = [29, 1]
+    Path("storage/test/movement/29.json").write_text(json.dumps(d29))
+    self.assertTrue(dashboard.agent_day("test", "Maya")["stays"][0]["people"]["Maya"][4])
+    dashboard._day_cache.clear()
+    for step in (30, 36):
+      move = Path(f"storage/test/movement/{step}.json")
+      d = json.loads(move.read_text())
+      d["persona"]["Maya"]["asleep"] = True  # the probe's rule says asleep, though the text doesn't
+      move.write_text(json.dumps(d))
+    self.assertFalse(dashboard.agent_day("test", "Maya")["stays"][0]["people"]["Maya"][4])
+
+  def test_only_agents_of_the_run(self):
+    from translator import dashboard
+    self.assertEqual(dashboard.dashboard_day(type("R", (), {"GET": {"agent": "Nobody"}})(), "test").status_code, 404)
+    self.assertEqual(dashboard.dashboard_day(type("R", (), {"GET": {"agent": "Maya"}})(), "../x").status_code, 404)

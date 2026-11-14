@@ -237,6 +237,8 @@ def generate_poig_score(persona, event_type, description):
 
 
 def load_history_via_whisper(personas, whispers):
+  """Stores each whisper as a thought; returns the new memory node ids in order."""
+  node_ids = []
   for count, row in enumerate(whispers): 
     persona = personas[row[0]]
     whisper = row[1]
@@ -251,9 +253,11 @@ def load_history_via_whisper(personas, whispers):
     keywords = set([s, p, o])
     thought_poignancy = generate_poig_score(persona, "event", whisper)
     thought_embedding_pair = (thought, get_embedding(thought))
-    persona.a_mem.add_thought(created, expiration, s, p, o, 
-                              thought, keywords, thought_poignancy, 
-                              thought_embedding_pair, None)
+    node = persona.a_mem.add_thought(created, expiration, s, p, o, 
+                                     thought, keywords, thought_poignancy, 
+                                     thought_embedding_pair, None)
+    node_ids.append(node.node_id)
+  return node_ids
 
 
 def open_convo_session(persona, convo_mode): 

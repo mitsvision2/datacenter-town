@@ -147,12 +147,12 @@ class NetworkTests(SimpleTestCase):
     state_dir = Path("temp_storage/dashboard")
     state_dir.mkdir(parents=True)
     (state_dir / "state.json").write_text(json.dumps(
-      {"step": 351, "sim_code": "test", "persona_order": self.names,
+      {"step": 351, "sim_code": "test", "persona_order": self.names, "pid": os.getpid(), "status": "idle",
        "personas": {n: {"name": n} for n in self.names}}))
     with patch.object(dashboard, "_run_env", return_value="staging"):
       live = self.client.get("/dashboard/state/").json()
       saved = self.client.get("/dashboard/run/test/").json()
-    self.assertEqual(len(live["conversations"]), 300)
+    self.assertEqual(len(live["conversations"]), 351)
     self.assertEqual(live["network"]["conversations"], 351)
     self.assertEqual(saved["network"]["conversations"], 350)
     self.assertEqual(len(saved["network"]["nodes"]), 3)

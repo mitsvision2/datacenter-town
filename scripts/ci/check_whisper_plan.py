@@ -148,6 +148,7 @@ def stub_load(personas, whispers):
     if text == "boom" and name == "Luis":
       raise RuntimeError("the API is down")
     heard.append((personas[name].scratch.curr_time, name, text))
+  return [f"node_{len(heard)}"]
 
 
 reverie.load_history_via_whisper = stub_load
@@ -184,6 +185,8 @@ with tempfile.TemporaryDirectory() as tmp:
   check(by_id["a"]["status"] == "sent" and by_id["b"]["status"] == "sent",
         "delivered whispers should read as sent")
   check(by_id["c"]["status"] == "scheduled", "a future whisper should still be waiting")
+  check(by_id["a"]["received"]["Maya"].get("node_id") == "node_1",
+        f"a delivery must record the memory it became: {by_id['a']['received']}")
 
   # -- Added while the run is going -------------------------------------------
   heard.clear()

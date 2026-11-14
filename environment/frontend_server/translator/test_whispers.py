@@ -191,6 +191,50 @@ class WhisperApiTests(SimpleTestCase):
                  self.client.get(f"/dashboard/run/{self.sim}/").json()):
       self.assertEqual(body["mentions"][0]["mentions"][0]["quote"], "q")
 
+  def test_received_keeps_the_memory_it_became(self):
+    self.post({"targets": NAMES[:1], "text": "x", "at": None})
+    w = self.state_whispers()[0]
+    whisper_plan.append(self.plan, [{"op": "sent", "id": w["id"], "agent": NAMES[0],
+                                     "step": 700, "time": "t", "node_id": "node_42"}])
+    self.assertEqual(self.state_whispers()[0]["received"][NAMES[0]]["node_id"], "node_42")
+
+  def test_every_mention_row_is_read_not_a_tail(self):
+    rows = [{"step": i, "time": "t", "speakers": NAMES[:2], "checked": ["w"], "failed": [], "mentions": []}
+            for i in range(2500)]
+    whisper_plan.append(f"storage/{self.sim}/experiment/whisper_mentions.jsonl", rows)
+    body = self.client.get(f"/dashboard/run/{self.sim}/").json()
+    self.assertEqual(len(body["mentions"]), 2500)
+    self.assertEqual(body["mentions"][0]["step"], 0)
+
+  def test_every_stance_reading_is_read_not_a_tail(self):
+    rows = [{"step": i, "name": NAMES[0], "score": 50} for i in range(4500)]
+    whisper_plan.append(f"storage/{self.sim}/experiment/opinions.jsonl", rows)
+    for url in (f"/dashboard/run/{self.sim}/", "/dashboard/state/"):
+      opinions = self.client.get(url).json()["opinions"]
+      self.assertEqual((len(opinions), opinions[0]["step"]), (4500, 0))
+
+  def test_unchanged_logs_are_not_sent_again(self):
+    first = self.client.get("/dashboard/state/").json()
+    self.assertIn("conversations", first)
+    again = self.client.get(f"/dashboard/state/?logs={first['logs']}").json()
+    self.assertTrue(again["logs_same"])
+    self.assertNotIn("conversations", again)
+    whisper_plan.append(f"storage/{self.sim}/experiment/conversations.jsonl", [{"step": 1, "speakers": NAMES[:2]}])
+    changed = self.client.get(f"/dashboard/state/?logs={first['logs']}").json()
+    self.assertEqual(len(changed["conversations"]), 1)
+    # Only the new row comes back, with the counts it follows; another run's version gets a full copy.
+    held = len(first["conversations"])
+    self.assertEqual(changed["logs_from"][0], held)
+    self.assertEqual(changed["conversations"][0]["step"], 1)
+    other = self.client.get("/dashboard/state/?logs=other-run|0|5|5|5").json()
+    self.assertEqual((other["logs_from"], len(other["conversations"])), ([0, 0, 0], held + 1))
+
+  def test_a_stopped_run_is_not_shown_as_live(self):
+    self.write_state(pid=999999999)  # no such process: the run is over
+    body = self.client.get("/dashboard/state/").json()
+    self.assertEqual((body["status"], body["sim"], body["results"]), ("stopped", None, []))
+    self.assertNotIn("conversations", body)
+
   def test_no_mentions_file_is_fine(self):
     self.assertEqual(self.client.get("/dashboard/state/").json()["mentions"], [])
 

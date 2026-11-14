@@ -37,7 +37,7 @@ from utils import *
 from maze import *
 from persona.persona import *
 from experiment_logger import ExperimentLogger, set_experiment_logger, get_experiment_logger
-from opinion_probe import probe as probe_opinion, STANCE_SCALE
+from opinion_probe import probe as probe_opinion, STANCE_SCALE, is_asleep
 from sim_logging import get_logger, setup_logging
 from dashboard_bridge import CommandFeed, record_result, write_state, load_settings
 from llm import usage
@@ -288,7 +288,8 @@ class ReverieServer:
 
   def _load_whispers(self, clean_whispers):
     """
-    Adds whispered memories via load_history_via_whisper. Personas that have
+    Adds whispered memories via load_history_via_whisper and returns their
+    node ids. Personas that have
     not stepped yet have no clock, which add_thought needs for timestamps, so
     one is lent for the duration and then cleared again: a None clock is what
     makes Persona.move() run first-day planning.
@@ -298,7 +299,7 @@ class ReverieServer:
     for p in unclocked:
       p.scratch.curr_time = self.curr_time
     try:
-      load_history_via_whisper(self.personas, clean_whispers)
+      return load_history_via_whisper(self.personas, clean_whispers)
     finally:
       for p in unclocked:
         p.scratch.curr_time = None
@@ -331,7 +332,8 @@ class ReverieServer:
           self.whispers.record({"op": "started", "id": whisper["id"], "time": now})
         row = {"id": whisper["id"], "agent": name, "step": self.step, "time": now}
         try:
-          self._load_whispers([[name, whisper["text"]]])
+          # The memory's id lets the dashboard show exactly which thought it became.
+          row["node_id"] = (self._load_whispers([[name, whisper["text"]]]) or [None])[0]
           row["op"] = "sent"
         except Exception as e:
           log.exception("Whisper %s to %s failed", whisper["id"], name)
@@ -622,6 +624,13 @@ class ReverieServer:
             movements["persona"][persona_name]["description"] = description
             movements["persona"][persona_name]["chat"] = (persona
                                                           .scratch.chat)
+            # The probe's own asleep rule, so the map shows sleep as the readings count it;
+            # display only, so a failure leaves it unknown rather than stopping the step.
+            try:
+              movements["persona"][persona_name]["asleep"] = bool(is_asleep(persona))
+            except Exception:
+              log.exception("asleep flag failed for %s", persona_name)
+              movements["persona"][persona_name]["asleep"] = None
             chat_note = ""
             if persona.scratch.chat:
               chat_note = f" | chatting_with={persona.scratch.chatting_with}"

@@ -117,11 +117,39 @@ def _run_start(sim):
   return _read_json(f"storage/{fork}/reverie/meta.json", {}).get("step", 0)
 
 
+# Whole-run logs, parsed once per change and kept for the next poll.
+_jsonl_cache = collections.OrderedDict()
+JSONL_CACHED = 32
+
+
+def _read_jsonl(path):
+  try:
+    st = os.stat(path)
+    key = (st.st_mtime, st.st_size)
+    hit = _jsonl_cache.get(path)
+    if not hit or hit[0] != key:
+      rows = []
+      with open(path, encoding="utf-8") as f:
+        for line in f:
+          try:
+            rows.append(json.loads(line))
+          except ValueError:
+            pass  # a line still being written
+      hit = _jsonl_cache[path] = (key, rows)
+  except OSError:
+    return []
+  _jsonl_cache.move_to_end(path)
+  while len(_jsonl_cache) > JSONL_CACHED:
+    _jsonl_cache.popitem(last=False)
+  return hit[1]
+
+
 def _run_log(sim, name, n, start):
-  rows = _tail_jsonl(f"storage/{sim}/experiment/{name}", n, max_bytes=2 << 20)
-  for r in rows:
-    r["inherited"] = (r.get("step") or 0) < start
-  return rows
+  """The last n rows of a run's log, or every row when n is None."""
+  path = f"storage/{sim}/experiment/{name}"
+  rows = _read_jsonl(path) if n is None else _tail_jsonl(path, n, max_bytes=2 << 20)
+  # Copies: whole-log rows are shared with the cache and with other requests.
+  return [{**r, "inherited": (r.get("step") or 0) < start} for r in rows]
 
 
 def _opinions(rows):
@@ -132,8 +160,7 @@ def _opinions(rows):
 
 
 EVIDENCE_SHOWN = 5
-# nodes.json can be large; cached per path until its mtime changes. A small
-# LRU, so the live run and a saved run open side by side don't evict each other.
+# nodes.json can be large: cached per path by mtime, in an LRU so a live and a saved run don't evict each other.
 _nodes_cache = collections.OrderedDict()
 NODES_CACHED = 32
 
@@ -181,16 +208,15 @@ def _whispers(sim):
 
 
 def _mentions(sim, start):
-  """Where whispers came up in conversation, for the whisper chart."""
-  return _run_log(sim, "whisper_mentions.jsonl", 2000, start)
+  """Where whispers came up in conversation, and which conversations were checked."""
+  return _run_log(sim, "whisper_mentions.jsonl", None, start)
 
 
 def _view_history(sim, persona):
   """Each distinct "currently" an agent has had, from the periodic snapshots,
   to show how their view changed over the run."""
   out = []
-  for r in _tail_jsonl(f"storage/{sim}/experiment/agent_snapshots.jsonl",
-                       4000, max_bytes=8 << 20):
+  for r in _read_jsonl(f"storage/{sim}/experiment/agent_snapshots.jsonl"):
     if r.get("name") == persona and r.get("currently") and (
         not out or out[-1]["currently"] != r["currently"]):
       out.append({"step": r.get("step"), "time": r.get("time"),
@@ -308,20 +334,30 @@ def dashboard_run(request, sim):
     "roster": [{k: agents[n].get(k) for k in ROSTER_FIELDS} for n in names],
     "agent": agents.get(agent),
   }
-  opinions = _run_log(sim, "opinions.jsonl", 4000, start)
+  opinions = _run_log(sim, "opinions.jsonl", None, start)
   if view["agent"]:
     view["agent"]["history"] = _view_history(sim, agent)
     view["agent"]["evidence"] = _stance_evidence(sim, agent, opinions)
   return JsonResponse({
     "sim": view,
-    "conversations": _run_log(sim, "conversations.jsonl", 300, start),
-    "events": _run_log(sim, "events.jsonl", 300, start),
+    "conversations": _run_log(sim, "conversations.jsonl", None, start),
+    "events": _run_log(sim, "events.jsonl", None, start),
     "opinions": _opinions(opinions),
     "whispers": _whispers(sim),
     "mentions": _mentions(sim, start),
     "network": network_summary(sim, names, view["step"]),
     "results": [r for r in _tail_jsonl(RESULT_FILE, 400) if r.get("sim") == sim][-60:],
   })
+
+
+def _movement_near(sim, step, name):
+  """The movement file at <step>, or the nearest earlier one that has <name>;
+  steps can be missing on disk. Returns (step, movement) or (None, None)."""
+  for s in range(step, max(-1, step - 60), -1):
+    move = _read_json(f"storage/{sim}/movement/{s}.json")
+    if (move or {}).get("persona", {}).get(name):
+      return s, move
+  return None, None
 
 
 def dashboard_activity(request, sim):
@@ -332,17 +368,84 @@ def dashboard_activity(request, sim):
   except ValueError:
     step = -1
   if SIM_NAME.match(sim) and step >= 0:
-    # Steps can be missing on disk; take the nearest earlier one.
-    for s in range(step, max(-1, step - 60), -1):
-      move = _read_json(f"storage/{sim}/movement/{s}.json")
-      p = (move or {}).get("persona", {}).get(name)
-      if p:
-        desc, _, addr = (p.get("description") or "").partition(" @ ")
-        others = {c[0] for c in p.get("chat") or [] if c and c[0] != name}
-        return JsonResponse({"step": s, "description": desc, "address": addr,
-                             "pronunciatio": p.get("pronunciatio"),
-                             "chatting_with": min(others) if others else None})
+    s, move = _movement_near(sim, step, name)
+    if move:
+      p = move["persona"][name]
+      desc, _, addr = (p.get("description") or "").partition(" @ ")
+      others = {c[0] for c in p.get("chat") or [] if c and c[0] != name}
+      return JsonResponse({"step": s, "description": desc, "address": addr,
+                           "pronunciatio": p.get("pronunciatio"),
+                           "chatting_with": min(others) if others else None})
   return JsonResponse({}, status=404)
+
+
+DAY_MIN_STAY = 30  # steps; shorter stays are walks between places
+DAY_SETTLE = 30    # snapshot a little after arrival, once everyone has walked in
+DAY_LOOKBACK = 12  # steps searched back for the last move, to know which way someone faces
+
+
+def _poses(sim, step, move):
+  """Each person in a movement file as [x, y, emoji, facing, walking]. Facing comes from the
+  last step they moved (d, l, r, u); two people talking face each other."""
+  people = {n: p for n, p in move["persona"].items() if p and p.get("movement")}
+  earlier = [_read_json(f"storage/{sim}/movement/{s}.json") or {} for s in range(step - 1, max(-1, step - 1 - DAY_LOOKBACK), -1)]
+  def facing(dx, dy):
+    return ("r" if dx > 0 else "l") if abs(dx) >= abs(dy) else ("d" if dy > 0 else "u")
+  out = {}
+  for n, p in people.items():
+    x, y = p["movement"]
+    face, walking = "d", False
+    for k, m in enumerate(earlier):
+      prev = (m.get("persona", {}).get(n) or {}).get("movement")
+      if prev and list(prev) != [x, y]:
+        face, walking = facing(x - prev[0], y - prev[1]), k == 0
+        break
+    partner = next((c[0] for c in p.get("chat") or [] if c and c[0] != n and c[0] in people), None)
+    if partner and not walking:
+      px, py = people[partner]["movement"]
+      if (px, py) != (x, y):
+        face = facing(px - x, py - y)
+    # The probe's own asleep flag, written by reverie.py; runs without it fall back to a guess from the activity.
+    asleep = p["asleep"] if isinstance(p.get("asleep"), bool) else "sleep" in (p.get("description") or "").lower()
+    out[n] = [x, y, p.get("pronunciatio"), face, walking and not asleep]
+  return out
+
+
+# A finished stay's snapshot never changes, so it is kept; only the stay still going (its end
+# keeps moving) is worked out again. Keyed by everything that picks the snapshot.
+_day_cache = collections.OrderedDict()
+DAY_CACHED = 5000
+
+
+def agent_day(sim, name):
+  """One agent's run as a strip of stays, each with where everyone stood a little after it
+  began, or at the start of a conversation they had there, for the map's Day view."""
+  stays = [x for x in activity_timeline(sim)["agents"].get(name, []) if x[1] - x[0] >= DAY_MIN_STAY]
+  talks = [c for c in _run_log(sim, "conversations.jsonl", None, 0) if name in (c.get("speakers") or [])]
+  out = []
+  for start, end, place, action in stays:
+    convo = next((c for c in talks if start <= (c.get("step") or -1) <= end), None)
+    key = (sim, name, start, end, place, action, convo and convo["step"])
+    if key not in _day_cache:
+      step, move = _movement_near(sim, convo["step"] if convo else min(end, start + DAY_SETTLE), name)
+      _day_cache[key] = move and {"from": start, "to": end, "place": place, "action": action, "step": step,
+        "time": move.get("meta", {}).get("curr_time"), "people": _poses(sim, step, move),
+        **({"convo": {"step": convo["step"], "speakers": convo.get("speakers")}} if convo else {})}
+    _day_cache.move_to_end(key)
+    if _day_cache[key]:
+      out.append(_day_cache[key])
+  while len(_day_cache) > DAY_CACHED:
+    _day_cache.popitem(last=False)
+  return {"agent": name, "stays": out}
+
+
+def dashboard_day(request, sim):
+  """One agent's day, stay by stay, for the map's Day view."""
+  name = request.GET.get("agent", "")
+  meta = _read_json(f"storage/{sim}/reverie/meta.json") if SIM_NAME.match(sim) else None
+  if not meta or name not in meta.get("persona_names", []):
+    return JsonResponse({"error": "No such run or agent."}, status=404)
+  return JsonResponse(agent_day(sim, name))
 
 
 def agent_memory(sim, name):
@@ -373,8 +476,12 @@ def agent_memory(sim, name):
         except ValueError:
           continue  # a line still being written
         if r.get("name") == name and r.get("evidence"):
+          # Each memory's cosine to the stance question, and the agent's own quoted lines'.
+          sel = r.get("selection") or {}
           readings.append({"step": r.get("step"), "time": r.get("time"), "score": r.get("score"),
-                           "scale": r.get("scale"), "evidence": r["evidence"]})
+                           "scale": r.get("scale"), "evidence": r["evidence"],
+                           "cos": {m["id"]: m.get("cos") for m in sel.get("memories") or [] if m.get("id")},
+                           "quoted": [q.get("cos") for q in sel.get("quoted") or []]})
   except OSError:
     pass
   meta = _read_json(f"storage/{sim}/reverie/meta.json", {})
@@ -392,6 +499,61 @@ def dashboard_memory(request, sim):
   if name not in agents:
     return JsonResponse({"error": "No such run or agent."}, status=404)
   return JsonResponse(agent_memory(sim, name))
+
+
+REFLECTION_DEPTH = 6  # deep enough for reflections on reflections; guards a cycle
+
+
+def _reflection_tree(node_id, by_id, whisper_of, seen, depth=0):
+  """A memory and, recursively, the memories it was drawn from. <seen> holds only this
+  branch's ancestors (a guard against cycles), so a source cited twice shows under both."""
+  n = by_id[node_id]
+  kind = "whisper" if node_id in whisper_of else (
+    "reflection" if _is_reflection(n, by_id) else n.get("type"))
+  out = {"id": node_id, "kind": kind, "created": n.get("created"),
+         "description": n.get("description")}
+  if kind == "whisper":
+    out["whisper_id"] = whisper_of[node_id]
+  if n.get("type") == "chat":
+    out["lines"] = n.get("filling") or []
+    return out
+  kids = list(dict.fromkeys(i for i in n.get("filling") or [] if isinstance(i, str) and i in by_id and i not in seen))
+  if depth < REFLECTION_DEPTH:
+    kids.sort(key=lambda i: by_id[i].get("created") or "", reverse=True)
+    out["children"] = [_reflection_tree(i, by_id, whisper_of, seen | {i}, depth + 1) for i in kids]
+  return out
+
+
+def reflections(sim, names):
+  """Every saved reflection in a run with the memories it came from, newest first."""
+  whispers = _whispers(sim)
+  cited = collections.Counter()
+  for r in _read_jsonl(f"storage/{sim}/experiment/opinions.jsonl"):
+    for node_id in r.get("evidence") or []:
+      cited[(r.get("name"), node_id)] += 1
+  out = []
+  for name in names:
+    by_id = _saved_nodes(sim, name)
+    whisper_of = {got["node_id"]: w["id"] for w in whispers
+                  for agent, got in (w.get("received") or {}).items()
+                  if agent == name and got.get("node_id")}
+    for node_id, n in by_id.items():
+      if not _is_reflection(n, by_id):
+        continue
+      tree = _reflection_tree(node_id, by_id, whisper_of, {node_id})
+      out.append({**tree, "agent": name, "poignancy": n.get("poignancy"),
+                  "count": n.get("node_count", 0), "cited": cited[(name, node_id)]})
+  out.sort(key=lambda r: (r.get("created") or "", r["count"]), reverse=True)
+  return out
+
+
+def dashboard_reflections(request, sim):
+  """Every agent's reflections and what each was drawn from, for the Reflections tab."""
+  meta = _read_json(f"storage/{sim}/reverie/meta.json") if SIM_NAME.match(sim) else None
+  if not meta:
+    return JsonResponse({"error": f"No saved run named {sim}."}, status=404)
+  return JsonResponse({"saved_time": meta.get("curr_time"),
+                       "reflections": reflections(sim, meta.get("persona_names", []))})
 
 
 def dashboard_timeline(request, sim):
@@ -422,6 +584,23 @@ def dashboard(request):
                 {"histories_json": json.dumps(histories)})
 
 
+LOG_FILES = (("conversations", "conversations.jsonl"), ("events", "events.jsonl"),
+             ("mentions", "whisper_mentions.jsonl"))
+
+
+def _held_counts(held, sim, start, logs):
+  """Row counts the page already holds, from its ?logs= version; zeros if it holds another run or a log shrank."""
+  parts = (held or "").split("|")
+  zeros = [0] * len(logs)
+  if len(parts) != 2 + len(logs) or parts[:2] != [sim, str(start)]:
+    return zeros
+  try:
+    counts = [int(x) for x in parts[2:]]
+  except ValueError:
+    return zeros
+  return counts if all(n <= len(rows) for n, rows in zip(counts, logs)) else zeros
+
+
 def dashboard_state(request):
   state = _read_json(STATE_FILE)
   status = _backend_status(state)
@@ -430,6 +609,10 @@ def dashboard_state(request):
           "run_env": _run_env(),
           "results": _tail_jsonl(RESULT_FILE, 40),
           "launch": _read_json(LAUNCH_FILE, {})}
+  # state.json outlives its run: only an idle or running one is live; a stopped one opens from the run menu.
+  if state and status not in ("idle", "running"):
+    state = None
+    data["results"] = []
   if state:
     personas = state.pop("personas", {})
     state["roster"] = [{k: personas[n].get(k) for k in ROSTER_FIELDS}
@@ -437,15 +620,23 @@ def dashboard_state(request):
     state["agent"] = personas.get(agent)
     sim = state["sim_code"]
     state["start_step"] = start = _run_start(sim)
-    opinions = _run_log(sim, "opinions.jsonl", 4000, start)
+    opinions = _run_log(sim, "opinions.jsonl", None, start)
     if state["agent"]:
       state["agent"]["history"] = _view_history(sim, agent)
       state["agent"]["evidence"] = _stance_evidence(sim, agent, opinions)
-    data["conversations"] = _run_log(sim, "conversations.jsonl", 300, start)
-    data["events"] = _run_log(sim, "events.jsonl", 300, start)
     data["opinions"] = _opinions(opinions)
     data["whispers"] = _whispers(sim)
-    data["mentions"] = _mentions(sim, start)
+    # Logs only grow: the page sends the row counts it holds (?logs=<version>) and gets just the rows
+    # past them; ?lean=1 (a saved run in view) gets none.
+    logs = [_read_jsonl(f"storage/{sim}/experiment/{name}") for _, name in LOG_FILES]
+    data["logs"] = "|".join([sim, str(start)] + [str(len(rows)) for rows in logs])
+    held = _held_counts(request.GET.get("logs"), sim, start, logs)
+    if request.GET.get("lean") == "1" or request.GET.get("logs") == data["logs"]:
+      data["logs_same"] = True
+    else:
+      data["logs_from"] = held
+      for (key, _), rows, n in zip(LOG_FILES, logs, held):
+        data[key] = [{**r, "inherited": (r.get("step") or 0) < start} for r in rows[n:]]
     data["network"] = network_summary(sim, state.get("persona_order", []), state["step"])
     # Results from before runs were tagged have no "sim"; keep showing those.
     data["results"] = [r for r in data["results"] if r.get("sim") in (None, sim)]
@@ -461,9 +652,8 @@ def _cost(row):
                          row.get("cached", 0), row.get("out", 0))
 
 
-# The usage log covers every run ever made and grows with each API call, so
-# it is read incrementally into running totals rather than kept as rows. Only
-# the last day's rows are kept, for the "today" and "last 5 minutes" figures.
+# The usage log spans every run and grows per API call, so it is folded into running totals;
+# only the last day's rows are kept, for the recent-window figures.
 RECENT_SECS = 26 * 3600
 
 
@@ -577,14 +767,15 @@ def _usage_read():
     for line in complete.decode("utf-8", "replace").splitlines():
       try:
         row = json.loads(line)
-      except ValueError:
-        continue
+        row["ts"] = float(row["ts"])
+      except (ValueError, KeyError, TypeError):
+        continue  # a malformed row; the rest of the chunk still counts
       row["cost"] = _cost(row)
       _usage["since"] = row["ts"] if _usage["since"] is None else _usage["since"]
       _usage["all"].add(row)
       _usage["runs"].setdefault(row.get("sim"), _UsageTotals()).add(row)
       _usage["recent"].append(row)
-      if row.get("ok") and row.get("kind") == "chat":
+      if row.get("ok") and row.get("kind") == "chat" and row.get("secs") is not None:
         _usage["latency"].append(row["secs"])
       if row["cost"] is None:
         _usage["unpriced"].add(row.get("model"))

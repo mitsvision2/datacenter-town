@@ -12,7 +12,9 @@ other's work, and a run's plan travels with it when the run is forked.
   {"op": "cancel", "id"}
   {"op": "started", "id", "time"}                delivery has begun, so it's too
                                                  late to edit
-  {"op": "sent", "id", "agent", "step", "time"}
+  {"op": "sent", "id", "agent", "step", "time",
+   "node_id"}                                    the thought it became in the
+                                                 agent's memory (if recorded)
   {"op": "failed", "id", "agent", "step", "time", "error"}
   {"op": "saved", "step"}                        the agents' memory was saved
 
@@ -87,7 +89,8 @@ def summarize(rows):
       w["started"] = True
     elif w and op == "sent":
       w["sent"].append(row.get("agent"))
-      w["received"][row.get("agent")] = {"step": row.get("step"), "time": row.get("time")}
+      w["received"][row.get("agent")] = {"step": row.get("step"), "time": row.get("time"),
+                                         **({"node_id": row["node_id"]} if row.get("node_id") else {})}
     elif w and op == "failed":
       w["failed"][row.get("agent")] = row.get("error")
   for w in whispers.values():

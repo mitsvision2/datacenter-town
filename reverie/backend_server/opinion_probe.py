@@ -117,12 +117,14 @@ REJECTED_N = 5
 
 # Hours counted as night when labelling a withheld asleep reading. A labelling
 # convention only -- nothing is gated on it. See probe for why the two cases
-# are worth telling apart.
+# are worth telling apart. Twins: NIGHT_FROM / NIGHT_TO in the dashboard and map
+# (templates/dashboard/dashboard.html, templates/home/main_script.html), which draw night from it.
 NIGHT_FROM, NIGHT_TO = 22, 6
 
 # Raw cosine, below which the model's answer stopped depending on the evidence.
 # See the module docstring: 0.39 mean when abstaining against 0.59 when
 # scoring, so the two populations separate cleanly either side of this.
+# Twin: STANCE_FLOOR in the dashboard (templates/dashboard/dashboard.html), which shows it on gaps.
 RELEVANCE_FLOOR = 0.45
 
 # perceive.py writes one event per perception tick for a conversation that is

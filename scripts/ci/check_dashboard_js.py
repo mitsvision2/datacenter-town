@@ -12,6 +12,7 @@ page = pathlib.Path("environment/frontend_server/templates/dashboard/dashboard.h
 js = page[page.rindex("<script>") + len("<script>"):page.rindex("</script>")]
 # The script contains two Django template tags; give them plain JS values.
 js = (js.replace("{% static 'assets/flat/' %}", "/static/")
+        .replace("{% static 'assets/the_ville/visuals/' %}", "/static/")
         .replace("{{ histories_json|safe }}", "[]"))
 if "{%" in js or "{{" in js:
   sys.exit("The dashboard script has a Django template tag this check doesn't "

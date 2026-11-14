@@ -59,6 +59,19 @@ changes, as well as at nulls. These instruments are not directly comparable
 without calibration. Rationale hover and conversation/whisper/reflection markers
 remain. Markers between readings are interpolated positions, not causal estimates.
 
+## Other dashboard endpoints
+
+- `/dashboard/reflections/<sim>/`: every saved reflection with its source tree (whisper
+  leaves via the delivery's `node_id`) and how many stance readings cited it.
+- `/dashboard/day/<sim>/?agent=<name>`: one agent's stays, each with everyone's tile,
+  emoji, facing and walking at a step a little after it began (or at its conversation).
+- `/dashboard/state/` adds `logs`, a version of the conversations, events and mentions
+  logs (run, start step and row counts). A poll that sends `?logs=<version>` gets
+  `logs_same: true` when nothing changed; otherwise `logs_from` gives the counts it
+  already holds and only the rows after them are sent. `?lean=1` (the page is showing
+  a saved run) never sends them. With no live run (status not idle/running) it returns
+  `sim: null`.
+
 ## Social network and polling
 
 Both `/dashboard/state/` and `/dashboard/run/<sim>/` now return a `network` field:
@@ -97,10 +110,12 @@ original score, scale, and legacy method remain visible in the tooltip.
 Frozen-evidence replay outputs also label old and new scoring versions and carry
 the new category/conditions, so comparisons do not silently merge instruments.
 
-The new panel sits below the line chart. Stable, name-sorted positions adapt to
-two columns on narrow screens and four on wide screens. Edges use a bounded
-logarithmic stroke width. Node click/Enter/Space uses the existing agent selection
-and inspector. Native SVG titles and accessible labels expose names, category,
+The panel is the **Social network** tab of the charts card. Each person is placed
+left to right by latest stance (0 against to 100 for, unrated in a column on the
+left), rows only to keep people apart. Edges use a bounded logarithmic stroke width
+and are dark when the pair sit on opposite sides of 50, light on the same side,
+dashed when either is unrated (by *latest* stance, not their stances when they
+talked). Node or edge click/Enter/Space opens that person's or pair's conversations. Native SVG titles and accessible labels expose names, category,
 last valid time, counts, and partners. The legend includes text as well as color.
 The existing polling cycle updates both charts; no new API call is made for edges.
 

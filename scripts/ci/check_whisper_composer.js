@@ -12,6 +12,8 @@ const timeAxisSource = /function stanceTimeAxis\([\s\S]*?\n\}/.exec(html)[0];
 const netSpriteSource = /const netSprite = [^\n]*/.exec(html)[0];
 const tipTableSource = /function tipTable\([\s\S]*?\n\}/.exec(html)[0];
 const tipNameSource = /const tipName = [^\n]*/.exec(html)[0];
+const netDaySource = /const netDay = [^\n]*/.exec(html)[0];
+const nightSource = /const NIGHT_FROM = [^\n]*/.exec(html)[0];
 const stanceChangeSource = /function stanceChangeHtml\([\s\S]*?\n\}/.exec(html)[0];
 const stanceScoreSource = /const STANCE_OLD_SCALE = [^\n]*\n[\s\S]*?function stanceScore100\([\s\S]*?\n\}/.exec(html)[0];
 const elements = new Map();
@@ -28,7 +30,7 @@ const context = vm.createContext({
   paint: (el, value) => { el.innerHTML = value; },
   sprite: (name) => `/static/${name}.png`,
   agentColor: () => "#2f7d52",
-  showInherited: false, Set, Map, Date, isNaN, String,
+  showInherited: false, Set, Map, Date, isNaN, String, refl: null, mapLink: () => "",
   drawn: {}, showConvo() {}, selectAgent() {}, chartTipMove() {}, ResizeObserver: class { observe() {} },
   focus: {whisper: null, step: null}, onFocus() {},
   setFocus(patch) { Object.assign(context.focus, patch); },
@@ -50,6 +52,8 @@ vm.runInContext(timeAxisSource, context);
 vm.runInContext(netSpriteSource, context);
 vm.runInContext(tipTableSource, context);
 vm.runInContext(tipNameSource, context);
+vm.runInContext(netDaySource, context);
+vm.runInContext(nightSource, context);
 vm.runInContext(stanceChangeSource, context);
 vm.runInContext(stanceScoreSource, context);
 vm.runInContext(script, context);
@@ -80,9 +84,9 @@ assert.equal(hint(null), "Goes out at the next step.");
 assert.doesNotMatch(hint("2023-02-13T12:30"), /waits for the next/);
 assert.match(hint("2023-02-13T14:00"), /This run ends at .* 13:00, so it waits for the next one/);
 
-// "Everyone" only when it really is everyone.
+// "All agents" only when it really is everyone.
 state("idle");
-assert.equal(run(`whisperAudience(${JSON.stringify(cast)})`), "Everyone");
+assert.equal(run(`whisperAudience(${JSON.stringify(cast)})`), "All agents");
 assert.equal(run(`whisperAudience(${JSON.stringify(cast.slice(0, 3))})`), "Maya, Luis, Denise");
 
 // One whisper to several people reads as one row; a repeat at another step doesn't merge.
@@ -155,7 +159,7 @@ assert.match(pane, /Game time only moves during a run/);
 run(`whisperShow.delete("cancelled"); renderEvents(); whisperShow.add("cancelled")`);
 assert.doesNotMatch(element("w-list").innerHTML, /data-w-id="gone"/);
 
-// Event-log-only whispers (pre-plan) list newest first, names in send order.
+// Whispers known only from the event log (older runs) list newest first, names in send order.
 context.data.whispers = [];
 context.data.events = [row("Maya Okonkwo", 5, "first"), row("Luis Hernandez", 5, "first"), row("Tom Whitaker", 9, "second")];
 run("renderEvents()");
@@ -205,7 +209,7 @@ assert.equal(run(`whisperSummary(${JSON.stringify(s)})`), "Told to 2 people. The
 // A grey conversation only claims what was actually established.
 const talk = (step, ppl) => ({step, time: "t", speakers: ppl, utterances: []});
 const said = (w, mentions, c) => story(w, mentions, [c]).talks[0].said;
-assert.equal(said(told(), [quietRow(200, speakers, "w")], talk(200, speakers)), "It didn't come up.");
+assert.equal(said(told(), [quietRow(200, speakers, "w")], talk(200, speakers)), "Not detected.");
 assert.equal(said(told(), [], talk(50, speakers)), "Neither of them had heard it yet.");
 assert.equal(said(told(), [], talk(200, [cast[2], cast[3]])), "Neither of them had heard it yet.");
 assert.equal(said(told(), [], talk(200, speakers)), "This one wasn't checked.");
@@ -222,14 +226,14 @@ context.data.conversations = [talk(200, speakers), talk(150, [cast[1], cast[3]])
 run("renderTrail()");
 const chart = element("trail-chart").innerHTML;
 assert.match(chart, /<svg/);
-// Spread tree: two told, one secondhand via Maya, one failed.
+// Spread tree: two told, one secondhand, one failed.
 assert.equal((chart.match(/class="tr-node"/g) || []).length, 3);
 assert.equal((chart.match(/class="tr-node failed"/g) || []).length, 1);
 assert.equal((chart.match(/class="tr-edge told"/g) || []).length, 2);
 assert.equal((chart.match(/class="tr-edge talk"/g) || []).length, 1);
 assert.equal((chart.match(/class="tr-edge failed"/g) || []).length, 1);
-// The secondhand edge links to its conversation.
-assert.match(chart, new RegExp(`data-trail-convo="${run(`convoKey(${JSON.stringify(talk(200, speakers))})`).replace(/\|/g, "\\|")}"`));
+// The secondhand edge carries its conversation's key; clicking it opens the transcript.
+assert.match(chart, new RegExp(`data-trail-hop="${run(`convoKey(${JSON.stringify(talk(200, speakers))})`).replace(/\|/g, "\\|")}"`));
 assert.match(chart, /Maya&lt;\/span&gt; → &lt;span[^"]*Denise/);
 // Mention counts are in the tooltip, not under the name.
 assert.match(chart, /Brought it up&lt;\/span&gt;&lt;span&gt;1×/);
@@ -248,6 +252,24 @@ assert.match(element("trail-summary").title, /Told to 2 people\. 1 more heard it
 assert.doesNotMatch(element("trail-select").innerHTML, /scheduled-only/);
 assert.match(element("trail-select").innerHTML, /&lt;b&gt;The vote moved/);
 assert.doesNotMatch(element("trail-select").innerHTML, /<b>The vote/);
+// A checked conversation that didn't bring it up: a tick on the lane of each person who knew it.
+context.data.mentions = [mentionRow(200, speakers, "w"), quietRow(250, [cast[0], cast[1]], "w")];
+context.data.conversations = [talk(200, speakers), talk(250, [cast[0], cast[1]]), talk(150, [cast[1], cast[3]])];
+run("renderTrail()");
+const quietChart = element("trail-chart").innerHTML;
+assert.equal((quietChart.match(/class="tr-quiet"/g) || []).length, 2);
+assert.match(quietChart, /data-trail-convo="[^"]+"/);
+assert.match(quietChart, /Not detected/);
+// Every clickable mark is focusable and has a complete aria-label.
+const marksG = quietChart.match(/<g [^>]*data-trail-(agent|refl|convo|open)=[^>]*>/g) || [];
+assert.ok(marksG.length >= 7);
+for (const g of marksG) assert.match(g, /tabindex="0" role="button" aria-label="[^"]+\."/);
+assert.doesNotMatch(quietChart, /aria-label="[^"]*(, \.|\. \.|: \.)/);
+// The Whisper pill comes first in Tab order, then each lane with its own marks.
+assert.ok(quietChart.indexOf('class="tr-you"') < quietChart.indexOf("data-trail-hop"));
+// The tick's tooltip and the key's entries each explain themselves.
+assert.match(quietChart, /Not detected\. · /);
+assert.match(quietChart, /Reflection via a talk/);
 
 // The trail follows the shared whisper focus.
 context.data.whispers = [told(), told({id: "second", text: "A second one", received: {[cast[3]]: {step: 350, time: "February 13, 2023, 13:00:00"}}})];
@@ -269,4 +291,4 @@ context.data = {status: "stopped", sim: null};
 run("renderTrail()");
 assert.match(element("trail-chart").innerHTML, /Start a run/);
 
-console.log("Whisper labels, hints, grouping, row actions, ordering, chart, tooltips, escaping: passed");
+console.log("Whisper labels, hints, grouping, row actions, ordering, chart, keyboard, escaping: passed");

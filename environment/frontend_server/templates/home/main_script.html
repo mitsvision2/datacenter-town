@@ -2,6 +2,7 @@
 
 <div id="step" style="display:none">{{step}}</div>
 <div id="sim_code" style="display:none">{{sim_code}}</div>
+<div id="map_mode" style="display:none">{{mode}}</div>
 <div id="persona_name_list" style="display:none">{{persona_name_str}}</div>
 <div id="persona_init_pos" style="display:none">
 	{% for i in persona_init_pos %}
@@ -76,6 +77,13 @@
 
 	// ?overview=1: static whole-town view for the dashboard backdrop; never polls.
 	const overview = new URLSearchParams(window.location.search).get("overview") === "1";
+	// Replay only reads a saved run: no positions are posted back, and the dashboard can
+	// pause it, change its speed (steps per tick) and seek; each step played is reported.
+	const replayMode = document.getElementById("map_mode").innerHTML.trim() === "replay";
+	const rp = {paused: false, stride: 1, seekTo: null, waitUntil: 0};
+	function tellDashboard(msg) {
+	  if (window.parent !== window) window.parent.postMessage(msg, window.location.origin);
+	}
 
 	// Creating the game instance and setting up the main Phaser variables that  
 	// will be used in it. 
@@ -103,30 +111,34 @@
 	let pre_anims_direction;
 	let pre_anims_direction_dict = {};
 	let pegs = {};   // persona name -> visible peg sprite
-	// Pixel speech bubble: white box, black border with stepped corners, and a stepped
+	// Pixel speech bubble: a bordered box with stepped corners, and a stepped
 	// tail. The container's origin is the tail's tip, placed just above the peg's head.
 	const BUB = 3;   // one art pixel, the same size as the pegs' pixels
 	function speechBubble(scene, text) {
 	  const label = scene.add.text(0, 0, text, {font: "bold 26px monospace", fill: "#000000"});
 	  const gfx = scene.add.graphics();
 	  const box = scene.add.container(0, 0, [gfx, label]).setDepth(3);
-	  box.setText = (t) => {
+	  // align "left": the box reaches right from the tail; "right": it reaches left. lift raises the box
+	  // with a stem down to the tail, for when the spot over the head is taken.
+	  box.setText = (t, align = "left", lift = 0) => {
 	    label.setText(t);
 	    const u = BUB, w = Math.ceil(label.width / u) * u + 8 * u, h = Math.ceil(label.height / u) * u + 4 * u;
-	    const tx = 4 * u, tail = 4 * u;          // tail column and depth
-	    const ox = -tx - u, oy = -(h + tail);      // shift so the tail tip sits at (0, 0)
+	    const tx = align === "right" ? w - 6 * u : 4 * u, tail = 4 * u;  // tail column and depth
+	    const ox = -tx - u, oy = -(h + tail + lift);  // shift so the tail tip sits at (0, 0)
+	    box.boxW = w; box.boxH = h;  // not .w: Phaser's Transform already uses it
 	    gfx.clear().fillStyle(0x000000);
 	    gfx.fillRect(ox + u, oy, w - 2 * u, h).fillRect(ox, oy + u, w, h - 2 * u);   // border, stepped corners
 	    for (let i = 0; i < tail / u; i++) gfx.fillRect(ox + tx - u, oy + h - u + i * u, (tail / u - i + 1) * u, u);
 	    gfx.fillStyle(0xffffff);
 	    gfx.fillRect(ox + 2 * u, oy + u, w - 4 * u, h - 2 * u).fillRect(ox + u, oy + 2 * u, w - 2 * u, h - 4 * u);
 	    for (let i = 0; i < tail / u - 1; i++) gfx.fillRect(ox + tx, oy + h - u + i * u, (tail / u - i - 1) * u, u);
+	    if (lift) gfx.fillStyle(0x000000).fillRect(-2 * u, oy + h + tail - u, 2 * u, lift + u);
 	    label.setPosition(ox + 4 * u, oy + 2 * u);
 	    return box;
 	  };
 	  return box.setText(text);
 	}
-	// Tail tip just above the peg's head (the peg's feet are on the tile's bottom edge, 72px tall).
+	// Tail tip just above the peg's head; the peg's feet sit on the tile's bottom edge.
 	function placeBubble(name) {
 	  const b = personas[name].body;
 	  pronunciatios[name].setPosition(b.x + tile_width / 2 - 6, b.y + tile_width - 72 - 2)
@@ -148,6 +160,10 @@
 	function noteTile(name, x, y) {
 	  const t = tileTrail[name] = tileTrail[name] || [], last = t[t.length - 1];
 	  if (last && last[0] === x && last[1] === y) return;
+	  // A jump breaks the trail rather than drawing a line through walls.
+	  // A fast replay step covers several tiles; past what a trail can follow, it's left off.
+	  const reach = replayMode && rp.stride <= 6 ? rp.stride + 1 : 2;
+	  if (last && Math.abs(last[0] - x) + Math.abs(last[1] - y) > reach) t.length = 0;
 	  t.push([x, y]);
 	  if (t.length > TRAIL_MAX) t.shift();
 	}
@@ -162,6 +178,111 @@
 	    const [ax, ay] = c(t[i - 1]), [bx, by] = c(t[i]);
 	    trailGfx.lineStyle(8, trailColor, 0.15 + 0.65 * (i / (t.length - 1)));
 	    trailGfx.lineBetween(ax, ay, bx, by);
+	  }
+	}
+
+	// Night: a dark overlay following the game clock, warm indoors, with a soft light around each awake agent.
+	// Built once from the tile map and only faded, so WebGL and canvas match. Keep in sync with dashboard.html's Day view (NIGHT_*, darkness()).
+	const NIGHT_COLOR = 0x0b1236, NIGHT_WARM = 0xffb45c, NIGHT_MAX = 0.68;
+	const NIGHT_INDOOR = 0.38, NIGHT_WARMTH = 0.22;  // indoors: share of the dark kept, and strength of the warm cast
+	const night = {enabled: true, level: 0, target: 0, drawn: -1, dirty: true, hour: null, awake: {}, glows: {}};
+	// The probe's night (opinion_probe.NIGHT_FROM / NIGHT_TO), with an hour's fade either side.
+	const NIGHT_FROM = 22, NIGHT_TO = 6;
+	function darkness(h) {
+	  if (h == null) return 0;
+	  if (h >= NIGHT_FROM || h < NIGHT_TO) return 1;
+	  if (h >= NIGHT_FROM - 1) return h - (NIGHT_FROM - 1);
+	  if (h < NIGHT_TO + 1) return 1 - (h - NIGHT_TO);
+	  return 0;
+	}
+	function setNightTime(curr_time) {
+	  const m = /(\d+):(\d+):\d+$/.exec(curr_time || "");
+	  if (m) night.hour = +m[1] + +m[2] / 60;
+	  night.target = night.enabled ? darkness(night.hour) * NIGHT_MAX : 0;
+	}
+	function drawNight() {
+	  if (!night.out) return;
+	  const k = night.level / NIGHT_MAX;  // 0 by day, 1 at full night
+	  night.out.setAlpha(night.level).setVisible(night.level > 0.003);
+	  night.inside.setAlpha(k).setVisible(night.level > 0.003);
+	  // Agents: a light cool tint at night (WebGL only; the canvas renderer ignores tints).
+	  const lerp = (a, b) => Math.round(a + (b - a) * k);
+	  const tint = (lerp(255, 0xc4) << 16) | (lerp(255, 0xcc) << 8) | lerp(255, 0xe6);
+	  for (const n of Object.keys(pegs)) pegs[n].setTint(tint);
+	  for (const n of Object.keys(night.glows)) {
+	    const g = night.glows[n], b = personas[n].body, on = night.awake[n] && night.level > 0.003;
+	    g.setVisible(on);
+	    if (on) g.setPosition(b.x + tile_width / 2, b.y + tile_width / 2).setAlpha(0.32 * k);
+	  }
+	  night.drawn = night.level;
+	  night.dirty = false;
+	}
+
+	// Bubbles are short cues, never the text, which lives in the dashboard's readers.
+	const SAY = {mark: 4500, activity: 2500};  // ms on screen
+	const says = {};          // name -> {emoji, flash: {text, until}, mark: {text, until}}
+	let marks = [], marksStep = null;  // logged reflections and whispers, from the dashboard
+	const initialsOf = (n) => { const w = [...n.matchAll(/(\p{L})\p{L}+/gu)]; return ((w[0]?.[1] || "") + (w.length > 1 ? w[w.length - 1][1] : "")).toUpperCase(); };
+	// Called once a step, when the step's movement arrives.
+	function noteSays(move, at, prevStep) {
+	  const now = performance.now();
+	  for (const n of Object.keys(personas)) {
+	    const p = move["persona"][n] || {}, s = says[n] = says[n] || {};
+	    if (p["pronunciatio"] && p["pronunciatio"] !== s.emoji) {
+	      if (s.emoji != null) s.flash = {text: `${initialsOf(n)}: ${p["pronunciatio"]}`, until: now + SAY.activity};
+	      s.emoji = p["pronunciatio"];
+	    }
+	    s.talking = !!(p["chat"] && p["chat"].length);
+	  }
+	  // Reflections and whispers logged between the last step shown and this one.
+	  for (const m of marks) {
+	    if (m.step > at || (prevStep != null && m.step <= prevStep) || (prevStep == null && m.step !== at)) continue;
+	    const s = says[m.agent] = says[m.agent] || {};
+	    // A cue, not the text: what was thought or whispered is in the dashboard's readers.
+	    s.mark = {text: `${initialsOf(m.agent)}: ${m.kind === "whisper" ? "◆ whisper" : "💭 reflecting"}`, until: now + SAY.mark};
+	  }
+	}
+	// [text, rank]: rank only orders placement; lower ranks are placed first and keep the spot over their head.
+	function sayFor(n, now) {
+	  const s = says[n];
+	  if (!s) return null;
+	  if (s.mark && s.mark.until > now) return [s.mark.text, 0];
+	  if (s.talking) return [`${initialsOf(n)}: 💬 talking`, 1];
+	  if (s.flash && s.flash.until > now) return [s.flash.text, 3];
+	  if (n === trailName && s.emoji) return [`${initialsOf(n)}: ${s.emoji}`, 2];
+	  return null;
+	}
+	// Each bubble keeps last frame's side when it can (no flipping as agents move); it rises, with a stem,
+	// only if both sides are taken. State uses say* names: Phaser containers already have .last and .w.
+	function renderSays(now) {
+	  const shown = [];
+	  for (const n of Object.keys(pronunciatios)) {
+	    const say = sayFor(n, now), b = pronunciatios[n];
+	    if (!say) { b.setVisible(false); continue; }
+	    if (b.sayText !== say[0]) { b.setText(say[0]); b.sayText = say[0]; b.sayLast = b.sayKey || b.sayLast; b.sayKey = null; }  // re-measures boxW/boxH
+	    shown.push({b, text: say[0], rank: say[1]});
+	  }
+	  shown.sort((p, q) => p.rank - q.rank || p.b.x - q.b.x);
+	  // Zoomed out, bubbles grow so they stay readable (at the whole-town view they'd be specks).
+	  const sc = Math.max(1, 0.5 / camera.zoom);
+	  const placed = [], u = BUB, tail = 4 * u, gap = u * sc;
+	  for (const {b, text} of shown) {
+	    b.setScale(sc);
+	    const w = b.boxW, h = b.boxH, spot = (align, lift) => {
+	      const x0 = b.x - ((align === "right" ? w - 6 * u : 4 * u) + u) * sc, y1 = b.y - (tail + lift) * sc;
+	      return {align, lift, x0, x1: x0 + w * sc, y0: y1 - h * sc, y1};
+	    };
+	    const free = (r) => !placed.some((o) => r.x0 < o.x1 + gap && o.x0 < r.x1 + gap && r.y0 < o.y1 + gap && o.y0 < r.y1 + gap);
+	    // Same side as last frame first, so free bubbles never swap sides; back down to head level as soon as there's room.
+	    const [lastAlign = "left", lastLift = "0"] = (b.sayKey || b.sayLast || "").split("|");
+	    const other = lastAlign === "left" ? "right" : "left", step = h + 2 * u;
+	    const tries = [spot(lastAlign, 0), spot(other, 0), spot(lastAlign, +lastLift)];
+	    for (let level = 1; level < 4; level++) tries.push(spot(lastAlign, level * step), spot(other, level * step));
+	    const pick = tries.find(free) || spot(lastAlign, 0);
+	    placed.push(pick);
+	    const key = `${pick.align}|${pick.lift}`;
+	    if (b.sayKey !== key) { b.setText(text, pick.align, pick.lift); b.sayKey = key; }
+	    b.setVisible(true);
 	  }
 	}
 
@@ -188,6 +309,8 @@
 	let update_pending = false;
 	let execute_count = execute_count_max;
 	let movement_target = {};
+	// Whether each persona moves this step; set once per step so one that just arrived doesn't flash to standing.
+	let step_moved = {};
 	
 
 	// ###########################################################################
@@ -368,15 +491,77 @@
 	    personas[persona_name] = new_sprite;
 	    // The physics sprite still does the moving; a peg in the persona's color is drawn on it.
 	    new_sprite.setVisible(false);
-	    // Depth is set in syncPeg: above the foreground layer (2) so heads aren't cut off, below the bubbles (3).
+	    // Depth is set in syncPeg: above the foreground layer so heads aren't cut off, below the bubbles.
 	    pegs[persona_name] = this.add.sprite(0, 0, "pegs", pegRow(i, "d") * 3).setOrigin(0.5, 1).setScale(3);
 	    syncPeg(persona_name);
 	    pronunciatios[persona_name] = speechBubble(this, "🦁");
 	    placeBubble(persona_name);
 	    noteTile(persona_name, spawn_tile_loc[persona_name][0], spawn_tile_loc[persona_name][1]);
 	  }
-	  // Under the pegs and bubbles, over the foreground layer (2).
+	  // Under the pegs and bubbles, over the foreground layer.
 	  trailGfx = this.add.graphics().setDepth(2.2);
+
+	  // Night layer: above the foreground, below pegs and bubbles; agents only get a cool tint so they stay visible.
+	  if (!overview) {
+	    // Indoors (interior floors and the wall faces just above them) stays lighter, with a warm cast.
+	    // One pixel per tile, scaled up with nearest-pixel filtering: tile-exact edges, no seams between strips.
+	    const cols = map.width, rows = map.height;
+	    const floor = (x, y) => (interiorGroundLayer.getTileAt(x, y)?.index ?? -1) >= 0;
+	    const wall = (x, y) => (wallLayer.getTileAt(x, y)?.index ?? -1) >= 0;
+	    const indoor = (x, y) => floor(x, y) || (wall(x, y) && (floor(x, y + 1) || floor(x, y + 2) || floor(x, y + 3)));
+	    const hex = (c, a) => `rgba(${c >> 16 & 255},${c >> 8 & 255},${c & 255},${a})`;
+	    const outTex = this.textures.createCanvas("night-out", cols, rows), outCtx = outTex.getContext();
+	    const inTex = this.textures.createCanvas("night-in", cols, rows), inCtx = inTex.getContext();
+	    for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) {
+	      if (indoor(x, y)) {
+	        inCtx.fillStyle = hex(NIGHT_COLOR, NIGHT_MAX * NIGHT_INDOOR); inCtx.fillRect(x, y, 1, 1);
+	        inCtx.fillStyle = hex(NIGHT_WARM, NIGHT_MAX * NIGHT_WARMTH); inCtx.fillRect(x, y, 1, 1);
+	      } else { outCtx.fillStyle = hex(NIGHT_COLOR, 1); outCtx.fillRect(x, y, 1, 1); }
+	    }
+	    outTex.refresh(); inTex.refresh();
+	    night.out = this.add.image(0, 0, "night-out").setOrigin(0, 0).setScale(tile_width).setDepth(2.3).setVisible(false);
+	    night.inside = this.add.image(0, 0, "night-in").setOrigin(0, 0).setScale(tile_width).setDepth(2.3).setVisible(false);
+	    // A soft round light for each awake agent.
+	    const glow = this.textures.createCanvas("night-glow", 64, 64), gctx = glow.getContext();
+	    const grad = gctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+	    grad.addColorStop(0, "rgba(255,226,170,1)"); grad.addColorStop(1, "rgba(255,226,170,0)");
+	    gctx.fillStyle = grad; gctx.fillRect(0, 0, 64, 64); glow.refresh();
+	    for (const n of Object.keys(personas)) {
+	      night.glows[n] = this.add.image(0, 0, "night-glow").setScale(2.5).setDepth(2.35).setBlendMode(Phaser.BlendModes.ADD).setVisible(false);  // a pool of light under them
+	    }
+	  }
+
+	  // Embedded map navigation: drag to pan, wheel to zoom toward the pointer, click an agent to pick them.
+	  if (!overview) {
+	    const fitZoom = Math.max(config.width / mapW, config.height / mapH);
+	    let drag = null;
+	    this.input.on("pointerdown", (p) => { drag = {x: p.x, y: p.y, sx: camera.scrollX, sy: camera.scrollY, moved: false}; });
+	    this.input.on("pointermove", (p) => {
+	      if (!drag || !p.isDown) return;
+	      if (!drag.moved && Math.hypot(p.x - drag.x, p.y - drag.y) < 5) return;
+	      if (!drag.moved) { drag.moved = true; camera.stopFollow(); tellDashboard({type: "camera", following: false}); }
+	      camera.setScroll(drag.sx - (p.x - drag.x) / camera.zoom, drag.sy - (p.y - drag.y) / camera.zoom);
+	    });
+	    this.input.on("pointerup", (p) => {
+	      if (drag && !drag.moved) {
+	        // The nearest agent within about a peg's width of the click, measured to the peg's middle.
+	        let best = null, bestD = 48 * 48;
+	        for (const n of Object.keys(pegs)) {
+	          const g = pegs[n], d = (g.x - p.worldX) ** 2 + (g.y - 36 - p.worldY) ** 2;
+	          if (d < bestD) { bestD = d; best = n; }
+	        }
+	        if (best) tellDashboard({type: "pick", name: best});
+	      }
+	      drag = null;
+	    });
+	    this.input.on("wheel", (p, objs, dx, dy) => {
+	      const before = camera.getWorldPoint(p.x, p.y);
+	      camera.setZoom(Math.max(fitZoom, Math.min(3, camera.zoom * Math.exp(-dy * 0.0015))));
+	      camera.preRender();
+	      const after = camera.getWorldPoint(p.x, p.y);
+	      if (!camera._follow) camera.setScroll(camera.scrollX + before.x - after.x, camera.scrollY + before.y - after.y);
+	    });
+	  }
 
 	  // Peg walk cycles, one per color and facing.
 	  for (let c = 0; c < 8; c++) for (const d of ["d", "l", "r", "u"]) {
@@ -423,6 +608,15 @@
 	  }
 
 	  if (overview) return;
+	  renderSays(performance.now());
+	  if (night.out) {
+	    night.level += (night.target - night.level) * Math.min(1, delta / 500);
+	    if (night.dirty || Math.abs(night.level - night.drawn) > 0.004) drawNight();
+	  }
+	  if (replayMode) {
+	    if (rp.seekTo != null && phase !== "execute") { step = rp.seekTo; rp.seekTo = null; phase = "update"; timer = 0; rp.waitUntil = 0; }
+	    if (rp.paused || time < rp.waitUntil) return;
+	  }
 
 	  // console.log("phase: " + phase + ", step: " + step);
 	  // *** MOVE PERSONAS ***
@@ -476,6 +670,10 @@
 	            if (JSON.parse(update_xobj.responseText)["<step>"] == step) {
 	              execute_movement = JSON.parse(update_xobj.responseText)
 	              phase = "execute";
+	            } else if (replayMode) {
+	              // Past the last saved step: ask again on a slow timer, not every frame.
+	              rp.waitUntil = performance.now() + 1000;
+	              tellDashboard({type: "replay-end", step: step});
 	            }
 	            timer = timer_max;
 	          }
@@ -493,6 +691,17 @@
 	    // The execute_count_max is computed by tile_width/movement_speed, which
 	    // defines a one step sequence in this world. 
 	    document.getElementById("game-time-content").innerHTML = execute_movement["meta"]["curr_time"];
+	    if (execute_count == execute_count_max) {
+	      noteSays(execute_movement, step, marksStep);
+	      marksStep = step;
+	      setNightTime(execute_movement["meta"]["curr_time"]);
+	      // Asleep as the stance probe counts it, written by reverie.py; runs without it fall back to a guess from the activity.
+	      for (const n of Object.keys(execute_movement["persona"])) {
+	        const p = execute_movement["persona"][n];
+	        night.awake[n] = typeof p["asleep"] === "boolean" ? !p["asleep"] : !/sleep/i.test(p["description"] || "");
+	      }
+	    }
+	    night.dirty = true;
 	    for (let i=0; i<Object.keys(personas).length; i++) {
 	      let curr_persona_name = Object.keys(personas)[i];
 	      let curr_persona = personas[curr_persona_name];
@@ -502,18 +711,9 @@
 	        let curr_y = execute_movement["persona"][curr_persona_name]["movement"][1];
 	        movement_target[curr_persona_name] = [curr_x * tile_width, 
 	                                              curr_y * tile_width]; 
+	        step_moved[curr_persona_name] = curr_persona.body.x !== curr_x * tile_width || curr_persona.body.y !== curr_y * tile_width;
 	        noteTile(curr_persona_name, curr_x, curr_y);
 	        if (curr_persona_name === trailName) drawTrail();
-	        let pronunciatio_content = execute_movement["persona"][curr_persona_name]["pronunciatio"];
-	        // This is what gives the pronunciatio balloon the name initials. We 
-	        // use regex to extract the initials of the personas. 
-	        // E.g., "Dolores Murphy" -> "DM"
-	        let rgx = new RegExp(/(\p{L}{1})\p{L}+/, 'gu');
-	        let initials = [...curr_persona_name.matchAll(rgx)] || [];
-	        initials = (
-	          (initials.shift()?.[1] || '') + (initials.pop()?.[1] || '')
-	        ).toUpperCase();
-	        pronunciatios[curr_persona_name].setText(initials + ": " + pronunciatio_content);
 	      }
 
 	      console.log(curr_persona_name);
@@ -546,9 +746,9 @@
         placeBubble(curr_persona_name);
 
           const peg = pegs[curr_persona_name], ci = pegIndex(curr_persona_name);
-          if (anims_direction) {
+          if (anims_direction && night.awake[curr_persona_name] !== false) {
             peg.anims.play(`peg-${ci % 8}-${anims_direction}`, true);
-          } else {
+          } else if (!step_moved[curr_persona_name] || night.awake[curr_persona_name] === false) {  // asleep: never walking in place
             // Standing: the idle frame facing the last way it walked.
             peg.anims.stop();
             peg.setFrame(pegRow(ci, pre_anims_direction_dict[curr_persona_name]) * 3);
@@ -567,9 +767,10 @@
 	          syncPeg(curr_persona_name);
 	          placeBubble(curr_persona_name);
 	        }
-	        phase = "process";
+	        if (replayMode) tellDashboard({type: "replay-step", step: step, time: execute_movement["meta"]["curr_time"]});
+	        phase = replayMode ? "update" : "process";
 	        execute_count = execute_count_max + 1;
-	        step = step + 1;
+	        step = step + (replayMode ? rp.stride : 1);
 	      }
 	    }
 
@@ -606,10 +807,27 @@
 	var play_button=document.getElementById("play_button");
 	var pause_button=document.getElementById("pause_button");
 
-	// The dashboard asks the embedded map to center on an agent, or to show
-	// the whole town when no agent is picked.
+	// Space inside the map pauses or resumes a replay; the dashboard owns the play state.
+	window.addEventListener("keydown", (e) => {
+	  if (replayMode && e.code === "Space") { e.preventDefault(); tellDashboard({type: "space"}); }
+	}, true);
+	// Commands posted by the dashboard.
 	window.addEventListener("message", function(e) {
 	  if (overview || e.origin !== window.location.origin || !e.data || !camera) return;
+	  // The game time before the first step arrives, so a run loaded at night doesn't open in daylight.
+	  if (e.data.type === "clock") {
+	    if (night.hour == null && Number.isFinite(e.data.hour)) { night.hour = e.data.hour; setNightTime(null); night.level = night.target; night.dirty = true; }
+	    return;
+	  }
+	  if (e.data.type === "marks") { marks = Array.isArray(e.data.items) ? e.data.items : []; return; }
+	  if (e.data.type === "night") { night.enabled = !!e.data.on; setNightTime(null); return; }
+	  if (e.data.type === "replay" && replayMode) {
+	    if (e.data.cmd === "pause") rp.paused = true;
+	    if (e.data.cmd === "play") rp.paused = false;
+	    if (e.data.cmd === "speed") rp.stride = Math.max(1, parseInt(e.data.value, 10) || 1);
+	    if (e.data.cmd === "seek") { rp.seekTo = Math.max(0, parseInt(e.data.value, 10) || 0); tileTrail = {}; drawTrail(); marksStep = null; }  // a jump isn't a walk
+	    return;
+	  }
 	  if (e.data.type === "overview") {
 	    // Fill the frame with the town. Sits a bit above center so the top row
 	    // of houses shows; only forest is trimmed at the bottom.
@@ -623,7 +841,8 @@
 	    if (!target || !player) return;
 	    player.setPosition(target.body.x, target.body.y);
 	    camera.setZoom(1);
-	    camera.startFollow(player);
+	    // A replay follows the agent itself, so seeking and fast playback keep them in view.
+	    camera.startFollow(replayMode ? target : player);
 	    trailName = e.data.name;
 	    trailColor = parseInt(String(e.data.color || "#000000").replace("#", ""), 16) || 0;
 	    drawTrail();
