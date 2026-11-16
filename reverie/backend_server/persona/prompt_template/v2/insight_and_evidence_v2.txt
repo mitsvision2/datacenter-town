@@ -1,0 +1,13 @@
+insight_and_evidence_v2.txt
+
+Variables:
+!<INPUT 0>! -- Numbered list of event/thought statements
+!<INPUT 1>! -- number of insights to write
+!<INPUT 2>! -- persona name
+
+<commentblockmarker>###</commentblockmarker>
+Input:
+!<INPUT 0>!
+
+What !<INPUT 1>! high-level insights can you infer from the above statements about !<INPUT 2>!? Write each insight as one sentence that names !<INPUT 2>! and says what !<INPUT 2>! wants, worries about, believes or has said, and why. Only describe a view or motive that the statements you cite actually show !<INPUT 2>! holding or voicing; if the statements do not show one, write what !<INPUT 2>! was doing or what happened to !<INPUT 2>! instead. (example format: !<INPUT 2>! <what they want, worry about or have said, and why> (because of 1, 5, 3))
+1.

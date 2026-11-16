@@ -2165,9 +2165,10 @@ def run_gpt_prompt_focal_pt(persona, statements, n, test_input=None, verbose=Fal
 
 
   
-def run_gpt_prompt_insight_and_guidance(persona, statements, n, test_input=None, verbose=False): 
+def run_gpt_prompt_insight_and_guidance(persona, statements, n, test_input=None, verbose=False, template=None): 
   def create_prompt_input(persona, statements, n, test_input=None): 
-    prompt_input = [statements, str(n)]
+    # v1 ignores the name; v2 writes its insights about this persona.
+    prompt_input = [statements, str(n), persona.scratch.name]
     return prompt_input
   
   def __func_clean_up(gpt_response, prompt=""):
@@ -2200,7 +2201,7 @@ def run_gpt_prompt_insight_and_guidance(persona, statements, n, test_input=None,
   gpt_param = {"engine": "text-davinci-003", "max_tokens": 500,
                "temperature": 0.5, "top_p": 1, "stream": False,
                "frequency_penalty": 0, "presence_penalty": 0, "stop": None}
-  prompt_template = "persona/prompt_template/v2/insight_and_evidence_v1.txt"
+  prompt_template = template or "persona/prompt_template/v2/insight_and_evidence_v1.txt"
   prompt_input = create_prompt_input(persona, statements, n)
   prompt = generate_prompt(prompt_input, prompt_template)
 
