@@ -2172,14 +2172,14 @@ def run_gpt_prompt_insight_and_guidance(persona, statements, n, test_input=None,
   
   def __func_clean_up(gpt_response, prompt=""):
     ret = dict()
-    for line in gpt_response.strip().split("\n"):
-      # Skips blank lines and a last line cut off before its evidence.
-      if "(because of " not in line or ")" not in line.split("(because of ")[1]:
-        continue
-      row = re.sub(r"^\s*\d+\.\s*", "", line)
-      thought = row.split("(because of ")[0].strip()
-      evi_raw = row.split("(because of ")[1].split(")")[0]
-      ret[thought] = [int(i) for i in re.findall(r'\d+', evi_raw)]
+    # Split on the evidence tags rather than on line breaks: the model
+    # sometimes writes all its insights on one line. The text after the last
+    # tag is a line cut off before its evidence, and is dropped.
+    parts = re.split(r"\(because of ([^)]*)\)", gpt_response.strip())
+    for thought, evi_raw in zip(parts[0::2], parts[1::2]):
+      thought = re.sub(r"^[\s.]*(?:\d+\.\s*)?", "", thought).strip()
+      if thought:
+        ret[thought] = [int(i) for i in re.findall(r'\d+', evi_raw)]
     if not ret:
       raise ValueError("no insights parsed")
     return ret
